@@ -1,0 +1,41 @@
+// Page styles for "Styling". Scoped to [data-doc-slug="guide/styling"].
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.swatch {
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  font-family: var(--fd-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+
+  &--surface {
+    background: var(--fd-surface);
+    color: var(--fd-text-muted);
+  }
+
+  &--sunken {
+    background: var(--fd-surface-sunken);
+    color: var(--fd-text-muted);
+  }
+
+  &--accent {
+    border-color: transparent;
+    background: var(--fd-accent);
+    color: #fff;
+  }
+
+  &--border {
+    border-width: 3px;
+    border-color: var(--fd-border-strong);
+    color: var(--fd-text-subtle);
+  }
+}

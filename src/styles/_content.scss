@@ -1,0 +1,289 @@
+// -----------------------------------------------------------------------------
+// Styles for rendered markdown.
+//
+// This content is inserted with innerHTML, so it never carries Angular's
+// component scoping attributes. These rules have to be global — that is why they
+// live here rather than in doc-page.scss.
+// -----------------------------------------------------------------------------
+
+.fd-markdown {
+  color: var(--fd-text);
+  font-size: 1rem;
+  line-height: 1.72;
+
+  > *:first-child {
+    margin-top: 0;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    position: relative;
+    margin: 2.25rem 0 0.75rem;
+    color: var(--fd-text-strong);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--fd-border);
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.1875rem;
+  }
+
+  h4 {
+    font-size: 1.0625rem;
+  }
+
+  p {
+    margin: 0 0 1.15rem;
+  }
+
+  a {
+    color: var(--fd-accent-strong);
+    text-decoration-color: var(--fd-accent-soft);
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  strong {
+    color: var(--fd-text-strong);
+    font-weight: 650;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 1.15rem;
+    padding-inline-start: 1.4rem;
+  }
+
+  li {
+    margin-bottom: 0.35rem;
+
+    > ul,
+    > ol {
+      margin-top: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+  }
+
+  hr {
+    margin: 2.5rem 0;
+    border: 0;
+    border-top: 1px solid var(--fd-border);
+  }
+
+  blockquote {
+    margin: 1.25rem 0;
+    padding: 0.15rem 0 0.15rem 1rem;
+    border-inline-start: 3px solid var(--fd-border-strong);
+    color: var(--fd-text-muted);
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :not(pre) > code {
+    padding: 0.12em 0.36em;
+    border: 1px solid var(--fd-border);
+    border-radius: 4px;
+    background: var(--fd-surface-sunken);
+    color: var(--fd-text-strong);
+    font-family: var(--fd-font-mono);
+    font-size: 0.855em;
+    overflow-wrap: anywhere;
+  }
+
+  kbd {
+    padding: 0.1em 0.4em;
+    border: 1px solid var(--fd-border-strong);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--fd-surface-sunken);
+    font-family: var(--fd-font-mono);
+    font-size: 0.8em;
+  }
+
+  mark {
+    border-radius: 2px;
+    background: var(--fd-mark-bg);
+    color: var(--fd-mark-text);
+  }
+
+  .fd-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--fd-radius);
+  }
+
+  // Task lists rendered from `- [ ] item`
+  input[type='checkbox'] {
+    margin-inline-end: 0.4rem;
+    accent-color: var(--fd-accent);
+  }
+
+  .contains-task-list {
+    padding-inline-start: 0.25rem;
+    list-style: none;
+  }
+
+  // --- Utility classes for authors, via `{.class}` attributes ----------------
+  // Global on purpose: they work on every page and in the editor preview.
+
+  // Opening paragraph, larger and calmer: `Intro text.{.lead}`
+  .lead {
+    max-width: 56ch;
+    color: var(--fd-text-muted);
+    font-size: 1.125rem;
+    line-height: 1.7;
+  }
+
+  // One-line emphasis bar: `Ship it.{.callout}`
+  .callout {
+    padding: 0.7rem 0.9rem;
+    border-inline-start: 3px solid var(--fd-accent);
+    border-radius: 0 var(--fd-radius) var(--fd-radius) 0;
+    background: var(--fd-accent-soft);
+    color: var(--fd-text-strong);
+    font-weight: 600;
+  }
+}
+
+// --- Heading anchors --------------------------------------------------------
+
+.fd-markdown .fd-heading-anchor {
+  margin-inline-start: 0.4rem;
+  color: var(--fd-text-subtle);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 100ms ease;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+:is(h1, h2, h3, h4, h5, h6):hover .fd-heading-anchor {
+  opacity: 1;
+}
+
+// --- Tables ----------------------------------------------------------------
+
+.fd-table-wrap {
+  margin: 1.25rem 0;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--fd-border);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--fd-surface-sunken);
+    color: var(--fd-text-strong);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+// --- Admonitions -----------------------------------------------------------
+
+.fd-admonition {
+  margin: 1.4rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--fd-border);
+  border-inline-start: 3px solid var(--fd-tone, var(--fd-tone-note));
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface-sunken);
+
+  &--note {
+    --fd-tone: var(--fd-tone-note);
+  }
+  &--info {
+    --fd-tone: var(--fd-tone-info);
+  }
+  &--tip {
+    --fd-tone: var(--fd-tone-tip);
+  }
+  &--success {
+    --fd-tone: var(--fd-tone-success);
+  }
+  &--warning {
+    --fd-tone: var(--fd-tone-warning);
+  }
+  &--caution {
+    --fd-tone: var(--fd-tone-caution);
+  }
+  &--danger {
+    --fd-tone: var(--fd-tone-danger);
+  }
+}
+
+.fd-admonition__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.35rem;
+  color: var(--fd-tone);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+    flex: 0 0 auto;
+  }
+}
+
+.fd-admonition__body {
+  > *:first-child {
+    margin-top: 0;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// --- Search result highlighting (also innerHTML, also global) --------------
+
+.fd-results__snippet mark {
+  border-radius: 2px;
+  background: var(--fd-mark-bg);
+  color: var(--fd-mark-text);
+}

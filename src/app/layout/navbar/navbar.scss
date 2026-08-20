@@ -1,0 +1,148 @@
+.fd-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--fd-border);
+  background: var(--fd-surface-translucent);
+  backdrop-filter: blur(12px);
+}
+
+.fd-navbar__row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  height: var(--fd-navbar-height);
+  padding: 0 1.25rem;
+}
+
+.fd-navbar__burger {
+  display: inline-flex;
+}
+
+.fd-navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--fd-text-strong);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fd-navbar__logo {
+  height: 26px;
+  width: auto;
+}
+
+// Simple brand mark so a logo-less site still has an anchor point.
+.fd-navbar__mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--fd-accent), var(--fd-accent-strong));
+}
+
+// --- Section tabs ------------------------------------------------------------
+
+.fd-navbar__sections {
+  display: flex;
+  align-self: stretch;
+  align-items: stretch;
+  gap: 0.25rem;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.fd-navbar__tab {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+
+  // Open on hover or while anything inside holds keyboard focus.
+  &:hover > .fd-navbar__dropdown,
+  &:focus-within > .fd-navbar__dropdown {
+    display: block;
+  }
+
+  // After a click the menu stays closed until the pointer leaves the tab,
+  // whatever :hover and :focus-within say — see Navbar.onTabClick.
+  &.fd-navbar__tab--suppressed > .fd-navbar__dropdown {
+    display: none;
+  }
+}
+
+.fd-navbar__dropdown {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  z-index: 45;
+  display: none;
+  padding-top: 2px; // keeps the hover path unbroken between tab and panel
+}
+
+.fd-navbar__section {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.7rem;
+  color: var(--fd-text-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--fd-text-strong);
+  }
+
+  .fd-navbar__sections--mobile & {
+    padding: 0.55rem 0.7rem;
+  }
+}
+
+.fd-navbar__section--active {
+  color: var(--fd-accent-strong);
+  font-weight: 600;
+
+  // Underline pinned to the bottom edge of the bar, Docusaurus-style.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0.45rem -1px;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--fd-accent);
+  }
+}
+
+// --- Right side --------------------------------------------------------------
+
+.fd-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
+.fd-navbar__extra {
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--fd-radius-sm);
+  color: var(--fd-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+    color: var(--fd-text-strong);
+  }
+
+  @media (max-width: 1100px) {
+    display: none;
+  }
+}

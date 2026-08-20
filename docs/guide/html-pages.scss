@@ -1,0 +1,35 @@
+// Styles for the "HTML pages" page. The build wraps everything below in
+// [data-doc-slug="guide/html-pages"], so these class names are private to it.
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1.5rem 0;
+}
+
+.feature-card {
+  padding: 1rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface-sunken);
+
+  // Tokens keep the card in step with light and dark mode for free.
+  border-top: 2px solid var(--fd-accent);
+}
+
+.feature-card__title {
+  margin: 0 0 0.4rem;
+  border: 0;
+  padding: 0;
+  color: var(--fd-text-strong);
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.feature-card__body {
+  margin: 0;
+  color: var(--fd-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

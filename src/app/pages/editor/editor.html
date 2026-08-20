@@ -1,0 +1,200 @@
+<div class="fd-editor">
+  @if (unavailable()) {
+    <div class="fd-editor__offline">
+      <h1>Content manager</h1>
+      <p>
+        No editing backend is available. Locally, start the dev server; for editing on
+        the deployed site, set <code>github.repo</code> in
+        <code>feastdocs.config.mjs</code>.
+      </p>
+      <pre><code>npm start</code></pre>
+      <button type="button" class="fd-button" (click)="refreshFiles()">Retry</button>
+    </div>
+  } @else if (needsConnect()) {
+    <div class="fd-editor__offline">
+      <h1>Connect GitHub</h1>
+      <p>
+        Edits made here are committed to
+        <strong>{{ github.repo }}</strong> ({{ github.branch }}) in your name. Paste a
+        fine-grained personal access token with <em>contents read and write</em> on
+        that repository.
+      </p>
+      <form class="fd-editor__connect" (submit)="$event.preventDefault(); connect()">
+        <input
+          type="password"
+          placeholder="github_pat_…"
+          aria-label="GitHub personal access token"
+          autocomplete="off"
+          [value]="tokenInput()"
+          (input)="tokenInput.set($any($event.target).value)"
+        />
+        <button type="submit" class="fd-button" [disabled]="connecting()">
+          {{ connecting() ? 'Connecting…' : 'Connect' }}
+        </button>
+      </form>
+      @if (status().kind === 'error') {
+        <p class="fd-editor__error">{{ $any(status()).message }}</p>
+      }
+      <p class="fd-editor__fineprint">
+        The token stays in this browser (localStorage) and talks only to
+        api.github.com. A full OAuth sign-in needs a small server-side token
+        exchange — this screen is where it plugs in.
+      </p>
+      @if (localAvailable()) {
+        <button type="button" class="fd-editor__link" (click)="setMode('local')">
+          Use local files instead
+        </button>
+      }
+    </div>
+  } @else {
+    <aside class="fd-editor__files">
+      @if (localAvailable() && github.isConfigured) {
+        <div class="fd-editor__mode" role="tablist" aria-label="Editing backend">
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="mode() === 'local'"
+            [class.is-active]="mode() === 'local'"
+            (click)="setMode('local')"
+          >
+            Local
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="mode() === 'github'"
+            [class.is-active]="mode() === 'github'"
+            (click)="setMode('github')"
+          >
+            GitHub
+          </button>
+        </div>
+      }
+
+      @if (mode() === 'github' && github.user(); as user) {
+        <div class="fd-editor__account">
+          <img [src]="user.avatarUrl" alt="" width="22" height="22" />
+          <span>{{ user.name || user.login }}</span>
+          <button type="button" (click)="disconnect()">Sign out</button>
+        </div>
+        @if (readOnly()) {
+          <p class="fd-editor__readonly">
+            Read-only — this account has no write access to
+            <code>{{ github.repo }}</code>. Ask the repository owner for access
+            to edit.
+          </p>
+        }
+      }
+
+      <div class="fd-editor__files-head">
+        <span>docs/</span>
+        <button
+          type="button"
+          class="fd-editor__new"
+          (click)="creating.set(!creating())"
+          [attr.aria-expanded]="creating()"
+        >
+          + New
+        </button>
+      </div>
+
+      @if (creating()) {
+        <form class="fd-editor__create" (submit)="$event.preventDefault(); create()">
+          <input
+            type="text"
+            placeholder="guide/deploying.md"
+            aria-label="Path of the new file, relative to docs/"
+            [value]="newPath()"
+            (input)="newPath.set($any($event.target).value)"
+          />
+          <button type="submit" class="fd-button">Create</button>
+        </form>
+      }
+
+      <input
+        class="fd-editor__filter"
+        type="search"
+        placeholder="Filter files"
+        aria-label="Filter files"
+        [value]="filter()"
+        (input)="filter.set($any($event.target).value)"
+      />
+
+      <ul class="fd-editor__list">
+        @for (file of visibleFiles(); track file) {
+          <li>
+            <button
+              type="button"
+              class="fd-editor__file"
+              [class.fd-editor__file--active]="file === selected()"
+              (click)="open(file)"
+            >
+              {{ file }}
+            </button>
+          </li>
+        }
+      </ul>
+    </aside>
+
+    <section class="fd-editor__work">
+      <header class="fd-editor__bar">
+        <span class="fd-editor__path">
+          {{ selected() ?? 'No file selected' }}
+          @if (dirty()) {
+            <span class="fd-editor__dirty" title="Unsaved changes">●</span>
+          }
+        </span>
+
+        <span class="fd-editor__status" aria-live="polite">
+          @switch (status().kind) {
+            @case ('saving') {
+              {{ mode() === 'github' ? 'Committing…' : 'Saving…' }}
+            }
+            @case ('saved') {
+              {{ $any(status()).detail }}
+            }
+            @case ('error') {
+              <span class="fd-editor__error">{{ $any(status()).message }}</span>
+            }
+          }
+        </span>
+
+        <span class="fd-editor__actions">
+          @if (pageRoute(); as route) {
+            <a class="fd-editor__view" [href]="route" target="_blank">View page ↗</a>
+          }
+          <button
+            type="button"
+            class="fd-button"
+            [disabled]="!dirty() || readOnly()"
+            [attr.title]="readOnly() ? 'No write access to the repository' : null"
+            (click)="save()"
+          >
+            {{ mode() === 'github' ? 'Commit' : 'Save' }}
+            <kbd>Ctrl S</kbd>
+          </button>
+        </span>
+      </header>
+
+      <div class="fd-editor__panes">
+        <textarea
+          class="fd-editor__source"
+          spellcheck="false"
+          aria-label="File content"
+          [value]="contentText()"
+          (input)="contentText.set($any($event.target).value)"
+        ></textarea>
+
+        <div class="fd-editor__preview">
+          @if (isMarkdown()) {
+            <div class="fd-markdown" [innerHTML]="preview()"></div>
+          } @else {
+            <p class="fd-editor__nopreview">
+              Preview is available for Markdown files. This file still saves normally.
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

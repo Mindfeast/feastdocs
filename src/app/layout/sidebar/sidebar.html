@@ -1,0 +1,100 @@
+<aside
+  id="fd-sidebar"
+  class="fd-sidebar"
+  [class.fd-sidebar--open]="ui.sidebarOpen()"
+  [class.fd-sidebar--collapsed]="ui.sidebarCollapsed()"
+  [class.fd-sidebar--no-section]="!section()"
+  aria-label="Documentation"
+>
+  <!-- Mobile drawer only: the section tabs live here when the top row is gone,
+       so the hamburger always opens a complete navigation. -->
+  <nav class="fd-sidebar__all-sections" aria-label="Sections">
+    @for (s of content.sections; track s.id) {
+      <a
+        class="fd-sidebar__section-link"
+        [class.fd-sidebar__section-link--active]="s.id === section()?.id"
+        [routerLink]="'/' + s.slug"
+        >{{ s.label }}</a
+      >
+    }
+  </nav>
+
+  @if (section(); as current) {
+    <div class="fd-sidebar__section">
+      <span class="fd-sidebar__section-label">{{ current.label }}</span>
+      @if (current.description) {
+        <span class="fd-sidebar__section-desc">{{ current.description }}</span>
+      }
+    </div>
+
+    <div class="fd-sidebar__filter">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="6" />
+        <path d="M20 20l-4.5-4.5" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Filter this section"
+        aria-label="Filter pages in this section"
+        [value]="filterText()"
+        (input)="filterText.set($any($event.target).value)"
+      />
+    </div>
+
+    <nav class="fd-sidebar__nav">
+      @if (hasResults()) {
+        <ul class="fd-sidebar__list">
+          @for (row of rows(); track row.key) {
+            <li class="fd-sidebar__item" [style.padding-inline-start.px]="row.depth * 14">
+              @if (row.kind === 'category') {
+                <div class="fd-sidebar__category">
+                  <button
+                    type="button"
+                    class="fd-sidebar__twisty"
+                    [attr.aria-expanded]="row.expanded"
+                    [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.label"
+                    (click)="toggle(row.key)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" [class.is-open]="row.expanded">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </button>
+
+                  @if (row.slug !== null) {
+                    <a
+                      class="fd-sidebar__link fd-sidebar__link--category"
+                      [class.fd-sidebar__link--active]="isActive(row.slug)"
+                      [routerLink]="'/' + row.slug"
+                      (mouseenter)="prefetch(row.slug)"
+                      >{{ row.label }}</a
+                    >
+                  } @else {
+                    <button
+                      type="button"
+                      class="fd-sidebar__link fd-sidebar__link--category fd-sidebar__link--plain"
+                      (click)="toggle(row.key)"
+                    >
+                      {{ row.label }}
+                    </button>
+                  }
+                </div>
+              } @else {
+                <a
+                  class="fd-sidebar__link"
+                  [class.fd-sidebar__link--active]="isActive(row.slug)"
+                  [routerLink]="'/' + row.slug"
+                  (mouseenter)="prefetch(row.slug)"
+                  >{{ row.label }}</a
+                >
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="fd-sidebar__empty">No pages match “{{ filterText() }}”.</p>
+      }
+    </nav>
+  } @else {
+    <p class="fd-sidebar__hint">Pick a section to browse its pages.</p>
+  }
+</aside>

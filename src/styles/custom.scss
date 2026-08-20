@@ -1,0 +1,12 @@
+// -----------------------------------------------------------------------------
+// Your styles. This file is loaded last, so anything here wins over the theme.
+//
+// Override a token for the whole site:
+//   :root { --fd-content-max: 940px; }
+//
+// Style something you wrote in a markdown file:
+//   .fd-markdown .my-callout { ... }
+//
+// For styles that belong to a single page, put a .scss file next to the .md
+// file instead — the build scopes it to that page automatically.
+// -----------------------------------------------------------------------------

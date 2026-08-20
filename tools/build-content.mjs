@@ -1,0 +1,40 @@
+import { pathToFileURL } from 'node:url';
+import { performance } from 'node:perf_hooks';
+import { loadConfig } from './lib/config.mjs';
+import { collectDocs } from './lib/collect.mjs';
+import { emit } from './lib/emit.mjs';
+import { dim, green, red, yellow } from './lib/log.mjs';
+
+/**
+ * Reads docs/, renders it, and writes the generated modules the Angular app
+ * imports. Safe to call repeatedly — used by both the one-shot build and the
+ * dev watcher.
+ */
+export async function buildContent({ bust = false, label = 'docs' } = {}) {
+  const started = performance.now();
+  const config = await loadConfig({ bust });
+  const { docs, sections, assets, warnings } = await collectDocs(config);
+  await emit({ config, docs, sections, assets });
+
+  const elapsed = Math.round(performance.now() - started);
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  console.log(
+    `${green('✓')} ${label}: ${plural(docs.length, 'page')}, ` +
+      `${plural(assets.length, 'asset')} ${dim(`(${elapsed}ms)`)}`,
+  );
+  for (const warning of warnings) console.log(`  ${yellow('!')} ${warning}`);
+
+  return { config, docs, sections, warnings };
+}
+
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (invokedDirectly) {
+  try {
+    await buildContent();
+  } catch (error) {
+    console.error(`${red('✗')} content build failed`);
+    console.error(error);
+    process.exitCode = 1;
+  }
+}

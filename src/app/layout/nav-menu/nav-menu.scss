@@ -1,0 +1,70 @@
+:host {
+  display: contents;
+}
+
+.fd-menu {
+  min-width: 210px;
+  margin: 0;
+  padding: 0.35rem;
+  border: 1px solid var(--fd-border-strong);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  box-shadow: var(--fd-shadow-lg);
+  list-style: none;
+}
+
+.fd-menu__item {
+  position: relative;
+}
+
+.fd-menu__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--fd-radius-sm);
+  color: var(--fd-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--fd-surface-hover);
+    color: var(--fd-text-strong);
+  }
+}
+
+.fd-menu__chevron {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--fd-text-subtle);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: 0 0 auto;
+}
+
+// --- Nested flyouts ----------------------------------------------------------
+// Every nested level opens to the side of its parent item, on hover or when
+// anything inside it holds focus. Recursion makes the depth unlimited.
+
+.fd-menu--nested {
+  position: absolute;
+  top: -0.4rem;
+  inset-inline-start: calc(100% - 4px);
+  z-index: 5;
+  display: none;
+}
+
+// The recursive <app-nav-menu> host sits between the branch <li> and its
+// nested <ul> (as display: contents), so the child combinator must step
+// through it — `li > ul` alone never matches and the flyout stays closed.
+.fd-menu__item--branch:hover > app-nav-menu > .fd-menu--nested,
+.fd-menu__item--branch:focus-within > app-nav-menu > .fd-menu--nested {
+  display: block;
+}

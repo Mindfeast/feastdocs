@@ -1,0 +1,18 @@
+@if (headings().length > 0) {
+  <nav class="fd-toc" aria-label="On this page">
+    <p class="fd-toc__title">On this page</p>
+    <ul class="fd-toc__list">
+      @for (heading of headings(); track heading.id) {
+        <li class="fd-toc__item" [class.fd-toc__item--nested]="heading.level === 3">
+          <a
+            class="fd-toc__link"
+            [class.fd-toc__link--active]="heading.id === activeId()"
+            [href]="'#' + heading.id"
+            (click)="jumpTo($event, heading.id)"
+            >{{ heading.text }}</a
+          >
+        </li>
+      }
+    </ul>
+  </nav>
+}

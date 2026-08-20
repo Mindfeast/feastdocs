@@ -1,0 +1,44 @@
+fd-counter {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.fd-counter {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius-sm);
+  background: var(--fd-surface-sunken);
+  overflow: hidden;
+}
+
+.fd-counter__button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: none;
+  color: var(--fd-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+    color: var(--fd-text-strong);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.fd-counter__value {
+  min-width: 3ch;
+  padding: 0 0.5rem;
+  color: var(--fd-text-strong);
+  font-family: var(--fd-font-mono);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+}

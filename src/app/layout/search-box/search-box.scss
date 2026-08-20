@@ -1,0 +1,172 @@
+.fd-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fd-search__icon {
+  position: absolute;
+  inset-inline-start: 0.6rem;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--fd-text-subtle);
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.fd-search__input {
+  width: clamp(150px, 22vw, 300px);
+  height: 34px;
+  padding: 0 3.4rem 0 2rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius-sm);
+  background: var(--fd-surface-sunken);
+  color: var(--fd-text-strong);
+  font: inherit;
+  font-size: 0.875rem;
+  transition: border-color 120ms ease;
+
+  &::placeholder {
+    color: var(--fd-text-subtle);
+  }
+
+  &:hover {
+    border-color: var(--fd-border-strong);
+  }
+
+  &:focus-visible {
+    border-color: var(--fd-accent);
+    outline: none;
+  }
+
+  // The native clear button clashes with the kbd hint.
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  @media (max-width: 560px) {
+    width: 150px;
+    padding-inline-end: 0.6rem;
+  }
+}
+
+.fd-search__kbd {
+  position: absolute;
+  inset-inline-end: 0.5rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--fd-border);
+  border-radius: 4px;
+  background: var(--fd-surface);
+  color: var(--fd-text-subtle);
+  font-family: var(--fd-font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  pointer-events: none;
+
+  @media (max-width: 560px) {
+    display: none;
+  }
+}
+
+// --- Results panel, anchored under the input ----------------------------------
+
+.fd-search__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  width: min(520px, calc(100vw - 2rem));
+  max-height: min(65vh, 540px);
+  border: 1px solid var(--fd-border-strong);
+  border-radius: var(--fd-radius-lg);
+  background: var(--fd-surface);
+  box-shadow: var(--fd-shadow-lg);
+  overflow: hidden;
+}
+
+.fd-search__status {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.fd-search__footer {
+  display: flex;
+  gap: 1rem;
+  padding: 0.45rem 0.9rem;
+  border-top: 1px solid var(--fd-border);
+  background: var(--fd-surface-sunken);
+  color: var(--fd-text-subtle);
+  font-size: 0.75rem;
+
+  kbd {
+    margin-inline-end: 0.2rem;
+    padding: 0.05rem 0.3rem;
+    border: 1px solid var(--fd-border);
+    border-radius: 3px;
+    background: var(--fd-surface);
+    font-family: var(--fd-font-mono);
+    font-size: 0.6875rem;
+  }
+}
+
+.fd-results {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.fd-results__hit {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 0;
+  border-radius: var(--fd-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.fd-results__hit--active {
+  background: var(--fd-accent-soft);
+}
+
+.fd-results__crumb {
+  display: block;
+  color: var(--fd-text-subtle);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fd-results__heading {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--fd-text-strong);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.fd-results__snippet {
+  // Two lines is enough to judge relevance without the list turning into a wall.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: 0.15rem;
+  color: var(--fd-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow: hidden;
+  // <mark> inside comes from innerHTML and is styled globally in _content.scss.
+}

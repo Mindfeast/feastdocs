@@ -1,0 +1,66 @@
+fd-steps {
+  display: block;
+  margin: 1.4rem 0;
+}
+
+.fd-steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.fd-steps__item {
+  position: relative;
+  padding: 0 0 1.5rem 2.4rem;
+
+  // Connector line between markers.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 26px;
+    bottom: 0;
+    left: 12px;
+    width: 1px;
+    background: var(--fd-border);
+  }
+
+  &:last-child {
+    padding-bottom: 0.25rem;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.fd-steps__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.fd-steps__marker {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  left: 0;
+  width: 25px;
+  height: 25px;
+  border: 1px solid var(--fd-border-strong);
+  border-radius: 50%;
+  background: var(--fd-surface);
+  color: var(--fd-text-strong);
+  font-family: var(--fd-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.fd-steps__title {
+  color: var(--fd-text-strong);
+  font-weight: 650;
+  font-size: 1rem;
+}

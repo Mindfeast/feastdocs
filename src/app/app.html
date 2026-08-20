@@ -1,0 +1,20 @@
+<a class="fd-skip-link" href="#fd-main">Skip to content</a>
+
+<app-navbar />
+
+<div class="fd-shell">
+  <app-sidebar />
+
+  @if (ui.sidebarOpen()) {
+    <button
+      type="button"
+      class="fd-shell__scrim"
+      aria-label="Close navigation"
+      (click)="ui.closeSidebar()"
+    ></button>
+  }
+
+  <main id="fd-main" class="fd-shell__main" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>

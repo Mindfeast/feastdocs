@@ -1,0 +1,17 @@
+<div class="fd-api-field">
+  <div class="fd-api-field__head">
+    <code class="fd-api-field__name">{{ name }}</code>
+    @if (type) {
+      <span class="fd-api-field__type">{{ type }}</span>
+    }
+    @if (required) {
+      <span class="fd-api-field__required">required</span>
+    }
+    @if (default) {
+      <span class="fd-api-field__default">
+        default: <code>{{ default }}</code>
+      </span>
+    }
+  </div>
+  <div class="fd-api-field__body fd-markdown"><ng-content /></div>
+</div>

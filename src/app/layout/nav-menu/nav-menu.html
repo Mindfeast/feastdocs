@@ -1,0 +1,37 @@
+<ul class="fd-menu" [class.fd-menu--nested]="nested()">
+  @for (item of items(); track item.type === 'doc' ? item.slug : item.label) {
+    @if (item.type === 'doc') {
+      <li class="fd-menu__item">
+        <a
+          class="fd-menu__link"
+          [routerLink]="'/' + item.slug"
+          (mouseenter)="prefetch(item.slug)"
+          >{{ item.label }}</a
+        >
+      </li>
+    } @else {
+      <li class="fd-menu__item fd-menu__item--branch">
+        @if (item.slug !== null) {
+          <a
+            class="fd-menu__link fd-menu__link--branch"
+            [routerLink]="'/' + item.slug"
+            (mouseenter)="prefetch(item.slug)"
+          >
+            {{ item.label }}
+            <svg class="fd-menu__chevron" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+        } @else {
+          <span class="fd-menu__link fd-menu__link--branch" tabindex="0">
+            {{ item.label }}
+            <svg class="fd-menu__chevron" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </span>
+        }
+        <app-nav-menu [items]="item.items" [nested]="true" />
+      </li>
+    }
+  }
+</ul>

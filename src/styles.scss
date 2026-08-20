@@ -1,0 +1,8 @@
+// Global stylesheet. Order matters: tokens define the vocabulary, base sets the
+// page defaults, content/code style the HTML that markdown produces, and
+// custom.scss is yours to override anything above it.
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/content';
+@use 'styles/code';
+@use 'styles/custom';

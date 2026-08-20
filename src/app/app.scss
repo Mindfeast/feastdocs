@@ -1,0 +1,48 @@
+.fd-skip-link {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 var(--fd-radius) var(--fd-radius);
+  background: var(--fd-accent);
+  color: #fff;
+  font-weight: 600;
+  transform: translate(-50%, -110%);
+  transition: transform 120ms ease;
+
+  &:focus-visible {
+    transform: translate(-50%, 0);
+  }
+}
+
+.fd-shell {
+  display: grid;
+  // `auto` instead of a fixed track: pages without a sidebar (landing, 404)
+  // collapse the column to zero and the content takes the full width.
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+
+  @media (max-width: 996px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.fd-shell__main {
+  min-width: 0;
+  outline: none;
+}
+
+.fd-shell__scrim {
+  position: fixed;
+  inset: var(--fd-navbar-offset) 0 0;
+  z-index: 30;
+  border: 0;
+  padding: 0;
+  background: rgb(0 0 0 / 45%);
+  cursor: default;
+
+  @media (min-width: 997px) {
+    display: none;
+  }
+}

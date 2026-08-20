@@ -1,0 +1,85 @@
+// -----------------------------------------------------------------------------
+// Code blocks. Highlighting happens at build time with Shiki, which emits both
+// themes at once: light colours inline, dark colours as --shiki-dark custom
+// properties. Switching themes is therefore pure CSS, no client-side JS.
+// -----------------------------------------------------------------------------
+
+.fd-code {
+  position: relative;
+  margin: 1.35rem 0;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-code-bg);
+  overflow: hidden;
+
+  pre {
+    margin: 0;
+    padding: 0.95rem 1.05rem;
+    background: transparent !important;
+    font-family: var(--fd-font-mono);
+    font-size: 0.8375rem;
+    line-height: 1.62;
+    overflow-x: auto;
+    tab-size: 2;
+  }
+
+  code {
+    display: block;
+    min-width: fit-content;
+    font-family: inherit;
+  }
+
+  &:hover .fd-code__copy,
+  .fd-code__copy:focus-visible {
+    opacity: 1;
+  }
+}
+
+.fd-code__title {
+  padding: 0.45rem 1.05rem;
+  border-bottom: 1px solid var(--fd-border);
+  background: var(--fd-surface-sunken);
+  color: var(--fd-text-muted);
+  font-family: var(--fd-font-mono);
+  font-size: 0.75rem;
+}
+
+.fd-code__copy {
+  position: absolute;
+  top: 0.45rem;
+  inset-inline-end: 0.45rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--fd-border-strong);
+  border-radius: var(--fd-radius-sm);
+  background: var(--fd-surface);
+  color: var(--fd-text-muted);
+  font-family: var(--fd-font-sans);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+
+  &:hover {
+    color: var(--fd-text-strong);
+  }
+}
+
+// A code block with a title bar needs the button below it.
+.fd-code__title ~ .fd-code__copy,
+.fd-code:has(.fd-code__title) .fd-code__copy {
+  top: 2.35rem;
+}
+
+// Unhighlighted fences (unknown language) still need monospace styling.
+.fd-code__plain code {
+  color: var(--fd-text);
+  white-space: pre;
+}
+
+:root[data-theme='dark'] .fd-code .shiki,
+:root[data-theme='dark'] .fd-code .shiki span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}

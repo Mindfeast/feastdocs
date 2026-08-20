@@ -1,0 +1,94 @@
+@switch (state()) {
+  @case ('missing') {
+    <div class="fd-page fd-page--centered">
+      <p class="fd-missing__code">404</p>
+      <h1 class="fd-missing__title">This page doesn’t exist</h1>
+      <p class="fd-missing__body">
+        Nothing is published at <code>/{{ slug() }}</code
+        >. It may have been renamed, or the file is still a draft.
+      </p>
+      <a class="fd-button" routerLink="/">Back to the start</a>
+    </div>
+  }
+
+  @case ('loading') {
+    <div class="fd-page" aria-busy="true">
+      <div class="fd-skeleton fd-skeleton--title"></div>
+      <div class="fd-skeleton"></div>
+      <div class="fd-skeleton"></div>
+      <div class="fd-skeleton fd-skeleton--short"></div>
+    </div>
+  }
+
+  @default {
+    @let page = doc()!;
+
+    <div class="fd-page" [class.fd-page--with-toc]="page.showToc && page.headings.length > 0">
+      <article #article class="fd-doc" [attr.data-doc-slug]="page.slug">
+        @if (breadcrumbs().length > 0) {
+          <nav class="fd-breadcrumbs" aria-label="Breadcrumb">
+            @for (crumb of breadcrumbs(); track crumb.label; let isLast = $last) {
+              @if (crumb.slug !== null) {
+                <a [routerLink]="'/' + crumb.slug">{{ crumb.label }}</a>
+              } @else {
+                <span>{{ crumb.label }}</span>
+              }
+              @if (!isLast) {
+                <span class="fd-breadcrumbs__sep" aria-hidden="true">/</span>
+              }
+            }
+          </nav>
+        }
+
+        <header class="fd-doc__header">
+          <h1 class="fd-doc__title">{{ page.title }}</h1>
+          @if (page.description) {
+            <p class="fd-doc__description">{{ page.description }}</p>
+          }
+        </header>
+
+        <!-- Rendered at build time from markdown/HTML; see DocPage.html signal. -->
+        <div class="fd-markdown" [innerHTML]="html()" (click)="onContentClick($event)"></div>
+
+        <footer class="fd-doc__footer">
+          <div class="fd-doc__meta">
+            @if (site.showLastUpdated) {
+              <span>
+                Last updated {{ page.lastUpdated | date: 'mediumDate' }}
+                @if (page.lastAuthor) {
+                  by <strong class="fd-doc__author">{{ page.lastAuthor }}</strong>
+                }
+              </span>
+            }
+            @if (editLink()) {
+              <a [href]="editLink()" target="_blank" rel="noopener noreferrer">Edit this page</a>
+            }
+          </div>
+
+          @if (prev() || next()) {
+            <nav class="fd-pager" aria-label="Page navigation">
+              @if (prev(); as previous) {
+                <a class="fd-pager__link" [routerLink]="'/' + previous.slug">
+                  <span class="fd-pager__label">Previous</span>
+                  <span class="fd-pager__title">{{ previous.title }}</span>
+                </a>
+              } @else {
+                <span></span>
+              }
+              @if (next(); as upcoming) {
+                <a class="fd-pager__link fd-pager__link--next" [routerLink]="'/' + upcoming.slug">
+                  <span class="fd-pager__label">Next</span>
+                  <span class="fd-pager__title">{{ upcoming.title }}</span>
+                </a>
+              }
+            </nav>
+          }
+        </footer>
+      </article>
+
+      @if (page.showToc && page.headings.length > 0) {
+        <app-toc [headings]="page.headings" [activeId]="activeHeading()" />
+      }
+    </div>
+  }
+}

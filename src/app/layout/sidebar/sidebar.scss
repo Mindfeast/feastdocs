@@ -1,0 +1,247 @@
+.fd-sidebar {
+  position: sticky;
+  top: var(--fd-navbar-offset);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: var(--fd-sidebar-width);
+  height: calc(100vh - var(--fd-navbar-offset));
+  padding: 1rem 0.75rem 2rem;
+  border-inline-end: 1px solid var(--fd-border);
+  background: var(--fd-surface);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  @media (max-width: 996px) {
+    position: fixed;
+    inset: var(--fd-navbar-offset) auto 0 0;
+    z-index: 35;
+    transform: translateX(-100%);
+    transition: transform 160ms ease;
+    box-shadow: var(--fd-shadow-lg);
+  }
+}
+
+// Pages without a section (the landing page) have no tree to show: the aside
+// disappears on desktop, but stays reachable as the mobile drawer.
+.fd-sidebar--no-section {
+  @media (min-width: 997px) {
+    display: none;
+  }
+}
+
+// Desktop collapse, toggled by the navbar hamburger. Mobile ignores it — there
+// the hamburger drives the drawer instead.
+.fd-sidebar.fd-sidebar--collapsed {
+  @media (min-width: 997px) {
+    display: none;
+  }
+}
+
+// Mobile drawer only — on desktop the section tabs live in the navbar.
+.fd-sidebar__all-sections {
+  display: none;
+
+  @media (max-width: 996px) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--fd-border);
+  }
+}
+
+.fd-sidebar__section-link {
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--fd-radius-sm);
+  color: var(--fd-text-strong);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+  }
+}
+
+.fd-sidebar__section-link--active {
+  background: var(--fd-accent-soft);
+  color: var(--fd-accent-strong);
+}
+
+.fd-sidebar__hint {
+  margin: 0.5rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.8125rem;
+}
+
+.fd-sidebar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.25rem 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--fd-border);
+}
+
+.fd-sidebar__section-label {
+  color: var(--fd-text-strong);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.fd-sidebar__section-desc {
+  color: var(--fd-text-subtle);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+// Doubled class: same rule as the base drawer state, so specificity — not
+// stylesheet order, which HMR can shuffle — decides that open wins.
+.fd-sidebar.fd-sidebar--open {
+  @media (max-width: 996px) {
+    transform: translateX(0);
+  }
+}
+
+.fd-sidebar__filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    inset-inline-start: 0.55rem;
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: var(--fd-text-subtle);
+    stroke-width: 2;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.4rem 0.5rem 0.4rem 1.9rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm);
+    background: var(--fd-surface-sunken);
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+
+    &::placeholder {
+      color: var(--fd-text-subtle);
+    }
+
+    &:focus-visible {
+      border-color: var(--fd-accent);
+      outline: none;
+    }
+
+    // The native clear button is unstyleable and clashes with the layout.
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+}
+
+.fd-sidebar__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fd-sidebar__item {
+  display: block;
+}
+
+.fd-sidebar__category {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.fd-sidebar__twisty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 26px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--fd-text-subtle);
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 120ms ease;
+  }
+
+  svg.is-open {
+    transform: rotate(90deg);
+  }
+
+  &:hover {
+    color: var(--fd-text-strong);
+  }
+}
+
+.fd-sidebar__link {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--fd-radius-sm);
+  color: var(--fd-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: start;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+    color: var(--fd-text-strong);
+  }
+}
+
+// Plain docs sit where a twisty would be, so they line up with their siblings.
+.fd-sidebar__item > .fd-sidebar__link {
+  margin-inline-start: 20px;
+}
+
+.fd-sidebar__link--category {
+  color: var(--fd-text-strong);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+}
+
+.fd-sidebar__link--plain {
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.fd-sidebar__link--active {
+  background: var(--fd-accent-soft);
+  color: var(--fd-accent-strong);
+  font-weight: 600;
+}
+
+.fd-sidebar__empty {
+  margin: 0.5rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.8125rem;
+}

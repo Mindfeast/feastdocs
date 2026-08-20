@@ -1,0 +1,200 @@
+.fd-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  max-width: var(--fd-content-max);
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 3rem) 4rem;
+}
+
+.fd-page--with-toc {
+  max-width: calc(var(--fd-content-max) + var(--fd-toc-width));
+  grid-template-columns: minmax(0, 1fr) var(--fd-toc-width);
+
+  @media (max-width: 1200px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    app-toc {
+      display: none;
+    }
+  }
+}
+
+.fd-page--centered {
+  place-items: center;
+  padding-block: 6rem;
+  text-align: center;
+}
+
+.fd-doc {
+  min-width: 0;
+}
+
+.fd-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.8125rem;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--fd-accent-strong);
+    }
+  }
+}
+
+.fd-doc__header {
+  margin-bottom: 1.75rem;
+}
+
+.fd-doc__title {
+  margin: 0;
+  color: var(--fd-text-strong);
+  font-size: clamp(1.9rem, 1.4rem + 1.8vw, 2.5rem);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.fd-doc__description {
+  margin: 0.6rem 0 0;
+  color: var(--fd-text-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.fd-doc__footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--fd-border);
+}
+
+.fd-doc__author {
+  color: var(--fd-text-muted);
+  font-weight: 600;
+}
+
+.fd-doc__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.8125rem;
+
+  a {
+    color: var(--fd-accent-strong);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.fd-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.fd-pager__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+
+  &:hover {
+    border-color: var(--fd-accent);
+  }
+}
+
+.fd-pager__link--next {
+  text-align: end;
+}
+
+.fd-pager__label {
+  color: var(--fd-text-subtle);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fd-pager__title {
+  color: var(--fd-text-strong);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+// --- Loading and not-found states -------------------------------------------
+
+.fd-skeleton {
+  height: 1rem;
+  margin-bottom: 0.85rem;
+  border-radius: var(--fd-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--fd-surface-sunken) 25%,
+    var(--fd-surface-hover) 37%,
+    var(--fd-surface-sunken) 63%
+  );
+  background-size: 400% 100%;
+  animation: fd-shimmer 1.3s ease infinite;
+}
+
+.fd-skeleton--title {
+  width: 60%;
+  height: 2.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.fd-skeleton--short {
+  width: 40%;
+}
+
+@keyframes fd-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fd-skeleton {
+    animation: none;
+  }
+}
+
+.fd-missing__code {
+  margin: 0;
+  color: var(--fd-accent);
+  font-family: var(--fd-font-mono);
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.fd-missing__title {
+  margin: 0.5rem 0 0;
+  font-size: 1.5rem;
+}
+
+.fd-missing__body {
+  margin: 0.75rem 0 1.5rem;
+  color: var(--fd-text-muted);
+}

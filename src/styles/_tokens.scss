@@ -1,0 +1,110 @@
+// -----------------------------------------------------------------------------
+// Design tokens. Everything visual is expressed as a custom property here, so a
+// theme change means editing this file and nothing else.
+//
+// Both modes are first-class: every token is defined for light on :root and
+// redefined for dark under [data-theme='dark']. Visual hierarchy must hold in
+// both — if a token change looks right in one mode, check the other before
+// keeping it.
+//
+// --fd-accent-light / --fd-accent-dark are written to :root at runtime by
+// ThemeService, from feastdocs.config.mjs.
+// -----------------------------------------------------------------------------
+
+:root {
+  // Layout
+  --fd-navbar-height: 58px;
+  --fd-navbar-offset: var(--fd-navbar-height);
+  --fd-sidebar-width: 284px;
+  --fd-toc-width: 220px;
+  --fd-content-max: 820px;
+
+  // Shape — one radius scale for the whole app.
+  --fd-radius-sm: 6px;
+  --fd-radius: 10px;
+  --fd-radius-lg: 14px;
+
+  // Type
+  --fd-font-sans:
+    system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --fd-font-mono:
+    ui-monospace, 'Cascadia Code', 'Cascadia Mono', 'SFMono-Regular', 'JetBrains Mono', Consolas,
+    monospace;
+
+  // ---------------------------------------------------------------------------
+  // Light mode. Neutral zinc ramp — never pure white, never pure black.
+  // ---------------------------------------------------------------------------
+  --fd-bg: #fdfdfc;
+  --fd-surface: #fdfdfc;
+  --fd-surface-sunken: #f4f4f3;
+  --fd-surface-hover: #ebebe9;
+  --fd-surface-translucent: rgb(253 253 252 / 86%);
+  --fd-border: #e5e5e2;
+  --fd-border-strong: #cfcfcb;
+  --fd-text: #3f4349;
+  --fd-text-strong: #17191d;
+  --fd-text-muted: #5b6069;
+  --fd-text-subtle: #8a8f98;
+  --fd-code-bg: #f6f6f5;
+  --fd-mark-bg: #fdefb8;
+  --fd-mark-text: #4a3b00;
+  --fd-shadow-lg: 0 18px 48px rgb(23 25 29 / 14%);
+
+  --fd-accent: var(--fd-accent-light, #e26f1e);
+  // Fallback first, so a browser without color-mix still gets a usable value.
+  --fd-accent-strong: var(--fd-accent);
+  --fd-accent-strong: color-mix(in oklab, var(--fd-accent) 74%, #000);
+  --fd-accent-soft: rgb(226 111 30 / 11%);
+  --fd-accent-soft: color-mix(in oklab, var(--fd-accent) 12%, transparent);
+
+  // Admonition tones, light.
+  --fd-tone-note: #5b6b7f;
+  --fd-tone-info: #2f6fdb;
+  --fd-tone-tip: #12855c;
+  --fd-tone-success: #12855c;
+  --fd-tone-warning: #b46e00;
+  --fd-tone-caution: #b46e00;
+  --fd-tone-danger: #cc3f35;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  // ---------------------------------------------------------------------------
+  // Dark mode. Off-black base, slightly warm; text steps mirror the light ramp
+  // so hierarchy reads identically in both modes.
+  // ---------------------------------------------------------------------------
+  --fd-bg: #121417;
+  --fd-surface: #17191d;
+  --fd-surface-sunken: #1d2025;
+  --fd-surface-hover: #262a31;
+  --fd-surface-translucent: rgb(23 25 29 / 86%);
+  --fd-border: #282c33;
+  --fd-border-strong: #3b414b;
+  --fd-text: #c4c9d1;
+  --fd-text-strong: #f4f6f8;
+  --fd-text-muted: #9aa1ac;
+  --fd-text-subtle: #6f7681;
+  --fd-code-bg: #14161a;
+  --fd-mark-bg: #4d3f00;
+  --fd-mark-text: #ffe999;
+  --fd-shadow-lg: 0 18px 48px rgb(0 0 0 / 55%);
+
+  --fd-accent: var(--fd-accent-dark, #ff9d52);
+  --fd-accent-strong: var(--fd-accent);
+  --fd-accent-strong: color-mix(in oklab, var(--fd-accent) 86%, #fff);
+  --fd-accent-soft: rgb(255 157 82 / 15%);
+  --fd-accent-soft: color-mix(in oklab, var(--fd-accent) 17%, transparent);
+
+  // Tones brightened to hold WCAG contrast on the dark base.
+  --fd-tone-note: #93a5ba;
+  --fd-tone-info: #6ba1f4;
+  --fd-tone-tip: #3cc490;
+  --fd-tone-success: #3cc490;
+  --fd-tone-warning: #e5a43b;
+  --fd-tone-caution: #e5a43b;
+  --fd-tone-danger: #f07a71;
+
+  color-scheme: dark;
+}

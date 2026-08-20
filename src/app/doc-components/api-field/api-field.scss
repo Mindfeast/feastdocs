@@ -1,0 +1,67 @@
+fd-api-field {
+  display: block;
+
+  & + & .fd-api-field {
+    border-top: 0;
+  }
+}
+
+.fd-api-field {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--fd-border);
+}
+
+.fd-api-field__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.fd-api-field__name {
+  padding: 0.1em 0.4em;
+  border: 1px solid var(--fd-border);
+  border-radius: 4px;
+  background: var(--fd-surface-sunken);
+  color: var(--fd-accent-strong);
+  font-family: var(--fd-font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.fd-api-field__type {
+  color: var(--fd-text-subtle);
+  font-family: var(--fd-font-mono);
+  font-size: 0.8125rem;
+}
+
+.fd-api-field__required {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--fd-tone-danger);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.fd-api-field__default {
+  color: var(--fd-text-subtle);
+  font-size: 0.8125rem;
+
+  code {
+    font-family: var(--fd-font-mono);
+    font-size: 0.8125rem;
+  }
+}
+
+.fd-api-field__body {
+  color: var(--fd-text-muted);
+  font-size: 0.9375rem;
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}

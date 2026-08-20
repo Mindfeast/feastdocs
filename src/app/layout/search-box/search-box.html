@@ -1,0 +1,72 @@
+<div class="fd-search" [class.fd-search--open]="panelOpen()">
+  <svg class="fd-search__icon" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="11" cy="11" r="6" />
+    <path d="M20 20l-4.5-4.5" />
+  </svg>
+
+  <input
+    #field
+    type="search"
+    class="fd-search__input"
+    placeholder="Search docs"
+    aria-label="Search documentation"
+    autocomplete="off"
+    spellcheck="false"
+    role="combobox"
+    aria-autocomplete="list"
+    [attr.aria-expanded]="panelOpen()"
+    [value]="search.query()"
+    (focus)="onFocus()"
+    (input)="onInput($any($event.target).value)"
+    (keydown)="onFieldKeydown($event)"
+  />
+
+  <kbd class="fd-search__kbd">{{ shortcutHint() }}</kbd>
+
+  @if (panelOpen()) {
+    <div class="fd-search__panel">
+      @if (search.isLoading()) {
+        <p class="fd-search__status">Loading the search index…</p>
+      } @else if (search.failed()) {
+        <p class="fd-search__status">
+          Could not load the search index. Run the content build and reload.
+        </p>
+      } @else if (search.isEmpty()) {
+        <p class="fd-search__status">No results for “{{ search.query() }}”.</p>
+      } @else {
+        <ul class="fd-results" role="listbox">
+          @for (hit of search.results(); track hit.slug + '#' + hit.anchor; let i = $index) {
+            <li>
+              <button
+                type="button"
+                class="fd-results__hit"
+                role="option"
+                [attr.aria-selected]="i === activeIndex()"
+                [class.fd-results__hit--active]="i === activeIndex()"
+                (mouseenter)="activeIndex.set(i)"
+                (click)="go(hit)"
+              >
+                <span class="fd-results__crumb">
+                  @if (hit.section) {
+                    {{ hit.section }} › {{ hit.page }}
+                  } @else {
+                    {{ hit.page }}
+                  }
+                </span>
+                <span class="fd-results__heading">{{ hit.heading }}</span>
+                @if (hit.snippet) {
+                  <span class="fd-results__snippet" [innerHTML]="hit.snippet"></span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+        <footer class="fd-search__footer">
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+          <span><kbd>Enter</kbd> open</span>
+          <span><kbd>Esc</kbd> dismiss</span>
+        </footer>
+      }
+    </div>
+  }
+</div>

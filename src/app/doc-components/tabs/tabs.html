@@ -1,0 +1,37 @@
+<!--
+  The projection slot is required: @angular/elements extracts light-DOM
+  children as projectable nodes on upgrade and drops them without one. The
+  authored panes land here (hidden), get read into `panes`, then removed.
+-->
+<div #source hidden>
+  <ng-content />
+</div>
+
+@if (panes().length > 0) {
+  <div class="fd-tabs">
+    <div class="fd-tabs__list" role="tablist">
+      @for (pane of panes(); track pane.label; let i = $index) {
+        <button
+          type="button"
+          class="fd-tabs__tab"
+          role="tab"
+          [attr.aria-selected]="i === active()"
+          [attr.tabindex]="i === active() ? 0 : -1"
+          [class.fd-tabs__tab--active]="i === active()"
+          (click)="select(i)"
+          (keydown)="onKeydown($event, i)"
+        >
+          {{ pane.label }}
+        </button>
+      }
+    </div>
+    @for (pane of panes(); track pane.label; let i = $index) {
+      <div
+        class="fd-tabs__panel fd-markdown"
+        role="tabpanel"
+        [hidden]="i !== active()"
+        [innerHTML]="trust(pane.html)"
+      ></div>
+    }
+  </div>
+}

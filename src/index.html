@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FeastDocs</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Documentation" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      // Applies the theme before Angular boots so there is never a flash of
+      // the wrong mode. The site default is dark (feastdocs.config.mjs);
+      // a reader's stored choice wins over it.
+      (function () {
+        try {
+          var stored = localStorage.getItem('feastdocs:theme');
+          var dark =
+            stored === 'dark' ||
+            (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+            !stored;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (error) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>
