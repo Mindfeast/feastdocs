@@ -126,6 +126,17 @@ a quiet icon. A **public demo** is the case for an invitation — set
 `invite: 'Try it now'` (any wording, in any language) and first-time visitors
 get a labelled link that retires itself after they use it.
 
+## Changelog
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `changelog.limit` | number | How many commits the build reads from `git log`. Default `150` |
+
+The [`<fd-changelog>`](../components/changelog.md) component renders repository
+history collected at build time. The limit bounds the generated data, so raising
+it costs a slightly larger lazy chunk and nothing else. Attribution needs real
+history, so CI must clone with full depth (`fetch-depth: 0`).
+
 ## Sidebar
 
 `autoCollapse` is reserved for collapsing every category except the active one.

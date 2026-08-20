@@ -4,6 +4,7 @@ import { DocTabs } from './tabs/tabs';
 import { DocSteps } from './steps/steps';
 import { DocCounter } from './counter/counter';
 import { DocApiField } from './api-field/api-field';
+import { DocChangelog } from './changelog/changelog';
 
 /**
  * Angular components that documentation authors can use directly in Markdown
@@ -19,6 +20,7 @@ const DOC_ELEMENTS: ReadonlyArray<{ tag: string; component: Type<unknown> }> = [
   { tag: 'fd-steps', component: DocSteps },
   { tag: 'fd-counter', component: DocCounter },
   { tag: 'fd-api-field', component: DocApiField },
+  { tag: 'fd-changelog', component: DocChangelog },
 ];
 
 /** Idempotent: registering the same tag twice throws, so check first. */

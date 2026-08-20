@@ -119,6 +119,21 @@ export interface SiteConfig {
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+/** One repository commit, as shown by the <fd-changelog> component. */
+export interface ChangelogEntry {
+  readonly hash: string;
+  readonly author: string;
+  /** ISO date of the commit. */
+  readonly date: string;
+  /** Conventional-commit type (feat, fix, docs…) or null. */
+  readonly type: string | null;
+  /** Subject with any conventional-commit prefix removed. */
+  readonly subject: string;
+  readonly body: string;
+  readonly files: number;
+  readonly touchesDocs: boolean;
+}
+
 export interface Breadcrumb {
   readonly label: string;
   readonly slug: string | null;

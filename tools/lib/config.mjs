@@ -17,6 +17,7 @@ const DEFAULTS = {
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },
   editor: { invite: null },
+  changelog: { limit: 150 },
 };
 
 /**
@@ -39,6 +40,7 @@ export async function loadConfig({ bust = false } = {}) {
     sidebar: { ...DEFAULTS.sidebar, ...user.sidebar },
     github: { ...DEFAULTS.github, ...user.github },
     editor: { ...DEFAULTS.editor, ...user.editor },
+    changelog: { ...DEFAULTS.changelog, ...user.changelog },
   };
 }
 

@@ -32,6 +32,7 @@ npm start          # http://localhost:4200
 - [Theming](#theming)
 - [Content manager and editing strategies](#content-manager-and-editing-strategies)
 - [Author attribution](#author-attribution)
+- [Repository changelog](#repository-changelog)
 - [Configuration reference](#configuration-reference)
 - [Build warnings](#build-warnings)
 - [Deploying](#deploying)
@@ -213,6 +214,9 @@ Built-ins:
 <fd-api-field name="sidebar_position" type="number" default="999" required>
   Sort order among siblings.
 </fd-api-field>
+
+<!-- Repository history from `git log`, grouped by month -->
+<fd-changelog limit="20"></fd-changelog>
 ```
 
 Adding your own: build a standalone component under `src/app/doc-components/`,
@@ -295,6 +299,28 @@ uncommitted file) → file date, no author. **In CI, check out with
 `fetch-depth: 0`** — a shallow clone has one commit of history and blanks out
 most authors.
 
+## Repository changelog
+
+`<fd-changelog>` turns the git history into a page — no hand-maintained
+CHANGELOG file. The build collects the last `changelog.limit` commits (default
+150) into a lazily-imported module: hash, author, date, subject, body, file count
+and whether the commit touched `docs/`.
+
+```html
+<fd-changelog></fd-changelog>                 <!-- everything -->
+<fd-changelog limit="20"></fd-changelog>      <!-- most recent 20 -->
+<fd-changelog docs-only></fd-changelog>       <!-- content changes only -->
+```
+
+Commits are grouped by month. A [Conventional Commits](https://www.conventionalcommits.org)
+prefix (`feat:`, `fix:`, `docs:`) becomes a badge and is stripped from the
+headline; each hash links to the commit on GitHub when `github.repo` is set.
+Same caveat as attribution: the history must be there, so clone with full depth
+in CI.
+
+The demo site puts it in a **Changelog** section ([`docs/changelog/`](docs/changelog)),
+but the component works on any page — drop it wherever it fits your docs.
+
 ## Configuration reference
 
 Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
@@ -313,6 +339,7 @@ Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
 | `showLastUpdated` | boolean | Show date + author in page footers |
 | `github.repo` | string or null | `owner/name` — enables web editing |
 | `github.branch` | string | Branch web edits commit to (default `main`) |
+| `changelog.limit` | number | Commits read from `git log` for `<fd-changelog>` (default `150`) |
 
 ## Build warnings
 

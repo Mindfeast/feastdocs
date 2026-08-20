@@ -88,6 +88,11 @@ const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: strin
     text: '\n<fd-api-field name="option" type="string" default="value">\n  What it does.\n</fd-api-field>\n',
   },
   { label: 'Counter', group: 'Components', text: '\n<fd-counter start="0" step="1"></fd-counter>\n' },
+  {
+    label: 'Changelog',
+    group: 'Components',
+    text: '\n<fd-changelog limit="20"></fd-changelog>\n',
+  },
   { label: 'Lead paragraph', group: 'Inline', text: '\nOpening paragraph.{.lead}\n' },
   { label: 'Callout line', group: 'Inline', text: '\nImportant line.{.callout}\n' },
   { label: 'Link', group: 'Inline', text: '[text](./page.md)' },

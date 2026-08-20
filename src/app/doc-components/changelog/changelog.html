@@ -1,0 +1,43 @@
+@if (!loaded()) {
+  <p class="fd-changelog__loading">Loading history…</p>
+} @else if (months().length === 0) {
+  <p class="fd-changelog__loading">
+    No history available — the build could not read the repository's git log.
+  </p>
+} @else {
+  <div class="fd-changelog">
+    @for (month of months(); track month.label) {
+      <section class="fd-changelog__month">
+        <h3 class="fd-changelog__monthlabel" data-toc="false">{{ month.label }}</h3>
+
+        @for (entry of month.entries; track entry.hash) {
+          <article class="fd-changelog__entry">
+            <div class="fd-changelog__head">
+              @if (entry.type) {
+                <span class="fd-changelog__type" [attr.data-type]="entry.type">{{
+                  entry.type
+                }}</span>
+              }
+              <span class="fd-changelog__subject">{{ entry.subject }}</span>
+            </div>
+
+            @if (entry.body) {
+              <p class="fd-changelog__body">{{ entry.body }}</p>
+            }
+
+            <p class="fd-changelog__meta">
+              <span>{{ day(entry.date) }}</span>
+              <span>{{ entry.author }}</span>
+              <span>{{ entry.files }} file{{ entry.files === 1 ? '' : 's' }}</span>
+              @if (commitUrl(entry.hash); as url) {
+                <a [href]="url" target="_blank" rel="noopener noreferrer">{{ entry.hash }}</a>
+              } @else {
+                <span>{{ entry.hash }}</span>
+              }
+            </p>
+          </article>
+        }
+      </section>
+    }
+  </div>
+}

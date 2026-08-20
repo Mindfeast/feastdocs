@@ -97,4 +97,13 @@ export default {
      */
     invite: 'Try it now',
   },
+
+  changelog: {
+    /**
+     * How many commits the build reads from `git log` for <fd-changelog>.
+     * The data is a lazy chunk, so a larger number costs nothing on pages
+     * that do not use the component.
+     */
+    limit: 150,
+  },
 };

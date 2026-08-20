@@ -93,3 +93,15 @@ A minimal proof of live state — click it.
 ```
 
 <fd-counter start="0" step="1"></fd-counter>
+
+## Changelog
+
+Repository history, read from `git log` at build time and grouped by month.
+`limit` caps the number of commits; `docs-only` keeps just the ones that touched
+the docs folder.
+
+```html
+<fd-changelog limit="5"></fd-changelog>
+```
+
+<fd-changelog limit="5"></fd-changelog>
