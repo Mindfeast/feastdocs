@@ -726,7 +726,7 @@
 
 .fd-editor__inlineplus {
   position: absolute;
-  inset-inline-start: 0.3rem;
+  inset-inline-start: 0.45rem;
   z-index: 5;
   width: 20px;
   height: 20px;
@@ -746,7 +746,7 @@
 
 .fd-editor__insertmenu--inline {
   position: absolute;
-  inset-inline-start: 0.3rem;
+  inset-inline-start: 0.45rem;
   z-index: 6;
 }
 
@@ -917,6 +917,7 @@
 
 .fd-editor__source {
   padding: 1.1rem 1.2rem;
+  padding-inline-start: 2.3rem; // gutter for the inline + insert affordance
   border: 0;
   border-inline-end: 1px solid var(--fd-border);
   background: var(--fd-code-bg);

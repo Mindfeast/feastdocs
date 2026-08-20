@@ -264,7 +264,12 @@ export class Editor {
     if (this.templateMenuOpen() && !target?.closest('.fd-editor__tpl')) {
       this.templateMenuOpen.set(false);
     }
-    if (this.insertMenuOpen() && !target?.closest('.fd-editor__insert')) {
+    // The inline + and its menu count as "inside" — otherwise the click that
+    // follows the opening mousedown would close the menu in the same gesture.
+    if (
+      this.insertMenuOpen() &&
+      !target?.closest('.fd-editor__insert, .fd-editor__inlineplus, .fd-editor__insertmenu--inline')
+    ) {
       this.insertMenuOpen.set(false);
     }
   }
