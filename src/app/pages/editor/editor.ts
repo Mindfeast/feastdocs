@@ -861,13 +861,13 @@ export class Editor {
     if (!raw) return;
     const path = /\.(md|markdown|html|scss)$/i.test(raw) ? raw : `${raw}.md`;
 
-    // Deepest allowed nesting: section / category / sub-category. The local
+    // Deepest allowed nesting: a section plus four category levels. The local
     // API enforces the same limit; checking here answers without a request.
     const depth = path.split('/').length - 1;
-    if (depth > 3) {
+    if (depth > 5) {
       this.status.set({
         kind: 'error',
-        message: `Too deep: ${depth} folders. The maximum is 3 levels (section/category/sub-category).`,
+        message: `Too deep: ${depth} folders. The maximum is 5 levels (a section plus four category levels).`,
       });
       return;
     }

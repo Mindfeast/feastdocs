@@ -8,8 +8,8 @@ import { createRenderer, collectFenceLanguages } from './markdown.mjs';
 import { collectGitMeta } from './git-meta.mjs';
 
 const DOC_GLOB = ['**/*.md', '**/*.markdown', '**/*.html'];
-/** Deepest allowed nesting: section / category / sub-category. */
-export const MAX_FOLDER_DEPTH = 3;
+/** Deepest allowed nesting: a section plus four category levels. */
+export const MAX_FOLDER_DEPTH = 5;
 /** Files and folders starting with `_` are partials: never pages, but importable. */
 const IGNORE = ['**/_*/**', '**/_*.*', '**/node_modules/**'];
 const NON_ASSET = /\.(md|markdown|html|scss|sass|css)$/i;
@@ -62,7 +62,7 @@ export async function collectDocs(config) {
     if (depth > MAX_FOLDER_DEPTH) {
       warn(
         `${file.relative}: nested ${depth} folders deep — the maximum is ${MAX_FOLDER_DEPTH} ` +
-          `(section/category/sub-category). The page still renders, but flatten it.`,
+          `(a section plus four category levels). The page still renders, but flatten it.`,
       );
     }
     docs.push(await buildDoc(file, { renderer, docsRoot, warn, gitMeta }));

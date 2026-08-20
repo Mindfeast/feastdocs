@@ -6,8 +6,8 @@ import { cyan, dim, yellow } from './lib/log.mjs';
 
 export const EDITOR_API_PORT = 4271;
 
-/** Deepest allowed nesting: section / category / sub-category. */
-const MAX_FOLDER_DEPTH = 3;
+/** Deepest allowed nesting: a section plus four category levels. */
+const MAX_FOLDER_DEPTH = 5;
 
 /**
  * Tiny local file API for the in-app content manager (/_editor). Development
@@ -58,7 +58,7 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
         const depth = relative.replace(/\\/g, '/').split('/').length - 1;
         if (depth > MAX_FOLDER_DEPTH) {
           return json(res, 400, {
-            error: `Too deep: ${depth} folders. The maximum is ${MAX_FOLDER_DEPTH} levels (section/category/sub-category).`,
+            error: `Too deep: ${depth} folders. The maximum is ${MAX_FOLDER_DEPTH} levels (a section plus four category levels).`,
           });
         }
         if (body.ifMissing === true && (await exists(file))) {

@@ -64,21 +64,24 @@ with a `_category.json`:
 { "label": "Advanced", "position": 20, "collapsed": true }
 ```
 
-### Depth limit: 3 levels
+### Depth limit: 5 levels
 
-A page can sit at most **three folders deep** — section, category, sub-category:
+A page can sit at most **five folders deep** — a section plus up to four nested
+category levels:
 
 ```text
-docs/guide/hello.md                 ✓  1 level
-docs/guide/section/hello.md         ✓  2 levels
-docs/guide/section/section/hello.md ✓  3 levels
-docs/guide/a/b/c/hello.md           ✗  rejected
+docs/guide/hello.md                     ✓  1 level
+docs/guide/a/hello.md                   ✓  2 levels
+docs/guide/a/b/hello.md                 ✓  3 levels
+docs/guide/a/b/c/hello.md               ✓  4 levels
+docs/guide/a/b/c/d/hello.md             ✓  5 levels
+docs/guide/a/b/c/d/e/hello.md           ✗  rejected
 ```
 
 The content manager and `docs:new` refuse to create anything deeper, and the
-build prints a warning if such a file appears by other means. Deeper trees stop
-being navigation and start being archaeology — split into another section
-instead.
+build prints a warning if such a file appears by other means. Even five levels
+is a lot of clicking — prefer splitting into another section before reaching
+for the last one.
 
 ## Ordering
 
