@@ -17,8 +17,12 @@ export async function onRequestPost(context) {
   const { env, request } = context;
 
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
+    // Names only, never values — this tells the operator which variable the
+    // production deployment actually received, ending the guesswork when the
+    // dashboard says "saved" but the wrong project/environment was selected.
+    const missing = ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'].filter((name) => !env[name]);
     return json(
-      { error: 'OAuth is not configured: set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET on the Pages project.' },
+      { error: `OAuth is not configured — missing on this deployment: ${missing.join(', ')}.` },
       501,
     );
   }
