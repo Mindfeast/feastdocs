@@ -38,17 +38,38 @@ list. Without either, the page explains what to set up instead of failing.
 
 ### Connecting GitHub
 
-The GitHub mode asks once for a **fine-grained personal access token** with
-*contents read and write* on the docs repository. The token stays in the
-browser's localStorage and is sent only to `api.github.com`.
+Two ways in, on the same connect screen:
 
-:::info Why a token and not an OAuth popup
-A full "Sign in with GitHub" needs a server-side step — exchanging the OAuth
-code for a token requires the app's client secret, which cannot ship inside a
-static site. The connect screen is built as the seam for that: add a small
-exchange endpoint (a serverless function is enough) and swap the token input
-for the OAuth redirect without touching the rest of the editor.
+- **Sign in with GitHub** — a real OAuth login. It appears once
+  `github.oauthClientId` is set; the code-for-token exchange runs in a
+  Cloudflare Pages Function shipped with the project (`functions/api/oauth/token.js`),
+  so the OAuth client secret never touches the static bundle.
+- **Personal access token** — always available as a fallback: a fine-grained
+  token with *contents read and write* on the docs repository. Either way the
+  token stays in the browser's localStorage and is sent only to `api.github.com`.
+
+To enable the sign-in button:
+
+1. GitHub → Settings → Developer settings → **OAuth Apps → New OAuth App**.
+   Homepage URL: your site. **Authorization callback URL:**
+   `https://your-site/_editor`.
+2. Put the app's **Client ID** in `feastdocs.config.mjs` as
+   `github.oauthClientId` (client ids are public).
+3. On the Cloudflare Pages project (Settings → Variables and secrets), add two
+   **secrets**: `GITHUB_CLIENT_ID` (same value) and `GITHUB_CLIENT_SECRET`
+   (the app's secret — it lives only there).
+
+:::caution Access is still the repository's
+Signing in proves who the visitor is; **what they may do is decided by GitHub**.
+Accounts without write access to the repo get a read-only editor, and every
+write is rejected server-side by GitHub regardless of the UI.
 :::
+
+### Production never touches local files
+
+The local file API is probed only in development builds. On a deployed site the
+editor is GitHub-only — a visitor's own `npm start` on their machine is
+invisible to it, so "saving" can never silently land on someone's local disk.
 
 ### Author attribution
 

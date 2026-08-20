@@ -66,5 +66,11 @@ export default {
   github: {
     repo: 'Mindfeast/feastdocs',
     branch: 'main',
+    /**
+     * Client id of a GitHub OAuth App — enables "Sign in with GitHub" on the
+     * deployed site (the secret half lives in Cloudflare, never here; see
+     * functions/api/oauth/token.js). null falls back to pasting a token.
+     */
+    oauthClientId: null,
   },
 };

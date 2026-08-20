@@ -136,7 +136,21 @@ at build time). The workflow checks out with `fetch-depth: 0`, so deploying from
 it keeps attribution intact.
 :::
 
-## 5. Choose how people edit
+## 5. Optional: "Sign in with GitHub" for web editing
+
+Web editing works out of the box with personal access tokens. For a real OAuth
+login button, three steps (the exchange function already ships in `functions/`):
+
+1. Create a **GitHub OAuth App** (Settings → Developer settings → OAuth Apps)
+   with callback URL `https://your-site/_editor`.
+2. Set `github.oauthClientId` in `feastdocs.config.mjs` to the app's client id.
+3. Add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` as **secrets** on the
+   Cloudflare Pages project (Settings → Variables and secrets).
+
+Editing rights are always the repository's collaborator permissions — GitHub
+enforces them on every commit, whoever is signed in.
+
+## 6. Choose how people edit
 
 Both strategies work at the same time; see the
 [content manager](/reference/editor) for the full picture:

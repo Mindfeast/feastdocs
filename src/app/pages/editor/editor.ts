@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, isDevMode, signal } from '@angular/core';
 import { DomSanitizer, Title, type SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
@@ -118,15 +118,84 @@ export class Editor {
 
   private async start(): Promise<void> {
     await this.github.restore();
-    try {
-      await firstValueFrom(this.http.get(`${LOCAL_API}/health`));
-      this.localAvailable.set(true);
-      this.mode.set('local');
-    } catch {
+    await this.finishOAuthRedirect();
+
+    // The local file API is a development tool. A production build never
+    // probes it — a visitor to the deployed site may well have their own dev
+    // server running on 127.0.0.1, and "saving" to their local disk from the
+    // live site is exactly the confusion this guard prevents.
+    if (isDevMode()) {
+      try {
+        await firstValueFrom(this.http.get(`${LOCAL_API}/health`));
+        this.localAvailable.set(true);
+        this.mode.set('local');
+      } catch {
+        this.localAvailable.set(false);
+      }
+    } else {
       this.localAvailable.set(false);
-      if (this.github.isConfigured) this.mode.set('github');
     }
+    if (!this.localAvailable() && this.github.isConfigured) this.mode.set('github');
     await this.refreshFiles();
+  }
+
+  /** True when the site is configured for a real "Sign in with GitHub". */
+  protected readonly oauthConfigured = this.content.site.github.oauthClientId !== null;
+
+  /** Kicks off the OAuth authorization redirect. */
+  protected signIn(): void {
+    const clientId = this.content.site.github.oauthClientId;
+    if (!clientId) return;
+    const state = crypto.randomUUID();
+    try {
+      sessionStorage.setItem('feastdocs:oauth-state', state);
+    } catch {
+      // Without storage the state check is skipped on return.
+    }
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: `${location.origin}/_editor`,
+      scope: 'repo',
+      state,
+    });
+    location.assign(`https://github.com/login/oauth/authorize?${params}`);
+  }
+
+  /**
+   * Completes the flow when GitHub redirects back with ?code=…&state=…:
+   * exchanges the code through the same-origin Pages Function, connects, and
+   * cleans the query string so a reload doesn't retry a spent code.
+   */
+  private async finishOAuthRedirect(): Promise<void> {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    if (!code) return;
+
+    let expected: string | null = null;
+    try {
+      expected = sessionStorage.getItem('feastdocs:oauth-state');
+      sessionStorage.removeItem('feastdocs:oauth-state');
+    } catch {
+      // No storage — accept the redirect without the CSRF check.
+    }
+    history.replaceState(null, '', '/_editor');
+    if (expected !== null && params.get('state') !== expected) {
+      this.status.set({ kind: 'error', message: 'Sign-in was rejected: state mismatch.' });
+      return;
+    }
+
+    this.connecting.set(true);
+    try {
+      const result = await firstValueFrom(
+        this.http.post<{ token: string }>('/api/oauth/token', { code }),
+      );
+      await this.github.connect(result.token);
+      this.mode.set('github');
+    } catch (error) {
+      this.status.set({ kind: 'error', message: describe(error, 'GitHub sign-in failed.') });
+    } finally {
+      this.connecting.set(false);
+    }
   }
 
   /** Manual switch between the two strategies when both are usable. */

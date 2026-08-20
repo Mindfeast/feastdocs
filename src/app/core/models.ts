@@ -97,6 +97,8 @@ export interface SiteConfig {
     /** 'owner/name', or null when GitHub-backed editing is not configured. */
     readonly repo: string | null;
     readonly branch: string;
+    /** OAuth App client id for "Sign in with GitHub"; null = token paste only. */
+    readonly oauthClientId: string | null;
   };
 }
 

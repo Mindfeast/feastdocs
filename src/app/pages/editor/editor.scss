@@ -58,6 +58,33 @@
   }
 }
 
+.fd-editor__signin {
+  gap: 0.5rem;
+  margin: 1.25rem auto 0.5rem;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    fill: currentColor;
+  }
+}
+
+.fd-editor__pat {
+  max-width: 30rem;
+  margin: 0.75rem auto 0;
+  text-align: center;
+
+  summary {
+    color: var(--fd-text-subtle);
+    font-size: 0.8125rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--fd-text-strong);
+    }
+  }
+}
+
 .fd-editor__fineprint {
   max-width: 34rem;
   margin: 1rem auto 0;
