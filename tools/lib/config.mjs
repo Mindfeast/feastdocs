@@ -5,6 +5,7 @@ export const ROOT = path.resolve(import.meta.dirname, '..', '..');
 
 const DEFAULTS = {
   title: 'FeastDocs',
+  siteUrl: null,
   tagline: '',
   logo: null,
   docsDir: 'docs',

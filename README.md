@@ -328,6 +328,15 @@ on, so a typo cannot block a deploy:
 | `<file>.scss: <error>` | Page stylesheet failed; page renders unstyled | Fix the SCSS |
 | `Language "x" was not pre-loaded` | Unknown fence language; renders plain | Fix the language tag |
 
+## SEO
+
+Set `siteUrl` in the config and `npm run build` prerenders **one static
+index.html per page** — article HTML baked in, per-page title/description,
+canonical and Open Graph tags — plus `sitemap.xml` and `robots.txt`
+(`/_editor` excluded). Crawlers and no-JS readers get real pages; Angular
+boots on top and takes over seamlessly. Leave `siteUrl` as `null` to skip all
+of it (right for internal sites).
+
 ## Deploying
 
 `npm run build` → static files in `dist/feastdocs/browser/`. One server rule:

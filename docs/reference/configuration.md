@@ -41,6 +41,7 @@ export default {
 | Option | Type | Effect |
 | --- | --- | --- |
 | `title` | string | Navbar brand and the suffix of every browser title |
+| `siteUrl` | string \| null | Public origin (e.g. `https://docs.example.com`). Enables SEO output at build time: prerendered HTML per page, canonical/Open Graph tags, sitemap.xml, robots.txt |
 | `tagline` | string | Fallback meta description for pages without one |
 | `logo` | string \| null | Path to an image inside `public/`, shown before the title |
 | `docsDir` | string | Where the content lives, relative to the project root |

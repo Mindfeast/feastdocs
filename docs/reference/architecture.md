@@ -29,6 +29,7 @@ feastdocs.config.mjs    └── emit.mjs      write          └── site-co
 | `tools/dev.mjs` | Watches `docs/`, rebuilds, runs the Angular dev server and the editor API |
 | `tools/editor-api.mjs` | Local file API behind the [content manager](./editor.md) |
 | `tools/new-doc.mjs` | Scaffolds a new page |
+| `tools/prerender.mjs` | After `ng build`: bakes each page's HTML + SEO metadata into static per-route index.html files, plus sitemap.xml and robots.txt |
 
 Two details worth knowing when editing the pipeline:
 

@@ -10,6 +10,13 @@ export default {
   /** Shown in the navbar and used as the browser title suffix. */
   title: 'FeastDocs',
 
+  /**
+   * Public origin of the deployed site. Enables SEO output at build time:
+   * prerendered HTML per page, canonical/Open Graph tags, sitemap.xml and
+   * robots.txt. null skips all of it (fine for internal sites).
+   */
+  siteUrl: 'https://feastdocs.feast-labs.com',
+
   /** Short description, used on the home page and as the default meta description. */
   tagline: 'Documentation that lives next to the code.',
 
