@@ -217,6 +217,9 @@ Built-ins:
 
 <!-- Repository history from `git log`, grouped by month -->
 <fd-changelog limit="20"></fd-changelog>
+
+<!-- An index of the generated month pages, with counts -->
+<fd-changelog-months></fd-changelog-months>
 ```
 
 Adding your own: build a standalone component under `src/app/doc-components/`,
@@ -343,9 +346,18 @@ build deepens a `--depth 1` checkout, or reads the history from the GitHub API
 if it cannot. API entries have no file count (that endpoint carries no file
 list).
 
-**A page per month.** Set `changelog.monthlyPages: true` and the build writes one
-page per month under a category per year, so the sidebar reads
-Changelog → 2026 → August. They are ordinary Markdown files — sidebar, search,
+**Pages per repository, year and month.** Set `changelog.monthlyPages: true` and
+the build writes the tree itself — a category per repository, a category per
+year, a page per month:
+
+```text
+Changelog
+├── Changelog          (your own index.md)
+├── Acme Docs
+│   └── 2026 › August, July
+└── Checkout API
+    └── 2026 › August
+``` They are ordinary Markdown files — sidebar, search,
 prerendering and sitemap all work normally — and each holds only a filter, never
 the commits, so a new commit changes no file and a new month adds one. Generated
 files are overwritten on each build; hand-written pages in those folders are left
@@ -377,6 +389,9 @@ Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
 | `changelog.limit` | number | Commits read from `git log` for `<fd-changelog>` (default `150`) |
 | `changelog.repos` | array | Other repositories to collect history for, as `owner/name` or `{repo, branch}` |
 | `changelog.monthlyPages` | boolean | Generate a page per month under a category per year |
+| `changelog.branch` | string or null | Branch to read history from; `null` uses the checked-out branch |
+| `changelog.groupByRepo` | boolean or `'auto'` | Group generated pages under a category per repository |
+| `changelog.selfLabel` | string or null | Category label for this repository |
 
 ## Build warnings
 

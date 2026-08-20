@@ -150,6 +150,12 @@ a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspect
 | `changelog.repos` | array | Other repositories to collect, as `owner/name` or `{provider, org, project, repo}` |
 | `changelog.monthlyPages` | boolean | Generate a page per month under a category per year. Default `false` |
 | `changelog.monthlyPagesDir` | string | Where those pages go, relative to `docsDir`. Default `'changelog'` |
+| `changelog.branch` | string \| null | Branch to read history from. `null` (default) uses the checked-out branch |
+| `changelog.groupByRepo` | boolean \| `'auto'` | Group generated pages under a category per repository. Default `true` |
+| `changelog.selfLabel` | string \| null | Category label for this repository. Defaults to the repo name |
+
+How the generated tree works, and what stays yours:
+[how the changelog pages work](../guide/changelog-pages.md).
 
 The [`<fd-changelog>`](../components/changelog.md) component renders repository
 history collected at build time. The limit bounds the generated data, so raising

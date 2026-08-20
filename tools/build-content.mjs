@@ -23,7 +23,7 @@ export async function buildContent({ bust = false, label = 'docs' } = {}) {
   // History first: the month pages are generated from it and must exist on
   // disk before the docs folder is scanned.
   const changelog = await collectAllChangelogs(config);
-  await writeChangelogPages(config, changelog.commits);
+  await writeChangelogPages(config, changelog);
 
   const { docs, sections, assets, warnings } = await collectDocs(config);
   await emit({ config, docs, sections, assets, changelog });

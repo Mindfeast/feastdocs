@@ -114,6 +114,13 @@ export default {
     limit: 150,
 
     /**
+     * Which branch the history comes from. null reads the checked-out branch,
+     * which is what a normal deploy wants. Name one when previews build from
+     * feature branches but the changelog should track the release line.
+     */
+    branch: null,
+
+    /**
      * Other repositories to collect history for, so one docs site can carry a
      * changelog per product. Read at build time and used as
      * `<fd-changelog repo="…">`.
@@ -139,5 +146,15 @@ export default {
      */
     monthlyPages: true,
     monthlyPagesDir: 'changelog',
+
+    /**
+     * Group the generated pages under a category per repository, so several
+     * products can share one Changelog section. 'auto' collapses that level
+     * while there is only one source.
+     */
+    groupByRepo: true,
+
+    /** Category label for this repository. Defaults to the repo name. */
+    selfLabel: 'FeastDocs',
   },
 };

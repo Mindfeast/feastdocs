@@ -28,11 +28,11 @@ const LINE_BREAK = new RegExp(String.fromCharCode(13) + '?' + String.fromCharCod
  * API when it does not — see collectFromApi. Returns [] when neither source is
  * available; the component then renders a short notice instead.
  */
-export async function collectChangelog(docsDir, limit, github = {}) {
+export async function collectChangelog(docsDir, limit, github = {}, branch = null) {
   // Deepen a marked shallow clone. Harmless on a full one.
   await ensureFullHistory();
 
-  const commits = await collectFromGit(docsDir, limit);
+  const commits = await collectFromGit(docsDir, limit, branch);
   console.log(`  ${dim(`changelog: git history gave ${plural(commits.length, 'commit')}`)}`);
 
   // Hosts truncate history in ways `--is-shallow-repository` does not always
@@ -41,7 +41,8 @@ export async function collectChangelog(docsDir, limit, github = {}) {
   // checkout is not the source to trust.
   if (commits.length > 1 || !github.repo) return commits;
 
-  const fromApi = await collectRepoChangelog(github.repo, github.branch, limit);
+  // The API needs a branch name; fall back to the repository's default.
+  const fromApi = await collectRepoChangelog(github.repo, branch ?? github.branch, limit);
   return fromApi.length > commits.length ? fromApi : commits;
 }
 
@@ -69,13 +70,32 @@ export async function collectAllChangelogs(config) {
     valid.map(async (source) => [source, await collectSourceChangelog(source, limit)]),
   );
 
-  const commits = await collectChangelog(paths.docs(config), limit, config.github);
+  const commits = await collectChangelog(
+    paths.docs(config),
+    limit,
+    config.github,
+    config.changelog.branch,
+  );
+
+  const selfTitle =
+    config.changelog.selfLabel ?? config.github.repo?.split('/').pop() ?? 'This repository';
+  const sources = {
+    [SELF_ID]: {
+      title: selfTitle,
+      slug: slugify(selfTitle),
+      commitUrl:
+        config.github.repo === null ? null : `https://github.com/${config.github.repo}/commit/`,
+    },
+  };
 
   const byRepo = {};
-  const sources = {};
   for (const [source, entries] of collected) {
     byRepo[source.id] = entries;
-    sources[source.id] = { label: source.label, commitUrl: source.commitUrl };
+    sources[source.id] = {
+      title: source.title,
+      slug: source.slug,
+      commitUrl: source.commitUrl,
+    };
   }
 
   return { commits, byRepo, sources };
@@ -93,9 +113,13 @@ export function normaliseSource(entry) {
   if (provider === 'azure' || provider === 'azure-devops') {
     const { org, project, repo, branch = 'main' } = spec;
     if (!org || !project || !repo) return null;
+    const title = spec.title ?? repo;
     return {
       id: spec.id ?? `azure:${org}/${project}/${repo}`,
       provider: 'azure',
+      title,
+      slug: slugify(spec.slug ?? title),
+      // Fully qualified in build logs, where org and project matter.
       label: `${project}/${repo}`,
       commitUrl: `https://dev.azure.com/${org}/${encodeURIComponent(project)}/_git/${repo}/commit/`,
       org,
@@ -106,15 +130,29 @@ export function normaliseSource(entry) {
   }
 
   if (!spec.repo) return null;
+  const title = spec.title ?? String(spec.repo).split('/').pop();
   return {
     id: spec.id ?? spec.repo,
     provider: 'github',
+    title,
+    slug: slugify(spec.slug ?? title),
     label: spec.repo,
     commitUrl: `https://github.com/${spec.repo}/commit/`,
     repo: spec.repo,
     branch: spec.branch ?? 'main',
   };
 }
+
+/** Folder- and URL-safe name for a source. */
+export function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/** Reserved id for the repository the docs live in. */
+export const SELF_ID = 'self';
 
 /**
  * Total wall-clock budget for reading remote history. Deploy time is not worth
@@ -328,7 +366,9 @@ async function collectFromAzure({ org, project, repo, branch, label }, limit) {
   return commits;
 }
 
-async function collectFromGit(docsDir, limit) {
+async function collectFromGit(docsDir, limit, branch) {
+  const ref = await resolveRef(branch);
+
   let output;
   try {
     output = await run('git', [
@@ -337,6 +377,8 @@ async function collectFromGit(docsDir, limit) {
       `-n${limit}`,
       '--format=%x00%h%x1f%an%x1f%aI%x1f%s%x1f%b%x1f',
       '--name-only',
+      // Without a ref this reads HEAD, which is what a normal build wants.
+      ...(ref === null ? [] : [ref]),
     ]);
   } catch {
     return [];
@@ -374,6 +416,31 @@ async function collectFromGit(docsDir, limit) {
   }
 
   return commits;
+}
+
+/**
+ * Turns a configured branch name into a ref this checkout actually has. A CI
+ * clone often holds only the branch it built, so 'main' may exist solely as
+ * origin/main — and on a detached checkout, not at all. Falling back to HEAD
+ * beats failing a build over a changelog.
+ */
+async function resolveRef(branch) {
+  if (!branch) return null;
+
+  for (const candidate of [branch, `origin/${branch}`]) {
+    try {
+      await run('git', ['rev-parse', '--verify', '--quiet', `${candidate}^{commit}`]);
+      return candidate;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  console.warn(
+    `  ${yellow('!')} changelog: branch '${branch}' is not in this checkout ` +
+      dim('— reading the checked-out branch instead'),
+  );
+  return null;
 }
 
 /**

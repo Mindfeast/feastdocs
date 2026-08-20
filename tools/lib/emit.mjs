@@ -147,6 +147,11 @@ async function writeSiteConfig(config) {
     showLastUpdated: config.showLastUpdated,
     github: config.github,
     editor: config.editor,
+    changelog: {
+      monthlyPages: config.changelog.monthlyPages,
+      monthlyPagesDir: config.changelog.monthlyPagesDir,
+      groupByRepo: config.changelog.groupByRepo,
+    },
   };
   const contents =
     `${BANNER}\n` +

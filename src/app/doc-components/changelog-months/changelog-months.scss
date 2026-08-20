@@ -1,0 +1,76 @@
+.fd-clmonths {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin: 1.5rem 0;
+}
+
+.fd-clmonths__repo {
+  margin: 0.5rem 0 0.25rem;
+  color: var(--fd-text);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.fd-clmonths__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--fd-border);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fd-clmonths__total {
+  color: var(--fd-text-subtle);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.fd-clmonths__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fd-clmonths__item {
+  margin: 0;
+
+  a,
+  .fd-clmonths__plain {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius);
+    background: var(--fd-surface);
+    color: var(--fd-text);
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  a:hover {
+    border-color: color-mix(in srgb, var(--fd-accent) 55%, transparent);
+    background: var(--fd-surface-strong);
+    color: var(--fd-accent-strong);
+  }
+}
+
+.fd-clmonths__count {
+  flex: none;
+  min-width: 1.6rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--fd-surface-strong);
+  color: var(--fd-text-subtle);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}

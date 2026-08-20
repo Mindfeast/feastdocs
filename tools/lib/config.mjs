@@ -18,7 +18,15 @@ const DEFAULTS = {
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },
   editor: { invite: null },
-  changelog: { limit: 150, repos: [], monthlyPages: false, monthlyPagesDir: 'changelog' },
+  changelog: {
+    limit: 150,
+    branch: null,
+    repos: [],
+    monthlyPages: false,
+    monthlyPagesDir: 'changelog',
+    groupByRepo: true,
+    selfLabel: null,
+  },
 };
 
 /**

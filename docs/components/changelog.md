@@ -45,6 +45,21 @@ Renders as:
   the page heading already names the month. Used by the generated month pages.
 </fd-api-field>
 
+## An index of the pages
+
+`<fd-changelog-months>` lists what exists — repository, year, month, with a
+count each — and links to the generated pages. It is what belongs on a section
+landing page: repeating the commits there would mean the same history rendered
+twice, which is worse for a reader and splits the two pages in search results.
+
+```html
+<fd-changelog-months></fd-changelog-months>
+```
+
+It reads the same lazily-loaded history, so it costs nothing on pages that use
+neither component. With `monthlyPages` off it still renders, as a plain summary
+without links.
+
 ## A page per month
 
 Set `changelog.monthlyPages` and the build writes a page per month, grouped

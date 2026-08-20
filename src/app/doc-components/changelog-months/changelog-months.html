@@ -1,0 +1,36 @@
+@if (loaded()) {
+  <div class="fd-clmonths">
+    @for (repo of repos(); track repo.title) {
+      @if (repo.title) {
+        <h3 class="fd-clmonths__repo" data-toc="false">{{ repo.title }}</h3>
+      }
+
+      @for (year of repo.years; track year.year) {
+        <section class="fd-clmonths__year">
+          <h4 class="fd-clmonths__heading" data-toc="false">
+            {{ year.year }}
+            <span class="fd-clmonths__total">{{ year.total }} changes</span>
+          </h4>
+
+          <ul class="fd-clmonths__list">
+            @for (month of year.months; track month.label) {
+              <li class="fd-clmonths__item">
+                @if (month.route) {
+                  <a [routerLink]="month.route">
+                    <span class="fd-clmonths__month">{{ month.label }}</span>
+                    <span class="fd-clmonths__count">{{ month.count }}</span>
+                  </a>
+                } @else {
+                  <span class="fd-clmonths__plain">
+                    <span class="fd-clmonths__month">{{ month.label }}</span>
+                    <span class="fd-clmonths__count">{{ month.count }}</span>
+                  </span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+  </div>
+}

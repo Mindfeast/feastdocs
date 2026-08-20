@@ -115,14 +115,24 @@ export interface SiteConfig {
      */
     readonly invite: string | null;
   };
+  readonly changelog: {
+    /** Whether the build generates a page per month under a category per year. */
+    readonly monthlyPages: boolean;
+    /** Folder holding those pages, relative to docsDir — also their route base. */
+    readonly monthlyPagesDir: string;
+    /** Whether pages are grouped under a category per repository. */
+    readonly groupByRepo: boolean | 'auto';
+  };
 }
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 /** Where one changelog source lives, so commit links work per host. */
 export interface ChangelogSource {
-  /** Human-readable name of the repository. */
-  readonly label: string;
+  /** Display name — the category label for this repository's pages. */
+  readonly title: string;
+  /** Folder and route segment derived from the title. */
+  readonly slug: string;
   /** Commit URL prefix — the hash is appended. null when unknown. */
   readonly commitUrl: string | null;
 }
