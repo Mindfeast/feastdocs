@@ -334,33 +334,6 @@
   opacity: 0.6;
 }
 
-.fd-editor__commitbar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.6rem 0.35rem 0.2rem;
-  border-top: 1px solid var(--fd-border);
-
-  input {
-    padding: 0.4rem 0.55rem;
-    border: 1px solid var(--fd-border);
-    border-radius: var(--fd-radius-sm);
-    background: var(--fd-surface-sunken);
-    color: inherit;
-    font: inherit;
-    font-size: 0.8125rem;
-
-    &:focus-visible {
-      border-color: var(--fd-accent);
-      outline: none;
-    }
-  }
-
-  .fd-button {
-    justify-content: center;
-  }
-}
-
 .fd-editor__file {
   display: block;
   width: 100%;
@@ -457,6 +430,60 @@
   &:hover {
     filter: none;
   }
+}
+
+.fd-editor__stagebar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid var(--fd-border);
+  background: var(--fd-accent-soft);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm);
+    background: var(--fd-surface);
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+
+    &:focus-visible {
+      border-color: var(--fd-accent);
+      outline: none;
+    }
+  }
+}
+
+.fd-editor__stagecount {
+  color: var(--fd-accent-strong);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// Stage steps back visually once there is something to commit.
+.fd-button--ghost {
+  background: transparent;
+  border: 1px solid var(--fd-border-strong);
+  color: var(--fd-text-strong);
+
+  &:hover {
+    filter: none;
+    border-color: var(--fd-accent);
+  }
+
+  kbd {
+    border-color: var(--fd-border) !important;
+    opacity: 0.7;
+  }
+}
+
+.fd-button--commit {
+  font-weight: 700;
 }
 
 // --- Panes -----------------------------------------------------------------------
