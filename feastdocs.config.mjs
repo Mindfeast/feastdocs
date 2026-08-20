@@ -71,6 +71,6 @@ export default {
      * deployed site (the secret half lives in Cloudflare, never here; see
      * functions/api/oauth/token.js). null falls back to pasting a token.
      */
-    oauthClientId: null,
+    oauthClientId: 'Ov23lirZ0YGPoFFlFRP3',
   },
 };
