@@ -51,6 +51,10 @@ export default {
 Links take either `to` for an internal route or `href` for an external URL. External
 links open in a new tab and are marked as such.
 
+`footer.text` and `footer.links` render in the site footer. When `github.repo` is
+set, a **"Source on GitHub"** link is added for free — in the footer and as a
+GitHub mark in the navbar — so readers can find the project and clone it.
+
 ```js
 navbar: {
   links: [
