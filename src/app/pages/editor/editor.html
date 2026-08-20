@@ -308,6 +308,9 @@
             <div class="fd-editor__conflict">
               <code>{{ path }}</code>
               <span class="fd-editor__conflict-actions">
+                <button type="button" class="is-merge" (click)="openResolve(path)" title="Resolve hunk by hunk in the merge editor">
+                  Merge…
+                </button>
                 <button type="button" (click)="resolveTheirs(path)" title="Discard my staged change and load their version">
                   Use theirs
                 </button>
@@ -321,13 +324,42 @@
       }
 
       <div class="fd-editor__panes">
-        <textarea
-          class="fd-editor__source"
-          spellcheck="false"
-          aria-label="File content"
-          [value]="contentText()"
-          (input)="contentText.set($any($event.target).value)"
-        ></textarea>
+        <div class="fd-editor__sourcewrap">
+          <div class="fd-editor__toolbar">
+            <span class="fd-editor__insert">
+              <button
+                type="button"
+                (click)="insertMenuOpen.set(!insertMenuOpen())"
+                [attr.aria-expanded]="insertMenuOpen()"
+                aria-haspopup="menu"
+              >
+                + Insert ▾
+              </button>
+              @if (insertMenuOpen()) {
+                <div class="fd-editor__insertmenu" role="menu">
+                  @for (group of insertGroups; track group) {
+                    <span class="fd-editor__insertgroup">{{ group }}</span>
+                    @for (item of insertSnippets; track item.label) {
+                      @if (item.group === group) {
+                        <button type="button" role="menuitem" (click)="insert(item)">
+                          {{ item.label }}
+                        </button>
+                      }
+                    }
+                  }
+                </div>
+              }
+            </span>
+          </div>
+          <textarea
+            #source
+            class="fd-editor__source"
+            spellcheck="false"
+            aria-label="File content"
+            [value]="contentText()"
+            (input)="contentText.set($any($event.target).value)"
+          ></textarea>
+        </div>
 
         <div class="fd-editor__preview">
           @if (isMarkdown()) {
@@ -340,5 +372,61 @@
         </div>
       </div>
     </section>
+
+    @if (resolving(); as merge) {
+      <div class="fd-resolve" role="dialog" aria-modal="true" aria-label="Resolve conflict">
+        <div class="fd-resolve__panel">
+          <header class="fd-resolve__head">
+            <code>{{ merge.path }}</code>
+            <span class="fd-resolve__progress">
+              @if (resolveRemaining() > 0) {
+                {{ resolveRemaining() }} conflict{{ resolveRemaining() === 1 ? '' : 's' }} left
+              } @else {
+                All conflicts resolved
+              }
+            </span>
+            <span class="fd-resolve__actions">
+              <button type="button" class="fd-editor__link" (click)="cancelResolve()">Cancel</button>
+              <button
+                type="button"
+                class="fd-button"
+                [disabled]="resolveRemaining() > 0"
+                (click)="applyResolve()"
+              >
+                Apply merge
+              </button>
+            </span>
+          </header>
+
+          <div class="fd-resolve__body">
+            @for (hunk of merge.hunks; track $index) {
+              @if (hunk.kind === 'same') {
+                <pre class="fd-resolve__same">{{ hunk.same }}</pre>
+              } @else {
+                <div class="fd-resolve__hunk" [class.is-resolved]="hunk.choice !== null">
+                  <div
+                    class="fd-resolve__side fd-resolve__side--theirs"
+                    [class.is-chosen]="hunk.choice === 'theirs' || hunk.choice === 'both'"
+                  >
+                    <button type="button" (click)="chooseHunk($index, 'theirs')">Use theirs</button>
+                    <pre>{{ hunk.theirs || '(nothing)' }}</pre>
+                  </div>
+                  <div
+                    class="fd-resolve__side fd-resolve__side--mine"
+                    [class.is-chosen]="hunk.choice === 'mine' || hunk.choice === 'both'"
+                  >
+                    <button type="button" (click)="chooseHunk($index, 'mine')">Use mine</button>
+                    <pre>{{ hunk.mine || '(nothing)' }}</pre>
+                  </div>
+                  <button type="button" class="fd-resolve__both" (click)="chooseHunk($index, 'both')">
+                    Use both
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
   }
 </div>

@@ -24,6 +24,10 @@ and a live Markdown preview on the right.
 - **Batch commits** — in GitHub mode every save, creation and deletion is
   *staged* (`M`/`A`/`D` badges in the file list, ↺ to undo one); the commit bar
   publishes **all staged changes as a single commit**, with an optional message
+- **Insert helper** — the “+ Insert” menu above the editor drops admonitions,
+  code blocks, tables, doc components (`<fd-tabs>`, `<fd-steps>`,
+  `<fd-api-field>`, `<fd-counter>`) and inline extras at the cursor, ready to
+  fill in
 - **Preview while typing** — the right pane re-renders on every keystroke
 - **Jump to the real page** — the “View page” link opens the route the file
   publishes to
@@ -89,10 +93,12 @@ Several people can edit at the same time; what happens depends on the path:
   file's blob SHA from when you read it. At commit time it compares every
   staged file against the branch as it is *now* — if someone changed (or
   created, or deleted) one of your files in the meantime, the commit is
-  blocked and a panel lists each conflicted file with two choices:
-  **Use theirs** (drop your staged change, load their version) or
-  **Keep mine** (explicitly overwrite theirs). Nothing is ever overwritten
-  silently.
+  blocked and a panel lists each conflicted file with three choices:
+  **Merge…** opens a hunk-by-hunk resolver — both versions diffed line by
+  line, each conflicting hunk resolved as *theirs*, *mine* or *both*, with
+  shared lines shown as context; **Use theirs** drops your staged change and
+  loads their version; **Keep mine** explicitly overwrites theirs. Nothing is
+  ever overwritten silently.
 - **The final ref update is atomic.** If the branch moves in the instant
   between the check and the write, GitHub rejects the commit outright
   (nothing half-written) and the editor asks you to press Commit again.

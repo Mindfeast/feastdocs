@@ -1,10 +1,20 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, effect, inject, isDevMode, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  isDevMode,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { DomSanitizer, Title, type SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
 import { GithubService } from '../../core/github.service';
 import { createPreviewRenderer } from './markdown-preview';
+import { diffLines, type DiffHunk } from './line-diff';
 
 const LOCAL_API = 'http://127.0.0.1:4271/api';
 
@@ -21,6 +31,49 @@ interface Pending {
   readonly kind: 'edit' | 'create' | 'delete';
   readonly content: string | null;
 }
+
+/** One hunk in the merge resolver, carrying the author's choice. */
+interface ResolveHunk extends DiffHunk {
+  choice: 'theirs' | 'mine' | 'both' | null;
+}
+
+/** Snippets the Insert menu can drop at the cursor. */
+const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: string }> = [
+  { label: 'Note', group: 'Admonitions', text: '\n:::note\nText.\n:::\n' },
+  { label: 'Tip', group: 'Admonitions', text: '\n:::tip\nText.\n:::\n' },
+  { label: 'Warning', group: 'Admonitions', text: '\n:::warning\nText.\n:::\n' },
+  { label: 'Danger', group: 'Admonitions', text: '\n:::danger\nText.\n:::\n' },
+  {
+    label: 'Code block',
+    group: 'Blocks',
+    text: '\n```ts title="file.ts"\n// code\n```\n',
+  },
+  {
+    label: 'Table',
+    group: 'Blocks',
+    text: '\n| Column | Column |\n| --- | --- |\n| Cell | Cell |\n',
+  },
+  {
+    label: 'Tabs',
+    group: 'Components',
+    text: '\n<fd-tabs>\n  <div tab="First">\n\nContent (keep the blank lines).\n\n  </div>\n  <div tab="Second">\n\nContent.\n\n  </div>\n</fd-tabs>\n',
+  },
+  {
+    label: 'Steps',
+    group: 'Components',
+    text: '\n<fd-steps>\n  <div step="First step">\n\nWhat to do.\n\n  </div>\n  <div step="Second step">\n\nWhat comes next.\n\n  </div>\n</fd-steps>\n',
+  },
+  {
+    label: 'API field',
+    group: 'Components',
+    text: '\n<fd-api-field name="option" type="string" default="value">\n  What it does.\n</fd-api-field>\n',
+  },
+  { label: 'Counter', group: 'Components', text: '\n<fd-counter start="0" step="1"></fd-counter>\n' },
+  { label: 'Lead paragraph', group: 'Inline', text: '\nOpening paragraph.{.lead}\n' },
+  { label: 'Callout line', group: 'Inline', text: '\nImportant line.{.callout}\n' },
+  { label: 'Link', group: 'Inline', text: '[text](./page.md)' },
+  { label: 'Image', group: 'Inline', text: '![alt text](./image.png)' },
+];
 
 /**
  * The content manager (/_editor): browse the docs tree, edit Markdown with a
@@ -83,6 +136,19 @@ export class Editor {
   /** Files someone else changed between our read and our commit attempt. */
   protected readonly conflicts = signal<readonly string[]>([]);
 
+  /** The merge resolver, open for one conflicted file at a time. */
+  protected readonly resolving = signal<{ path: string; hunks: ResolveHunk[] } | null>(null);
+  protected readonly resolveRemaining = computed(
+    () => this.resolving()?.hunks.filter((h) => h.kind === 'conflict' && h.choice === null).length ?? 0,
+  );
+
+  /** The Insert helper menu. */
+  protected readonly insertMenuOpen = signal(false);
+  protected readonly insertSnippets = INSERT_SNIPPETS;
+  protected readonly insertGroups = [...new Set(INSERT_SNIPPETS.map((s) => s.group))];
+
+  private readonly sourceArea = viewChild<ElementRef<HTMLTextAreaElement>>('source');
+
   protected readonly pendingCount = computed(() => this.pending().size);
 
   protected readonly dirty = computed(() => this.contentText() !== this.savedContent());
@@ -136,12 +202,38 @@ export class Editor {
     this.creating.set(true);
   }
 
-  /** Closes the template submenu on any click outside it. */
+  /** Closes the template and insert submenus on any click outside them. */
   protected onDocumentClick(event: MouseEvent): void {
-    if (!this.templateMenuOpen()) return;
-    if (!(event.target as HTMLElement | null)?.closest('.fd-editor__tpl')) {
+    const target = event.target as HTMLElement | null;
+    if (this.templateMenuOpen() && !target?.closest('.fd-editor__tpl')) {
       this.templateMenuOpen.set(false);
     }
+    if (this.insertMenuOpen() && !target?.closest('.fd-editor__insert')) {
+      this.insertMenuOpen.set(false);
+    }
+  }
+
+  /** Drops a snippet at the caret and puts the caret after it. */
+  protected insert(snippet: { text: string }): void {
+    this.insertMenuOpen.set(false);
+    const area = this.sourceArea()?.nativeElement;
+    if (!area) return;
+    const start = area.selectionStart ?? this.contentText().length;
+    const end = area.selectionEnd ?? start;
+    const before = this.contentText().slice(0, start);
+    const after = this.contentText().slice(end);
+
+    // Block snippets bring their own newlines; avoid piling up blank lines
+    // when the caret already sits at a line boundary.
+    let text = snippet.text;
+    if (text.startsWith('\n') && (before === '' || before.endsWith('\n'))) text = text.slice(1);
+
+    this.contentText.set(before + text + after);
+    queueMicrotask(() => {
+      area.focus();
+      const caret = start + text.length;
+      area.setSelectionRange(caret, caret);
+    });
   }
 
   /** Live preview only makes sense for markdown; other files get a notice. */
@@ -505,6 +597,73 @@ export class Editor {
       }
     }
     await this.refreshFiles();
+  }
+
+  /**
+   * "Merge…": opens the hunk-by-hunk resolver — theirs and mine diffed line
+   * by line, each conflicting hunk resolved as theirs, mine, or both.
+   */
+  protected async openResolve(path: string): Promise<void> {
+    const change = this.pending().get(path);
+    const mine = change?.content ?? '';
+    let theirs = '';
+    try {
+      const file = await this.github.readFile(this.content.site.docsDir, path);
+      theirs = file.content;
+      this.latestShas.set(path, file.sha);
+    } catch {
+      // Deleted upstream — merging against an empty file still makes sense.
+    }
+    const hunks: ResolveHunk[] = diffLines(theirs, mine).map((hunk) => ({
+      ...hunk,
+      choice: null,
+    }));
+    this.resolving.set({ path, hunks });
+  }
+
+  protected chooseHunk(index: number, choice: 'theirs' | 'mine' | 'both'): void {
+    const current = this.resolving();
+    if (!current) return;
+    const hunks = current.hunks.map((hunk, i) => (i === index ? { ...hunk, choice } : hunk));
+    this.resolving.set({ ...current, hunks });
+  }
+
+  /** Builds the merged file from the choices and stages it as the resolution. */
+  protected applyResolve(): void {
+    const current = this.resolving();
+    if (!current || this.resolveRemaining() > 0) return;
+
+    const pieces: string[] = [];
+    for (const hunk of current.hunks) {
+      if (hunk.kind === 'same') {
+        pieces.push(hunk.same);
+        continue;
+      }
+      const chosen =
+        hunk.choice === 'both'
+          ? [hunk.theirs, hunk.mine].filter((part) => part !== '').join('\n')
+          : hunk.choice === 'theirs'
+            ? hunk.theirs
+            : hunk.mine;
+      if (chosen !== '') pieces.push(chosen);
+    }
+    const merged = pieces.join('\n');
+
+    const path = current.path;
+    const wasCreate = this.pending().get(path)?.kind === 'create';
+    const existsUpstream = this.latestShas.get(path) !== undefined;
+    this.stage(path, { kind: wasCreate && !existsUpstream ? 'create' : 'edit', content: merged });
+    const now = this.latestShas.get(path);
+    if (now !== undefined) this.baseShas.set(path, now);
+    else this.baseShas.delete(path);
+    this.conflicts.set(this.conflicts().filter((c) => c !== path));
+    if (this.selected() === path) this.applyOpened(path, merged);
+    else this.status.set({ kind: 'saved', detail: `Merged ${path} — staged, ready to commit` });
+    this.resolving.set(null);
+  }
+
+  protected cancelResolve(): void {
+    this.resolving.set(null);
   }
 
   /** "Keep mine": explicitly overwrite the upstream version with the staged one. */
