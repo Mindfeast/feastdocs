@@ -108,35 +108,32 @@ Before deleting, skim this Guide and Reference — or keep them around in a
 `npm run build` produces static files in `dist/feastdocs/browser/`. Any static
 host works; the one rule is that unknown paths must fall back to `index.html`.
 
-A minimal GitHub Actions workflow that builds on every push to `main`:
+The repository ships a ready workflow at `.github/workflows/ci.yml`: it builds
+and tests every push and pull request, keeps the built site as an artifact, and
+can deploy to **Cloudflare Pages** on pushes to `main`.
 
-```yaml title=".github/workflows/docs.yml"
-name: docs
-on:
-  push:
-    branches: [main]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Full history, not a shallow clone — the build reads git log to show
-          # "last updated by" on every page. Depth 1 would lose the authors.
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci
-      - run: npm run build
-      # Hand dist/feastdocs/browser to your host of choice:
-      # GitHub Pages, nginx, S3+CloudFront, Azure Static Web Apps…
-```
+To enable the Cloudflare deploy, create the Pages project once and add two
+repository secrets (Settings → Secrets and variables → Actions):
 
-:::caution fetch-depth matters
-The author shown under each page comes from `git log`. CI checkouts are shallow
-by default (one commit), which would blank out most authors — set
-`fetch-depth: 0` as above.
+| Secret | Where it comes from |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → API tokens, with the *Cloudflare Pages — Edit* permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages (right sidebar) |
+
+Without the secrets the deploy job skips itself, so the workflow is safe to keep
+even if you deploy some other way.
+
+:::note SPA routing on Cloudflare Pages
+No extra configuration needed: the build emits no top-level `404.html`, and in
+that case Cloudflare Pages automatically serves `index.html` for unmatched
+paths — exactly what the client-side router requires.
+:::
+
+:::caution Prefer deploying from the workflow
+Cloudflare's own Git-integration builder can clone the repository shallowly,
+which blanks out the "last updated by" authors (they are read from git history
+at build time). The workflow checks out with `fetch-depth: 0`, so deploying from
+it keeps attribution intact.
 :::
 
 ## 5. Choose how people edit

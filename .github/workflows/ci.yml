@@ -1,0 +1,77 @@
+# Build and test on every push and PR; optionally deploy to Cloudflare Pages.
+#
+# Two ways to deploy, pick one:
+#
+# 1. Cloudflare Pages Git integration (dashboard-driven): connect the repo in
+#    the Cloudflare dashboard with build command `npm run build` and output
+#    directory `dist/feastdocs/browser`. This workflow then just provides CI
+#    checks — the deploy job below stays skipped because the secrets are absent.
+#    Caveat: Cloudflare's own builder may clone shallowly, which can blank out
+#    the "last updated by" authors (they come from git history at build time).
+#
+# 2. Deploy from this workflow (recommended — guarantees full git history):
+#    create a Pages project once (`wrangler pages project create feastdocs`),
+#    then add two repository secrets:
+#      CLOUDFLARE_API_TOKEN   (API token with the "Cloudflare Pages — Edit" permission)
+#      CLOUDFLARE_ACCOUNT_ID  (dashboard → Workers & Pages → account ID)
+#    The deploy job activates by itself once they exist.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history — "last updated by" on every page is read from git log
+          # at build time; a shallow clone would blank out most authors.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/feastdocs/browser
+          retention-days: 7
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      # Job-level `if` cannot read secrets, so the gate lives in a step: when
+      # the Cloudflare secrets are not configured, every later step is skipped
+      # and the job succeeds as a no-op.
+      - name: Check Cloudflare secrets
+        id: cf
+        run: echo "configured=${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download site
+        if: steps.cf.outputs.configured == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.cf.outputs.configured == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=feastdocs --branch=main

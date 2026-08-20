@@ -339,26 +339,14 @@ location / {
 
 Subpath hosting: `ng build --base-href /docs/`.
 
-```yaml
-# .github/workflows/docs.yml — minimal CI
-name: docs
-on:
-  push:
-    branches: [main]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # full history — author attribution needs it
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci
-      - run: npm run build
-      # deliver dist/feastdocs/browser to your host
-```
+A ready CI workflow ships at [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+build + test on every push and PR, and an optional **Cloudflare Pages** deploy on
+`main` that activates once the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+repository secrets exist. It checks out with `fetch-depth: 0` so author
+attribution survives (Cloudflare's own Git-integration builder may clone
+shallowly — deploying from the workflow avoids that). Cloudflare Pages serves
+`index.html` for unmatched paths automatically when no `404.html` is present, so
+SPA routing needs no extra config.
 
 The app self-heals after redeploys: if a browser tab from an older build hits a
 renamed chunk, it reloads itself once and resyncs.
