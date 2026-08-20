@@ -89,6 +89,25 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages project create ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'feastdocs' }} --production-branch=main
 
+      # "Sign in with GitHub" needs two variables on the Pages project. Syncing
+      # them from GitHub secrets guarantees they land on the right project and
+      # environment — no dashboard hunting. Optional: skipped when unset.
+      - name: Sync OAuth secrets to the Pages project
+        if: steps.cf.outputs.configured == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OAUTH_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
+          OAUTH_SECRET: ${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
+          PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'feastdocs' }}
+        run: |
+          if [ -n "$OAUTH_ID" ] && [ -n "$OAUTH_SECRET" ]; then
+            printf '%s' "$OAUTH_ID" | npx --yes wrangler@4 pages secret put GITHUB_CLIENT_ID --project-name "$PROJECT"
+            printf '%s' "$OAUTH_SECRET" | npx --yes wrangler@4 pages secret put GITHUB_CLIENT_SECRET --project-name "$PROJECT"
+          else
+            echo "OAuth secrets not set in GitHub — skipping (the dashboard route works too)."
+          fi
+
       - name: Deploy to Cloudflare Pages
         if: steps.cf.outputs.configured == 'true'
         uses: cloudflare/wrangler-action@v3

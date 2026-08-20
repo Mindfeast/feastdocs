@@ -150,18 +150,64 @@
 
       <ul class="fd-editor__list">
         @for (file of visibleFiles(); track file) {
-          <li>
+          <li class="fd-editor__row">
             <button
               type="button"
               class="fd-editor__file"
               [class.fd-editor__file--active]="file === selected()"
+              [class.fd-editor__file--deleted]="pendingKind(file) === 'delete'"
               (click)="open(file)"
             >
               {{ file }}
+              @switch (pendingKind(file)) {
+                @case ('edit') {
+                  <span class="fd-editor__badge fd-editor__badge--edit" title="Staged edit">M</span>
+                }
+                @case ('create') {
+                  <span class="fd-editor__badge fd-editor__badge--create" title="Staged new file">A</span>
+                }
+                @case ('delete') {
+                  <span class="fd-editor__badge fd-editor__badge--delete" title="Staged deletion">D</span>
+                }
+              }
             </button>
+            @if (pendingKind(file) !== null && mode() === 'github') {
+              <button
+                type="button"
+                class="fd-editor__rowaction"
+                title="Undo staged change"
+                (click)="unstage(file, $event)"
+              >
+                ↺
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="fd-editor__rowaction fd-editor__rowaction--danger"
+                [attr.title]="mode() === 'github' ? 'Stage deletion' : 'Delete file'"
+                (click)="remove(file, $event)"
+              >
+                ✕
+              </button>
+            }
           </li>
         }
       </ul>
+
+      @if (mode() === 'github' && pendingCount() > 0) {
+        <div class="fd-editor__commitbar">
+          <input
+            type="text"
+            placeholder="Commit message (optional)"
+            aria-label="Commit message"
+            [value]="commitMessage()"
+            (input)="commitMessage.set($any($event.target).value)"
+          />
+          <button type="button" class="fd-button" [disabled]="readOnly()" (click)="commitAll()">
+            Commit {{ pendingCount() }} change{{ pendingCount() === 1 ? '' : 's' }}
+          </button>
+        </div>
+      }
     </aside>
 
     <section class="fd-editor__work">
@@ -176,7 +222,7 @@
         <span class="fd-editor__status" aria-live="polite">
           @switch (status().kind) {
             @case ('saving') {
-              {{ mode() === 'github' ? 'Committing…' : 'Saving…' }}
+              {{ mode() === 'github' ? 'Working…' : 'Saving…' }}
             }
             @case ('saved') {
               {{ $any(status()).detail }}
@@ -198,7 +244,7 @@
             [attr.title]="readOnly() ? 'No write access to the repository' : null"
             (click)="save()"
           >
-            {{ mode() === 'github' ? 'Commit' : 'Save' }}
+            {{ mode() === 'github' ? 'Stage' : 'Save' }}
             <kbd>Ctrl S</kbd>
           </button>
         </span>

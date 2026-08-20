@@ -19,7 +19,7 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
   const server = http.createServer(async (req, res) => {
     // The app runs on a different port (4200), so answer CORS preflights.
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') {
       res.writeHead(204).end();
@@ -38,6 +38,15 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
         const file = resolveSafe(docsRoot, url.searchParams.get('path'));
         const content = await fs.readFile(file, 'utf8');
         return json(res, 200, { path: url.searchParams.get('path'), content });
+      }
+      if (url.pathname === '/api/file' && req.method === 'DELETE') {
+        const relative = url.searchParams.get('path') ?? '';
+        const file = resolveSafe(docsRoot, relative);
+        if (!/\.(md|markdown|html|scss)$/i.test(file)) {
+          return json(res, 400, { error: 'Only .md, .html and .scss files can be deleted.' });
+        }
+        await fs.rm(file);
+        return json(res, 200, { deleted: relative });
       }
       if (url.pathname === '/api/file' && req.method === 'PUT') {
         const body = JSON.parse(await readBody(req));

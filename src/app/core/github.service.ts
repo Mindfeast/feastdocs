@@ -18,6 +18,12 @@ export interface GithubFile {
   readonly sha: string;
 }
 
+/** One staged change inside a batched commit. `content: null` = delete. */
+export interface BatchChange {
+  readonly path: string;
+  readonly content: string | null;
+}
+
 /**
  * GitHub backend for the content manager: commits straight to the configured
  * repository as the connected user, so authorship lands in git history — the
@@ -134,6 +140,41 @@ export class GithubService {
   }
 
   /**
+   * Commits any number of file changes — edits, creations, deletions — as ONE
+   * commit on the branch, via the Git Data API: build a tree on top of the
+   * current head, wrap it in a commit, advance the ref. The token's user is
+   * recorded as author, exactly like the single-file path.
+   */
+  async commitBatch(docsDir: string, changes: readonly BatchChange[], message: string): Promise<void> {
+    const ref = await this.get<{ object: { sha: string } }>(
+      `/repos/${this.repo}/git/ref/heads/${encodeURIComponent(this.branch)}`,
+    );
+    const headSha = ref.object.sha;
+    const head = await this.get<{ tree: { sha: string } }>(
+      `/repos/${this.repo}/git/commits/${headSha}`,
+    );
+
+    const tree = await this.send<{ sha: string }>('POST', `/repos/${this.repo}/git/trees`, {
+      base_tree: head.tree.sha,
+      tree: changes.map((change) =>
+        change.content === null
+          ? { path: `${docsDir}/${change.path}`, mode: '100644', type: 'blob', sha: null }
+          : { path: `${docsDir}/${change.path}`, mode: '100644', type: 'blob', content: change.content },
+      ),
+    });
+
+    const commit = await this.send<{ sha: string }>('POST', `/repos/${this.repo}/git/commits`, {
+      message,
+      tree: tree.sha,
+      parents: [headSha],
+    });
+
+    await this.send('PATCH', `/repos/${this.repo}/git/refs/heads/${encodeURIComponent(this.branch)}`, {
+      sha: commit.sha,
+    });
+  }
+
+  /**
    * The repo endpoint reports the caller's own permissions. A 404 means the
    * token cannot even see the repository (fine-grained tokens scope reads
    * too) — treated as no access rather than an error.
@@ -156,6 +197,12 @@ export class GithubService {
 
   private get<T>(path: string): Promise<T> {
     return firstValueFrom(this.http.get<T>(`${API}${path}`, { headers: this.headers() }));
+  }
+
+  private send<T>(method: 'POST' | 'PATCH', path: string, body: unknown): Promise<T> {
+    return firstValueFrom(
+      this.http.request<T>(method, `${API}${path}`, { body, headers: this.headers() }),
+    );
   }
 
   private headers(): HttpHeaders {

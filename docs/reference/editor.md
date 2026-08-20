@@ -13,9 +13,14 @@ and a live Markdown preview on the right.
 ## What it can do
 
 - **Edit** any `.md`, `.html` or `.scss` file under `docs/`, with
-  <kbd>Ctrl</kbd>+<kbd>S</kbd> to save
+  <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (GitHub)
 - **Create** pages — type a path like `guide/deploying.md` and it is scaffolded
   with front matter, in the right section
+- **Delete** files — the ✕ on each file row (deletes immediately in local mode,
+  stages the deletion in GitHub mode)
+- **Batch commits** — in GitHub mode every save, creation and deletion is
+  *staged* (`M`/`A`/`D` badges in the file list, ↺ to undo one); the commit bar
+  publishes **all staged changes as a single commit**, with an optional message
 - **Preview while typing** — the right pane re-renders on every keystroke
 - **Jump to the real page** — the “View page” link opens the route the file
   publishes to
@@ -31,7 +36,7 @@ The editor picks its backend by where it is running:
 | Backend | When | What Save does |
 | --- | --- | --- |
 | **Local** | `npm start` is running (the file API on `127.0.0.1:4271`) | Writes the file to disk; you commit and push from your own editor or terminal, already authenticated with git |
-| **GitHub** | `github.repo` is set in `feastdocs.config.mjs` — the mode for the deployed site | Commits to the configured branch through the GitHub API, **authored by the connected GitHub user** |
+| **GitHub** | `github.repo` is set in `feastdocs.config.mjs` — the mode for the deployed site | Stages the change; **Commit** publishes everything staged as one commit, **authored by the connected GitHub user** |
 
 In development with both available, a Local/GitHub switch appears above the file
 list. Without either, the page explains what to set up instead of failing.

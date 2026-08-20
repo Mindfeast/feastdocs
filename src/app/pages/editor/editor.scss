@@ -264,10 +264,101 @@
 }
 
 .fd-editor__list {
+  flex: 1;
   margin: 0;
   padding: 0;
   list-style: none;
   overflow-y: auto;
+}
+
+.fd-editor__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &:hover .fd-editor__rowaction {
+    opacity: 1;
+  }
+}
+
+.fd-editor__rowaction {
+  position: absolute;
+  inset-inline-end: 0.3rem;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--fd-surface-hover);
+  color: var(--fd-text-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 100ms ease;
+
+  &:hover {
+    color: var(--fd-text-strong);
+  }
+}
+
+.fd-editor__rowaction--danger:hover {
+  background: var(--fd-tone-danger);
+  color: #fff;
+}
+
+.fd-editor__badge {
+  margin-inline-start: 0.4rem;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.fd-editor__badge--edit {
+  background: var(--fd-accent-soft);
+  color: var(--fd-accent-strong);
+}
+
+.fd-editor__badge--create {
+  background: rgb(60 196 144 / 18%);
+  color: var(--fd-tone-success);
+}
+
+.fd-editor__badge--delete {
+  background: rgb(240 122 113 / 18%);
+  color: var(--fd-tone-danger);
+}
+
+.fd-editor__file--deleted {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.fd-editor__commitbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.35rem 0.2rem;
+  border-top: 1px solid var(--fd-border);
+
+  input {
+    padding: 0.4rem 0.55rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm);
+    background: var(--fd-surface-sunken);
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+
+    &:focus-visible {
+      border-color: var(--fd-accent);
+      outline: none;
+    }
+  }
+
+  .fd-button {
+    justify-content: center;
+  }
 }
 
 .fd-editor__file {
