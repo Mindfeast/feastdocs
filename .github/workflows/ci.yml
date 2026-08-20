@@ -68,10 +68,31 @@ jobs:
           name: site
           path: site
 
+      # Functions (e.g. the GitHub OAuth exchange) deploy alongside the assets.
+      - name: Include Pages Functions
+        if: steps.cf.outputs.configured == 'true'
+        uses: actions/checkout@v4
+        with:
+          path: repo
+      - name: Stage functions next to the site
+        if: steps.cf.outputs.configured == 'true'
+        run: cp -r repo/functions functions
+
+      # Project name: repo variable CLOUDFLARE_PAGES_PROJECT, or "feastdocs".
+      # Created on first run if it does not exist yet (harmless when it does).
+      - name: Ensure the Pages project exists
+        if: steps.cf.outputs.configured == 'true'
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'feastdocs' }} --production-branch=main
+
       - name: Deploy to Cloudflare Pages
         if: steps.cf.outputs.configured == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=feastdocs --branch=main
+          command: pages deploy site --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'feastdocs' }} --branch=main
