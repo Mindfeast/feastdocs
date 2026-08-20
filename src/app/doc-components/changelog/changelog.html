@@ -1,5 +1,7 @@
 @if (!loaded()) {
   <p class="fd-changelog__loading">Loading history…</p>
+} @else if (error(); as message) {
+  <p class="fd-changelog__loading">{{ message }}</p>
 } @else if (months().length === 0) {
   <p class="fd-changelog__loading">
     No history available — the build could not read the repository's git log.

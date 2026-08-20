@@ -36,6 +36,70 @@ Renders as:
   Only commits that touched a file under the docs folder — content changes
   without the framework noise. Present-as-attribute means true.
 </fd-api-field>
+<fd-api-field name="repo" type="string">
+  Another repository, as <code>owner/name</code>. It must be listed in
+  <code>changelog.repos</code>. Unset means this repository.
+</fd-api-field>
+
+## Other repositories
+
+One docs site often covers several products, each with its own repository. List
+them in `changelog.repos` and the build collects each one from the GitHub API:
+
+```js
+// feastdocs.config.mjs
+changelog: {
+  limit: 150,
+  repos: ['acme/checkout-api', { repo: 'acme/mobile-app', branch: 'release' }],
+},
+```
+
+Then point a page at one:
+
+```html
+<fd-changelog repo="acme/checkout-api" limit="30"></fd-changelog>
+```
+
+A repository that is not in `changelog.repos` renders a notice naming it,
+rather than an empty page.
+
+### Private repositories
+
+They work the same way, with a token in the **build environment**:
+
+<fd-steps>
+  <div step="Create a token">
+
+A fine-grained personal access token with **Contents: Read-only** on the
+repositories you list, or a classic token with the `repo` scope.
+
+  </div>
+  <div step="Store it as a secret">
+
+Cloudflare Pages → Settings → Environment variables, as an **encrypted**
+variable named `GITHUB_TOKEN` (`GH_TOKEN` also works). On GitHub Actions, a
+repository secret passed as `env:`. Never put it in `feastdocs.config.mjs` —
+that file is committed.
+
+  </div>
+  <div step="Build">
+
+The token is read at build time only. It is not shipped to the browser and does
+not appear in the generated bundle.
+
+  </div>
+</fd-steps>
+
+:::warning Private history becomes public
+The commits are baked into the deployed page. Everything collected — subjects,
+bodies and author names — is readable by anyone who can open the site, even
+though the repository itself stays private. Only list private repositories
+whose commit messages you would publish.
+:::
+
+Setting a token is worth it for public repositories too: anonymous GitHub API
+calls are limited to 60 per hour per IP, shared with every other build on the
+same host.
 
 ## How much history
 

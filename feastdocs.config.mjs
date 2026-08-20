@@ -107,10 +107,25 @@ export default {
 
   changelog: {
     /**
-     * How many commits the build reads from `git log` for <fd-changelog>.
-     * The data is a lazy chunk, so a larger number costs nothing on pages
-     * that do not use the component.
+     * How many commits the build reads for <fd-changelog>. The data is a lazy
+     * chunk, so a larger number costs nothing on pages that do not use the
+     * component.
      */
     limit: 150,
+
+    /**
+     * Other repositories to collect history for, so one docs site can carry a
+     * changelog per product. Each entry is 'owner/name' (or
+     * `{ repo, branch }`), read from the GitHub API at build time and used as
+     * `<fd-changelog repo="owner/name">`.
+     *
+     * Private repositories work the same way, but need a token in the build
+     * environment (GITHUB_TOKEN or GH_TOKEN) with read access to them. Put it
+     * in the host's secret store — never in this file.
+     *
+     * Whatever is listed here ends up publicly readable on the deployed page,
+     * including commit messages and author names.
+     */
+    repos: [],
   },
 };

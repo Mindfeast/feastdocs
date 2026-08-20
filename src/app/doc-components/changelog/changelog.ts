@@ -33,21 +33,43 @@ export class DocChangelog {
   @Input({ transform: numberAttribute }) limit = 0;
   /** Only commits that touched the docs folder — content updates, not code. */
   @Input({ alias: 'docs-only', transform: booleanAttribute }) docsOnly = false;
+  /**
+   * Another repository's history, as 'owner/name'. It must be listed in
+   * `changelog.repos` so the build collects it. Unset means this repository.
+   */
+  @Input() repo: string | null = null;
 
   protected readonly months = signal<readonly Month[]>([]);
   protected readonly loaded = signal(false);
-  protected readonly repoUrl =
-    SITE.github.repo === null ? null : `https://github.com/${SITE.github.repo}`;
+  protected readonly error = signal<string | null>(null);
 
   constructor() {
     void this.load();
   }
 
   private async load(): Promise<void> {
-    const { CHANGELOG } = await import('../../generated/changelog');
+    const { CHANGELOG, CHANGELOG_BY_REPO } = await import('../../generated/changelog');
+
+    let source: readonly ChangelogEntry[];
+    if (this.repo === null) {
+      source = CHANGELOG;
+    } else {
+      const collected = CHANGELOG_BY_REPO[this.repo];
+      if (collected === undefined) {
+        // An authoring mistake, not a runtime failure — say which repo and how
+        // to fix it rather than rendering an empty page.
+        this.error.set(
+          `No history collected for "${this.repo}". Add it to changelog.repos in the site config.`,
+        );
+        this.loaded.set(true);
+        return;
+      }
+      source = collected;
+    }
+
     let entries: readonly ChangelogEntry[] = this.docsOnly
-      ? CHANGELOG.filter((entry) => entry.touchesDocs !== false)
-      : CHANGELOG;
+      ? source.filter((entry) => entry.touchesDocs !== false)
+      : source;
     if (this.limit > 0) entries = entries.slice(0, this.limit);
 
     const formatter = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' });
@@ -68,6 +90,7 @@ export class DocChangelog {
   }
 
   protected commitUrl(hash: string): string | null {
-    return this.repoUrl === null ? null : `${this.repoUrl}/commit/${hash}`;
+    const repo = this.repo ?? SITE.github.repo;
+    return repo === null ? null : `https://github.com/${repo}/commit/${hash}`;
   }
 }

@@ -18,7 +18,7 @@ const DEFAULTS = {
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },
   editor: { invite: null },
-  changelog: { limit: 150 },
+  changelog: { limit: 150, repos: [] },
 };
 
 /**

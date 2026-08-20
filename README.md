@@ -311,10 +311,19 @@ CHANGELOG file. The build collects the last `changelog.limit` commits (default
 and whether the commit touched `docs/`.
 
 ```html
-<fd-changelog></fd-changelog>                 <!-- everything -->
-<fd-changelog limit="20"></fd-changelog>      <!-- most recent 20 -->
-<fd-changelog docs-only></fd-changelog>       <!-- content changes only -->
+<fd-changelog></fd-changelog>                    <!-- everything -->
+<fd-changelog limit="20"></fd-changelog>         <!-- most recent 20 -->
+<fd-changelog docs-only></fd-changelog>          <!-- content changes only -->
+<fd-changelog repo="acme/api"></fd-changelog>    <!-- another repository -->
 ```
+
+**Several products, several repositories.** List them in `changelog.repos`
+(`['acme/api', { repo: 'acme/app', branch: 'release' }]`) and the build reads
+each from the GitHub API, so one docs site can carry a changelog per product.
+Private repositories work too — put a token with read access in the build
+environment as `GITHUB_TOKEN`, in the host's secret store, never in the config
+file. Note that whatever you collect becomes publicly readable on the deployed
+page, commit messages and author names included.
 
 Commits are grouped by month. A [Conventional Commits](https://www.conventionalcommits.org)
 prefix (`feat:`, `fix:`, `docs:`) becomes a badge and is stripped from the
@@ -347,6 +356,7 @@ Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
 | `github.repo` | string or null | `owner/name` — enables web editing |
 | `github.branch` | string | Branch web edits commit to (default `main`) |
 | `changelog.limit` | number | Commits read from `git log` for `<fd-changelog>` (default `150`) |
+| `changelog.repos` | array | Other repositories to collect history for, as `owner/name` or `{repo, branch}` |
 
 ## Build warnings
 
