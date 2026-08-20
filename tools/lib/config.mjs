@@ -13,6 +13,7 @@ const DEFAULTS = {
   footer: { text: '', links: [] },
   theme: { defaultMode: 'system', accent: '#f0812c', accentDark: '#ff9d52' },
   sidebar: { autoCollapse: false },
+  socialImage: null,
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },

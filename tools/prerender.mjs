@@ -85,8 +85,23 @@ function renderPage(shell, doc, config, siteUrl) {
     `<meta property="og:type" content="article" />`,
     `<meta property="og:url" content="${escapeAttr(url)}" />`,
     `<meta property="og:site_name" content="${escapeAttr(config.title)}" />`,
-    `<meta name="twitter:card" content="summary" />`,
-  ].join('\n    ');
+  ];
+
+  // Without an image, a shared link renders as a bare text card on LinkedIn,
+  // Slack and X. With one, the large-summary layout applies.
+  if (config.socialImage) {
+    const image = `${siteUrl}/${String(config.socialImage).replace(/^\/+/, '')}`;
+    meta.push(
+      `<meta property="og:image" content="${escapeAttr(image)}" />`,
+      `<meta property="og:image:alt" content="${escapeAttr(config.title)}" />`,
+      `<meta name="twitter:image" content="${escapeAttr(image)}" />`,
+      `<meta name="twitter:card" content="summary_large_image" />`,
+    );
+  } else {
+    meta.push(`<meta name="twitter:card" content="summary" />`);
+  }
+
+  const metaTags = meta.join('\n    ');
 
   // The static article inherits the shipped stylesheet (fd-markdown etc.), so
   // even the no-JS rendering is presentable. Angular clears it on bootstrap.
@@ -102,7 +117,7 @@ function renderPage(shell, doc, config, siteUrl) {
       /<meta name="description"[^>]*\/?>/,
       `<meta name="description" content="${escapeAttr(description)}" />`,
     )
-    .replace('</head>', `    ${meta}\n  </head>`)
+    .replace('</head>', `    ${metaTags}\n  </head>`)
     .replace(/<app-root><\/app-root>/, `<app-root>${article}</app-root>`);
 }
 

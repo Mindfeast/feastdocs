@@ -341,6 +341,7 @@ Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
 | `footer.text` / `footer.links` | string / array | Footer content |
 | `theme.defaultMode` | `'dark'`, `'light'`, `'system'` | First-visit theme |
 | `theme.accent` / `theme.accentDark` | CSS colour | Accent per mode |
+| `socialImage` | string or null | 1200×630 PNG/JPG in `public/` used as `og:image` for link previews |
 | `editUrl` | string or null | Base URL for "Edit this page" links |
 | `showLastUpdated` | boolean | Show date + author in page footers |
 | `github.repo` | string or null | `owner/name` — enables web editing |

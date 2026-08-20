@@ -23,6 +23,13 @@ export default {
   /** Path to a logo inside `public/`, or null for a text-only navbar. */
   logo: 'logo.svg',
 
+  /**
+   * Preview image for link shares (LinkedIn, Slack, X, WhatsApp). A file in
+   * `public/`, 1200×630, PNG or JPG — SVG is not supported by any of them.
+   * null falls back to a text-only card.
+   */
+  socialImage: 'og-image.png',
+
   /** Folder holding your documentation sources, relative to the project root. */
   docsDir: 'docs',
 

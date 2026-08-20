@@ -126,6 +126,22 @@ a quiet icon. A **public demo** is the case for an invitation — set
 `invite: 'Try it now'` (any wording, in any language) and first-time visitors
 get a labelled link that retires itself after they use it.
 
+## Link previews
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `socialImage` | string \| null | Image in `public/` used as `og:image`. `null` gives a text-only card |
+
+LinkedIn, Slack, X and WhatsApp all read Open Graph tags when someone shares a
+link. Without an image they render a bare text card, which is far less likely to
+be clicked. Point `socialImage` at a **1200×630 PNG or JPG** in `public/` — none
+of these platforms render SVG — and the build emits `og:image`, `og:image:alt`,
+`twitter:image` and upgrades the Twitter card to `summary_large_image`.
+
+The URL is absolute, built from `siteUrl`, so link previews only work once
+`siteUrl` is set. Platforms cache aggressively: after changing the image, force
+a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
+
 ## Changelog
 
 | Option | Type | Effect |
