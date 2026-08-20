@@ -1,3 +1,5 @@
+<p align="center"><img src="public/logo.svg" width="120" alt="FeastDocs"></p>
+
 # FeastDocs
 
 A documentation framework built on Angular 21. Write **Markdown, HTML and SCSS**

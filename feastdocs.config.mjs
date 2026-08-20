@@ -14,7 +14,7 @@ export default {
   tagline: 'Documentation that lives next to the code.',
 
   /** Path to a logo inside `public/`, or null for a text-only navbar. */
-  logo: null,
+  logo: 'logo.svg',
 
   /** Folder holding your documentation sources, relative to the project root. */
   docsDir: 'docs',
