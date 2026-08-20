@@ -154,6 +154,13 @@
   text-decoration: none;
 }
 
+// The GitHub mark is a filled glyph; the shared icon-button styling strokes
+// its icons, which would draw an outline around every letterform.
+.fd-navbar__actions a[href*='github.com'] svg {
+  fill: currentColor;
+  stroke: none;
+}
+
 // The invitation (see SiteConfig.editor.invite): wide enough for a label,
 // tinted just enough to catch the eye, never louder than the accent already
 // present in the navbar. Retires itself once the reader opens the editor.

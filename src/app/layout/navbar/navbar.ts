@@ -21,6 +21,12 @@ export class Navbar {
   private readonly router = inject(Router);
 
   protected readonly site = this.content.site;
+
+  /** Source repository, derived from github.repo. Null hides the link. */
+  protected readonly repoUrl =
+    this.content.site.github.repo === null
+      ? null
+      : `https://github.com/${this.content.site.github.repo}`;
   protected readonly sections = this.content.sections;
 
   private readonly currentSlug = toSignal(

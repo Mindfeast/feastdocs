@@ -7,10 +7,11 @@ import { ThemeService } from './core/theme.service';
 import { UiStateService } from './core/ui-state.service';
 import { Navbar } from './layout/navbar/navbar';
 import { Sidebar } from './layout/sidebar/sidebar';
+import { Footer } from './layout/footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Sidebar],
+  imports: [RouterOutlet, Navbar, Sidebar, Footer],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
