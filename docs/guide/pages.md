@@ -83,6 +83,30 @@ build prints a warning if such a file appears by other means. Even five levels
 is a lot of clicking — prefer splitting into another section before reaching
 for the last one.
 
+## Category landing pages
+
+A folder becomes a category in the sidebar. Give it an `index.md` and that page
+becomes the category's own link — the reader can click the category itself, not
+only the pages under it.
+
+Without an `index.md`, the build generates that landing page for you: it lists
+everything directly inside as cards, with each page's description, and a page
+count for sub-categories. Nothing to configure, and a real `index.md` always
+wins.
+
+You can place the same cards on a page you wrote yourself:
+
+```html
+<!-- Everything inside the current category -->
+<fd-category-index></fd-category-index>
+
+<!-- Or a specific one -->
+<fd-category-index for="guide/advanced"></fd-category-index>
+```
+
+Generated landing pages carry no "Edit this page" link, since there is no file
+behind them.
+
 ## Ordering
 
 Pages sort by `sidebar_position` (ascending), then alphabetically. Leave gaps of 10

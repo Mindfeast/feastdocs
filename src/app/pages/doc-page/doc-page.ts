@@ -79,7 +79,9 @@ export class DocPage {
 
   protected readonly editLink = computed(() => {
     const doc = this.doc();
-    if (!doc || !this.site.editUrl) return null;
+    // A generated page (a category index with no index.md) has no source file
+    // to edit, and reports an empty path.
+    if (!doc || !this.site.editUrl || !doc.sourcePath) return null;
     return `${this.site.editUrl.replace(/\/?$/, '/')}${doc.sourcePath}`;
   });
 

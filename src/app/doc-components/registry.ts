@@ -7,6 +7,7 @@ import { DocApiField } from './api-field/api-field';
 import { DocChangelog } from './changelog/changelog';
 import { DocChangelogMonths } from './changelog-months/changelog-months';
 import { DocChangelogRepos } from './changelog-repos/changelog-repos';
+import { DocCategoryIndex } from './category-index/category-index';
 
 /**
  * Angular components that documentation authors can use directly in Markdown
@@ -25,6 +26,7 @@ const DOC_ELEMENTS: ReadonlyArray<{ tag: string; component: Type<unknown> }> = [
   { tag: 'fd-changelog', component: DocChangelog },
   { tag: 'fd-changelog-months', component: DocChangelogMonths },
   { tag: 'fd-changelog-repos', component: DocChangelogRepos },
+  { tag: 'fd-category-index', component: DocCategoryIndex },
 ];
 
 /** Idempotent: registering the same tag twice throws, so check first. */

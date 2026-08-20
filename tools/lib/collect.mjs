@@ -86,7 +86,17 @@ export async function collectDocs(config) {
     readJsonSidecars(docsRoot, '*/_section.json'),
   ]);
 
-  const sections = buildSections(pages, categories, sectionMeta);
+  const generatedIndexes = [];
+  const sections = buildSections(pages, categories, sectionMeta, generatedIndexes);
+
+  for (const category of generatedIndexes) {
+    // A real index.md always wins; this only fills the gap.
+    if (bySlug.has(category.slug)) continue;
+    const page = buildCategoryIndex(category, pages);
+    pages.push(page);
+    bySlug.set(page.slug, page);
+  }
+
   linkNeighbours(pages, sections);
 
   const assets = await fg(['**/*'], {
@@ -96,6 +106,49 @@ export async function collectDocs(config) {
   }).then((all) => all.filter((f) => !NON_ASSET.test(f)).map((f) => f.split(path.sep).join('/')));
 
   return { docs: pages, sections, assets, warnings };
+}
+
+/**
+ * Landing page for a category that has no index.md, listing what is inside as
+ * cards. Rendering is left to <fd-category-index>, which reads the generated
+ * sidebar tree at runtime — so the cards stay correct as pages are added
+ * without this page needing to know anything about them.
+ *
+ * `sourcePath` is empty on purpose: there is no file to edit, so the page
+ * footer's edit link is suppressed and the content manager's tree skips it.
+ */
+function buildCategoryIndex(category, pages) {
+  const prefix = `${category.slug}/`;
+  const children = pages.filter((doc) => doc.slug.startsWith(prefix));
+  // Newest child change stands in for the category's own date.
+  const lastUpdated = children
+    .map((doc) => doc.lastUpdated)
+    .sort()
+    .at(-1);
+
+  return {
+    slug: category.slug,
+    section: category.slug.split('/')[0],
+    title: category.label,
+    description: '',
+    sidebarLabel: category.label,
+    sidebarPosition: 999,
+    hasExplicitPosition: false,
+    hidden: false,
+    draft: false,
+    showSidebar: true,
+    tags: [],
+    keywords: [],
+    sourcePath: '',
+    lastUpdated: lastUpdated ?? new Date(0).toISOString(),
+    lastAuthor: null,
+    showToc: false,
+    headings: [],
+    html: `<fd-category-index for="${category.slug}"></fd-category-index>`,
+    css: '',
+    prev: null,
+    next: null,
+  };
 }
 
 async function buildDoc(file, { renderer, docsRoot, warn, gitMeta }) {
@@ -245,7 +298,7 @@ async function readJsonSidecars(docsRoot, glob) {
 }
 
 /** One section per top-level folder, each with its own sidebar tree. */
-function buildSections(docs, categories, sectionMeta) {
+function buildSections(docs, categories, sectionMeta, generatedIndexes = []) {
   const byFolder = new Map();
   for (const doc of docs) {
     if (doc.section === null) continue;
@@ -256,7 +309,7 @@ function buildSections(docs, categories, sectionMeta) {
   const sections = [];
   for (const [folder, members] of byFolder) {
     const meta = sectionMeta.get(folder) ?? {};
-    const items = buildTree(members, categories, folder);
+    const items = buildTree(members, categories, folder, generatedIndexes);
     const order = flattenSidebar(items);
     // The section's own index page is its landing; without one, the first page is.
     const landing = members.find((doc) => doc.slug === folder)?.slug ?? order[0];
@@ -273,12 +326,13 @@ function buildSections(docs, categories, sectionMeta) {
   }
 
   return sections.sort(
-    (a, b) => a.position - b.position || a.label.localeCompare(b.label, undefined, { numeric: true }),
+    (a, b) =>
+      a.position - b.position || a.label.localeCompare(b.label, undefined, { numeric: true }),
   );
 }
 
 /** Turns one section's pages into its nested sidebar tree. */
-function buildTree(docs, categories, sectionFolder) {
+function buildTree(docs, categories, sectionFolder, generatedIndexes = []) {
   const root = { items: [], children: new Map(), indexDoc: null };
   const prefix = `${sectionFolder}/`;
 
@@ -324,13 +378,23 @@ function buildTree(docs, categories, sectionFolder) {
     for (const [segment, child] of node.children) {
       const childPath = `${dirPath}/${segment}`;
       const meta = categories.get(childPath) ?? {};
+      const label = (meta.label ?? child.indexDoc?.sidebarLabel ?? humanize(segment)).toString();
+      const items_ = serialize(child, childPath);
+
+      // A category with no index.md has nothing to land on: clicking it only
+      // expands the sidebar. Claim its folder route and note it, so the caller
+      // can give it a page listing what is inside.
+      if (child.indexDoc === null && items_.length > 0) {
+        generatedIndexes.push({ slug: childPath, label, count: items_.length });
+      }
+
       items.push({
         type: 'category',
-        label: (meta.label ?? child.indexDoc?.sidebarLabel ?? humanize(segment)).toString(),
+        label,
         position: toNumber(meta.position ?? child.indexDoc?.sidebarPosition, 999),
         collapsed: meta.collapsed === true,
-        slug: child.indexDoc ? child.indexDoc.slug : null,
-        items: serialize(child, childPath),
+        slug: child.indexDoc ? child.indexDoc.slug : childPath,
+        items: items_,
       });
     }
 

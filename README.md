@@ -223,7 +223,15 @@ Built-ins:
 
 <!-- Cards linking to each repository's changelog -->
 <fd-changelog-repos></fd-changelog-repos>
+
+<!-- Cards for everything inside a category -->
+<fd-category-index></fd-category-index>
 ```
+
+**Category landing pages.** A folder with an `index.md` uses it as the
+category's own link. Without one, the build generates a landing page listing
+what is inside as cards — so a category is never a sidebar entry that cannot be
+opened. `<fd-category-index>` renders the same cards on any page you write.
 
 Adding your own: build a standalone component under `src/app/doc-components/`,
 add one line to `registry.ts` (`{ tag: 'fd-chart', component: DocChart }`), use

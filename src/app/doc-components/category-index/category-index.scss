@@ -1,0 +1,47 @@
+.fd-catindex {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.85rem;
+  margin: 1.5rem 0;
+}
+
+.fd-catindex__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  color: var(--fd-text);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+
+  &:not(.fd-catindex__card--plain):hover {
+    border-color: color-mix(in srgb, var(--fd-accent) 55%, transparent);
+    background: var(--fd-surface-strong);
+
+    .fd-catindex__label {
+      color: var(--fd-accent-strong);
+    }
+  }
+}
+
+.fd-catindex__label {
+  font-size: 0.98rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.fd-catindex__desc {
+  color: var(--fd-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.fd-catindex__meta {
+  color: var(--fd-text-subtle);
+  font-size: 0.76rem;
+}

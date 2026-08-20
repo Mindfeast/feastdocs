@@ -1,0 +1,28 @@
+@if (cards().length > 0) {
+  <div class="fd-catindex">
+    @for (card of cards(); track card.label) {
+      @if (card.route) {
+        <a class="fd-catindex__card" [routerLink]="card.route">
+          <span class="fd-catindex__label">{{ card.label }}</span>
+          @if (card.description) {
+            <span class="fd-catindex__desc">{{ card.description }}</span>
+          }
+          @if (card.pages !== null) {
+            <span class="fd-catindex__meta">
+              {{ card.pages }} page{{ card.pages === 1 ? '' : 's' }}
+            </span>
+          }
+        </a>
+      } @else {
+        <span class="fd-catindex__card fd-catindex__card--plain">
+          <span class="fd-catindex__label">{{ card.label }}</span>
+          @if (card.pages !== null) {
+            <span class="fd-catindex__meta">
+              {{ card.pages }} page{{ card.pages === 1 ? '' : 's' }}
+            </span>
+          }
+        </span>
+      }
+    }
+  </div>
+}
