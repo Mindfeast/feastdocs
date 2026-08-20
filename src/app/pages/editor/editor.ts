@@ -58,6 +58,8 @@ export class Editor {
   protected readonly status = signal<Status>({ kind: 'idle' });
   protected readonly creating = signal(false);
   protected readonly newPath = signal('');
+  /** Path of the chosen template inside _templates/, or '' for a blank page. */
+  protected readonly newTemplate = signal('');
   protected readonly tokenInput = signal('');
   protected readonly connecting = signal(false);
 
@@ -83,6 +85,21 @@ export class Editor {
 
   protected pendingKind(path: string): Pending['kind'] | null {
     return this.pending().get(path)?.kind ?? null;
+  }
+
+  /**
+   * Markdown files inside docs/_templates/ — a single flat folder. Underscore
+   * paths never publish, so templates are versioned, editable right here in
+   * the editor, and available identically on both backends.
+   */
+  protected readonly templates = computed(() =>
+    this.files().filter(
+      (file) => file.startsWith('_templates/') && /\.(md|markdown|html)$/i.test(file),
+    ),
+  );
+
+  protected templateLabel(path: string): string {
+    return humanize(path.slice('_templates/'.length).replace(/\.[^.]+$/, ''));
   }
 
   /** Live preview only makes sense for markdown; other files get a notice. */
@@ -458,9 +475,28 @@ export class Editor {
     }
 
     const title = humanize(path.split('/').pop()!.replace(/\.[^.]+$/, ''));
-    const template = `---\ntitle: ${title}\ndescription: \nsidebar_position: 10\n---\n\n# ${title}\n\nStart writing here.\n`;
+    let template = `---\ntitle: ${title}\ndescription: \nsidebar_position: 10\n---\n\n# ${title}\n\nStart writing here.\n`;
 
     try {
+      // "New from template": the chosen _templates/ file becomes the starting
+      // content, with {{title}} and {{date}} tokens filled in.
+      const from = this.newTemplate();
+      if (from) {
+        const source =
+          this.mode() === 'local'
+            ? (
+                await firstValueFrom(
+                  this.http.get<{ content: string }>(`${LOCAL_API}/file`, {
+                    params: { path: from },
+                  }),
+                )
+              ).content
+            : (await this.github.readFile(this.content.site.docsDir, from)).content;
+        template = source
+          .replace(/\{\{\s*title\s*\}\}/g, title)
+          .replace(/\{\{\s*date\s*\}\}/g, new Date().toISOString().slice(0, 10));
+      }
+
       if (this.mode() === 'local') {
         await firstValueFrom(
           this.http.put(`${LOCAL_API}/file`, { path, content: template, ifMissing: true }),
@@ -471,6 +507,7 @@ export class Editor {
       }
       this.creating.set(false);
       this.newPath.set('');
+      this.newTemplate.set('');
       await this.open(path);
     } catch (error) {
       this.status.set({ kind: 'error', message: describe(error, 'Could not create the file') });

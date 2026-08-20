@@ -128,14 +128,28 @@
 
       @if (creating()) {
         <form class="fd-editor__create" (submit)="$event.preventDefault(); create()">
-          <input
-            type="text"
-            placeholder="guide/deploying.md"
-            aria-label="Path of the new file, relative to docs/"
-            [value]="newPath()"
-            (input)="newPath.set($any($event.target).value)"
-          />
-          <button type="submit" class="fd-button">Create</button>
+          @if (templates().length > 0) {
+            <select
+              aria-label="Template for the new page"
+              [value]="newTemplate()"
+              (change)="newTemplate.set($any($event.target).value)"
+            >
+              <option value="">Blank page</option>
+              @for (t of templates(); track t) {
+                <option [value]="t">{{ templateLabel(t) }}</option>
+              }
+            </select>
+          }
+          <div class="fd-editor__create-row">
+            <input
+              type="text"
+              placeholder="guide/deploying.md"
+              aria-label="Path of the new file, relative to docs/"
+              [value]="newPath()"
+              (input)="newPath.set($any($event.target).value)"
+            />
+            <button type="submit" class="fd-button">Create</button>
+          </div>
         </form>
       }
 

@@ -226,8 +226,24 @@
 
 .fd-editor__create {
   display: flex;
+  flex-direction: column;
   gap: 0.4rem;
   padding: 0 0.35rem;
+
+  select {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm);
+    background: var(--fd-surface-sunken);
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+
+    &:focus-visible {
+      border-color: var(--fd-accent);
+      outline: none;
+    }
+  }
 
   input {
     flex: 1;
@@ -244,6 +260,16 @@
       border-color: var(--fd-accent);
       outline: none;
     }
+  }
+}
+
+.fd-editor__create-row {
+  display: flex;
+  gap: 0.4rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
   }
 }
 

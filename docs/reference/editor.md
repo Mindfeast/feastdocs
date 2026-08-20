@@ -16,6 +16,9 @@ and a live Markdown preview on the right.
   <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (GitHub)
 - **Create** pages — type a path like `guide/deploying.md` and it is scaffolded
   with front matter, in the right section
+- **New from template** — the create form offers every file in `docs/_templates/`
+  as a starting point; `{{title}}` and `{{date}}` tokens are filled in from the
+  new file's name and today's date
 - **Delete** files — the ✕ on each file row (deletes immediately in local mode,
   stages the deletion in GitHub mode)
 - **Batch commits** — in GitHub mode every save, creation and deletion is
@@ -140,3 +143,21 @@ the point.
 The content manager is a convenience layer, not a CMS. Files stay the source of
 truth: they diff, review and version like the rest of the repository, and
 everything the editor does can also be done in any text editor.
+
+## Templates
+
+`docs/_templates/` is one flat folder of starter pages. Anything in it shows up
+in the create form's template picker, and — because underscore paths never
+publish — templates are versioned with the repo and editable right here in the
+editor, without ever appearing on the site.
+
+Two tokens are substituted at creation time:
+
+| Token | Becomes |
+| --- | --- |
+| `{{title}}` | The new file's name, humanised (`release-2-1.md` → "Release 2 1") |
+| `{{date}}` | Today's date, `YYYY-MM-DD` |
+
+The project ships four starters — guide page, tutorial (with `<fd-steps>`), API
+reference (with `<fd-api-field>`), and release notes. Add your own by dropping a
+file in the folder, or by creating one in the editor at `_templates/name.md`.
