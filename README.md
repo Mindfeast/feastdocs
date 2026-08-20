@@ -339,28 +339,26 @@ of it (right for internal sites).
 
 ## Deploying
 
-`npm run build` → static files in `dist/feastdocs/browser/`. One server rule:
-unknown paths must fall back to `index.html` (routing happens in the browser).
+`npm run build` → static files in `dist/feastdocs/browser/`. One rule on every
+host: requests matching no file must fall back to `index.html`, because routing
+happens in the browser. Ready-made configs ship for each target:
 
-```nginx
-location / {
-  try_files $uri $uri/ /index.html;
-}
-```
+| Target | Use |
+| --- | --- |
+| **Docker** | `docker build -t my-docs . && docker run -p 8080:80 my-docs` — multi-stage `Dockerfile` (Node builds, nginx serves) |
+| **nginx** (Linux) | `deploy/nginx.conf` — SPA fallback, immutable caching for hashed assets, gzip |
+| **Windows / IIS** | `deploy/web.config` — rewrite rule + MIME types; needs the URL Rewrite module |
+| **Azure Pipelines** | `deploy/azure-pipelines.yml` — builds and pushes the image (plus a no-Docker artifact variant) |
+| **Cloudflare Pages** | `.github/workflows/ci.yml` — builds, tests and deploys on `main` once the two Cloudflare secrets exist |
 
-Subpath hosting: `ng build --base-href /docs/`.
+Serving from a subpath: `ng build --base-href /docs/`.
 
-A ready CI workflow ships at [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
-build + test on every push and PR, and an optional **Cloudflare Pages** deploy on
-`main` that activates once the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
-repository secrets exist. It checks out with `fetch-depth: 0` so author
-attribution survives (Cloudflare's own Git-integration builder may clone
-shallowly — deploying from the workflow avoids that). Cloudflare Pages serves
-`index.html` for unmatched paths automatically when no `404.html` is present, so
-SPA routing needs no extra config.
+**Everywhere: check out with full git history** (`fetch-depth: 0` /
+`fetchDepth: 0`, and keep `.git` in the Docker context) — "last updated by" is
+read from `git log` at build time and a shallow clone blanks it out.
 
-The app self-heals after redeploys: if a browser tab from an older build hits a
-renamed chunk, it reloads itself once and resyncs.
+The app self-heals after redeploys: a browser tab from an older build that hits
+a renamed chunk reloads itself once and resyncs.
 
 ## Using this template for your own docs
 

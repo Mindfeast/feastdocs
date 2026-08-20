@@ -105,36 +105,172 @@ Before deleting, skim this Guide and Reference — or keep them around in a
 
 ## 4. Deploy
 
-`npm run build` produces static files in `dist/feastdocs/browser/`. Any static
-host works; the one rule is that unknown paths must fall back to `index.html`.
+`npm run build` produces plain static files in `dist/feastdocs/browser/` —
+prerendered HTML per page, hashed assets, `sitemap.xml`, `robots.txt`. Any
+static host serves them.
 
-The repository ships a ready workflow at `.github/workflows/ci.yml`: it builds
-and tests every push and pull request, keeps the built site as an artifact, and
-can deploy to **Cloudflare Pages** on pushes to `main`.
+**One rule applies to every target:** requests that match no file must fall
+back to `index.html`, because routing happens in the browser. Without it, deep
+links work on first click and 404 on refresh. Every config below does that.
 
-To enable the Cloudflare deploy, create the Pages project once and add two
-repository secrets (Settings → Secrets and variables → Actions):
+:::caution Full git history, everywhere
+"Last updated by" is read from `git log` during the build. CI systems clone
+shallowly by default, which blanks out most authors — pass `fetch-depth: 0`
+(GitHub Actions) or `fetchDepth: 0` (Azure Pipelines), and keep `.git` in the
+Docker build context.
+:::
+
+<fd-tabs>
+  <div tab="Docker">
+
+The repository ships a `Dockerfile` (multi-stage: Node builds, nginx serves)
+and `deploy/nginx.conf`. Build and run:
+
+```bash
+docker build -t my-docs .
+docker run -p 8080:80 my-docs
+```
+
+The site is on <http://localhost:8080>. This is the same image whether you run
+it on your laptop, a Linux server, or a container platform — which makes it the
+best choice for a company that already deploys front ends as containers.
+
+To publish it:
+
+```bash
+docker tag my-docs registry.example.com/my-docs:1.0.0
+docker push registry.example.com/my-docs:1.0.0
+```
+
+  </div>
+  <div tab="Azure Pipelines">
+
+`deploy/azure-pipelines.yml` is a working pipeline: it checks out with full
+history, builds the Docker image and pushes it to a registry. Copy it to the
+repository root as `azure-pipelines.yml`, then set two variables — the name of
+your Docker Registry **service connection** and the image repository.
+
+```yaml
+variables:
+  registryConnection: my-registry-connection
+  imageRepository: feastdocs
+```
+
+The file also contains a commented **no-Docker** variant: build on the agent and
+publish `dist/feastdocs/browser` as a pipeline artifact, for release stages that
+copy files onto nginx or IIS directly.
+
+:::tip Deploying the image
+How the pushed image reaches your servers is your platform's business — Azure
+Web App for Containers, AKS, or an SSH step running `docker pull && docker run`
+all work, because the image is a self-contained static server.
+:::
+
+  </div>
+  <div tab="nginx (Linux)">
+
+No container needed: build, copy, reload.
+
+```bash
+npm ci
+npm run build
+sudo cp -r dist/feastdocs/browser/* /var/www/my-docs/
+```
+
+Use `deploy/nginx.conf` as the site config — point `root` at your directory:
+
+```nginx
+server {
+  listen 80;
+  server_name docs.example.com;
+  root /var/www/my-docs;
+
+  location / {
+    try_files $uri $uri/index.html /index.html;
+  }
+}
+```
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+The shipped config adds the parts worth having: a one-year immutable cache for
+hashed assets, `no-cache` for HTML and the search index so a deploy is picked
+up immediately, and gzip.
+
+  </div>
+  <div tab="Windows / IIS">
+
+Windows Server hosts the same static output. Two steps beyond the copy:
+
+<fd-steps>
+  <div step="Install URL Rewrite">
+
+IIS needs the [URL Rewrite module](https://www.iis.net/downloads/microsoft/url-rewrite)
+to do the `index.html` fallback. Install it once per server.
+
+  </div>
+  <div step="Ship web.config with the files">
+
+Copy `deploy/web.config` into the site root, next to `index.html`:
+
+```powershell
+npm ci
+npm run build
+Copy-Item deploy/web.config dist/feastdocs/browser/web.config
+Copy-Item -Recurse -Force dist/feastdocs/browser/* C:/inetpub/my-docs/
+```
+
+It sets the rewrite rule, `index.html` as the default document, and the MIME
+types IIS does not know by default (`.json`, `.woff2`, `.avif`).
+
+  </div>
+</fd-steps>
+
+:::tip Just previewing on Windows?
+You do not need IIS to look at a build. Any static server with SPA fallback
+works — `npx serve -s dist/feastdocs/browser` is the shortest (`-s` does the
+index.html fallback) — or run the Docker image, which needs nothing installed
+but Docker Desktop.
+:::
+
+  </div>
+  <div tab="Cloudflare Pages">
+
+The repository's GitHub Actions workflow (`.github/workflows/ci.yml`) builds and
+tests every push, and deploys to Cloudflare Pages on `main` once two repository
+secrets exist (Settings → Secrets and variables → Actions):
 
 | Secret | Where it comes from |
 | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → API tokens, with the *Cloudflare Pages — Edit* permission |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → API tokens, with *Cloudflare Pages — Edit* |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages (right sidebar) |
 
 Without the secrets the deploy job skips itself, so the workflow is safe to keep
-even if you deploy some other way.
+even if you deploy elsewhere.
 
-:::note SPA routing on Cloudflare Pages
-No extra configuration needed: the build emits no top-level `404.html`, and in
-that case Cloudflare Pages automatically serves `index.html` for unmatched
-paths — exactly what the client-side router requires.
+:::note SPA routing needs no configuration here
+With no top-level `404.html` in the output, Cloudflare Pages serves
+`index.html` for unmatched paths automatically.
 :::
 
 :::caution Prefer deploying from the workflow
-Cloudflare's own Git-integration builder can clone the repository shallowly,
-which blanks out the "last updated by" authors (they are read from git history
-at build time). The workflow checks out with `fetch-depth: 0`, so deploying from
-it keeps attribution intact.
+Cloudflare's own Git-integration builder can clone shallowly, which blanks out
+the "last updated by" authors. The workflow checks out with `fetch-depth: 0`.
 :::
+
+  </div>
+</fd-tabs>
+
+### Serving from a subpath
+
+All of the above assume the docs sit at the root of a domain. To host them under
+a path instead, build with a matching base href:
+
+```bash
+npx ng build --base-href /docs/
+```
 
 ## 5. Optional: "Sign in with GitHub" for web editing
 

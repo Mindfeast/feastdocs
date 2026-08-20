@@ -1,0 +1,71 @@
+# Azure Pipelines: build the docs image and push it to a container registry.
+#
+# Copy this to the repository root as azure-pipelines.yml (Azure DevOps looks
+# for it there), then set the two variables below. The commented job at the
+# bottom is the no-Docker alternative: publish the static files as an artifact
+# and let a release stage copy them to a web server.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - README.md
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  # Name of the Docker Registry service connection in Azure DevOps
+  # (Project settings → Service connections).
+  registryConnection: my-registry-connection
+  imageRepository: feastdocs
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Image
+        displayName: Build and push the docs image
+        steps:
+          - checkout: self
+            # Full history: "last updated by" on every page is read from git
+            # log at build time. The default shallow clone blanks out authors.
+            fetchDepth: 0
+
+          - task: Docker@2
+            displayName: Build and push
+            inputs:
+              command: buildAndPush
+              containerRegistry: $(registryConnection)
+              repository: $(imageRepository)
+              Dockerfile: Dockerfile
+              tags: |
+                $(Build.BuildId)
+                latest
+
+# ---------------------------------------------------------------------------
+# Alternative without Docker: build on the agent, publish the static output.
+# Swap this in if your servers host files directly (nginx or IIS) rather than
+# running containers.
+#
+#  - stage: BuildStatic
+#    jobs:
+#      - job: Static
+#        steps:
+#          - checkout: self
+#            fetchDepth: 0
+#          - task: NodeTool@0
+#            inputs:
+#              versionSpec: '22.x'
+#          - script: npm ci
+#            displayName: Install
+#          - script: npm test
+#            displayName: Test
+#          - script: npm run build
+#            displayName: Build
+#          # For IIS, ship the rewrite rules alongside the files.
+#          - script: cp deploy/web.config dist/feastdocs/browser/web.config
+#            displayName: Add web.config (IIS only)
+#          - publish: dist/feastdocs/browser
+#            artifact: site
