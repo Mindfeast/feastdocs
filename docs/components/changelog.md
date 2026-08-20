@@ -45,6 +45,20 @@ Renders as:
   the page heading already names the month. Used by the generated month pages.
 </fd-api-field>
 
+## Cards for each repository
+
+`<fd-changelog-repos>` renders one card per repository — name, total changes and
+the latest month — linking to that repository's own overview. It belongs on the
+section's landing page, so that page stays a way in rather than a copy of every
+listing:
+
+```html
+<fd-changelog-repos></fd-changelog-repos>
+```
+
+Renders nothing when the pages are not grouped per repository, since there is
+then only one changelog and nothing to choose between.
+
 ## An index of the pages
 
 `<fd-changelog-months>` lists what exists — repository, year, month, with a
@@ -55,6 +69,10 @@ twice, which is worse for a reader and splits the two pages in search results.
 ```html
 <fd-changelog-months></fd-changelog-months>
 ```
+
+Add `repo` to scope it to one source — `<fd-changelog-months repo="self">` for
+this repository, or a `changelog.repos` id. The generated per-repository pages
+use exactly that.
 
 It reads the same lazily-loaded history, so it costs nothing on pages that use
 neither component. With `monthlyPages` off it still renders, as a plain summary

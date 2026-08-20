@@ -36,6 +36,7 @@ docs/
     ├── index.md
     └── feastdocs/               ← generated: one folder per repository
         ├── _category.json       ← generated: the category label
+        ├── index.md             ← generated: that repository's overview
         └── 2026/                ← generated: one folder per year
             ├── _category.json
             └── august.md        ← generated: one page per month
@@ -59,6 +60,12 @@ sidebar_position: -8
 
 That is why the files are stable: the commits live in a generated data module,
 never in the page. **A new commit changes no file. A new month adds one.**
+
+Each repository's `index.md` becomes its category's own link, and carries that
+repository's months plus its five most recent changes. That is deliberate: the
+listings live with the repository they belong to, so the section's landing page
+can be an introduction and a set of cards
+(`<fd-changelog-repos>`) instead of a third copy of the same commits.
 
 You do not even have to create the section — point `monthlyPagesDir` at a folder
 that does not exist and the build creates it, which then becomes a top-level
@@ -176,7 +183,7 @@ Without it the repository name is used.
 | --- | --- | --- |
 | `_section.json`, `index.md`, any page you wrote | You | Never touched |
 | `<repo>/_category.json`, `<year>/_category.json` | Build | Carries `"generated": true` |
-| `<year>/<month>.md` | Build | Carries the AUTO-GENERATED marker |
+| `<repo>/index.md`, `<year>/<month>.md` | Build | Carries the AUTO-GENERATED marker |
 
 Two consequences:
 

@@ -1,0 +1,15 @@
+@if (loaded() && cards().length > 0) {
+  <div class="fd-clrepos">
+    @for (card of cards(); track card.title) {
+      <a class="fd-clrepos__card" [routerLink]="card.route">
+        <span class="fd-clrepos__title">{{ card.title }}</span>
+        <span class="fd-clrepos__meta">
+          <span>{{ card.total }} change{{ card.total === 1 ? '' : 's' }}</span>
+          @if (card.latest) {
+            <span class="fd-clrepos__latest">latest {{ card.latest }}</span>
+          }
+        </span>
+      </a>
+    }
+  </div>
+}

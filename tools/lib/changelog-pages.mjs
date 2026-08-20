@@ -71,6 +71,14 @@ export async function writeChangelogPages(config, changelog) {
 
     if (grouped) {
       await fs.mkdir(base, { recursive: true });
+
+      // An index inside a category folder becomes that category's own link, so
+      // this is where a repository's months belong — the section index stays a
+      // way in, not a second copy of every listing.
+      const indexFile = path.join(base, 'index.md');
+      expected.add(indexFile);
+      if (await writeIfChanged(indexFile, repoIndexPage(dataset))) written += 1;
+
       // Config order decides sidebar order, so readers see the products in the
       // order the site owner listed them.
       written += await writeCategory(base, expected, {
@@ -126,6 +134,35 @@ async function writeCategory(dir, expected, { label, position }) {
   return (await writeIfChanged(file, contents)) ? 1 : 0;
 }
 
+function repoIndexPage(dataset) {
+  const total = dataset.commits.length;
+  const attribute = ` repo="${dataset.id}"`;
+  return (
+    `---
+` +
+    `title: "${dataset.title.replace(/"/g, '')}"
+` +
+    `sidebar_label: 'Overview'
+` +
+    `description: '${total} change${total === 1 ? '' : 's'} recorded for ${dataset.title}.'
+` +
+    `---
+
+` +
+    `${MARKER}
+
+` +
+    `<fd-changelog-months${attribute}></fd-changelog-months>
+
+` +
+    `## The most recent changes
+
+` +
+    `<fd-changelog${attribute} limit="5"></fd-changelog>
+`
+  );
+}
+
 function monthPage({ name, year, month, count, repo, product }) {
   const attributes = repo === null ? '' : ` repo="${repo}"`;
   const heading = product === null ? `${name} ${year}` : `${product} — ${name} ${year}`;
@@ -138,8 +175,9 @@ function monthPage({ name, year, month, count, repo, product }) {
     // Newest month first within the year.
     `sidebar_position: ${-Number(month.slice(5, 7))}\n` +
     `---\n\n` +
+    // No body heading: the page template renders the front-matter title, and a
+    // heading after the marker comment is not stripped, so it would show twice.
     `${MARKER}\n\n` +
-    `# ${heading}\n\n` +
     `<fd-changelog${attributes} month="${month}"></fd-changelog>\n`
   );
 }

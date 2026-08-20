@@ -9,6 +9,9 @@ import {
 import { SITE } from '../../generated/site-config';
 import type { ChangelogEntry } from '../../core/models';
 
+/** Reserved id for the repository the docs live in. Matches the build. */
+const SELF_ID = 'self';
+
 interface Month {
   readonly label: string;
   readonly entries: readonly ChangelogEntry[];
@@ -60,8 +63,11 @@ export class DocChangelog {
       await import('../../generated/changelog');
 
     let source: readonly ChangelogEntry[];
-    if (this.repo === null) {
+    // 'self' is the reserved id for the repository the docs live in; the
+    // generated pages use it so every page states its source explicitly.
+    if (this.repo === null || this.repo === SELF_ID) {
       source = CHANGELOG;
+      this.commitUrlBase.set(CHANGELOG_SOURCES[SELF_ID]?.commitUrl ?? this.commitUrlBase());
     } else {
       const collected = CHANGELOG_BY_REPO[this.repo];
       // Each source knows its own host, so Azure DevOps commits link to Azure.

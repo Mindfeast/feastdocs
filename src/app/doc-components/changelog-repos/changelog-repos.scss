@@ -1,0 +1,47 @@
+.fd-clrepos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.85rem;
+  margin: 1.5rem 0;
+}
+
+.fd-clrepos__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  color: var(--fd-text);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--fd-accent) 55%, transparent);
+    background: var(--fd-surface-strong);
+  }
+
+  &:hover .fd-clrepos__title {
+    color: var(--fd-accent-strong);
+  }
+}
+
+.fd-clrepos__title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fd-clrepos__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  color: var(--fd-text-subtle);
+  font-size: 0.8rem;
+}
+
+.fd-clrepos__latest {
+  font-variant-numeric: tabular-nums;
+}

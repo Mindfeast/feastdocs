@@ -220,6 +220,9 @@ Built-ins:
 
 <!-- An index of the generated month pages, with counts -->
 <fd-changelog-months></fd-changelog-months>
+
+<!-- Cards linking to each repository's changelog -->
+<fd-changelog-repos></fd-changelog-repos>
 ```
 
 Adding your own: build a standalone component under `src/app/doc-components/`,

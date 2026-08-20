@@ -136,7 +136,7 @@ export default {
      * Whatever is listed here ends up publicly readable on the deployed page,
      * including commit messages and author names.
      */
-    repos: [],
+    repos: [{ repo: 'Mindfeast/mindfeast.github.io', branch: 'main', title: 'Mindfeast Site' }],
 
     /**
      * Generate a page per month, grouped under a category per year, inside

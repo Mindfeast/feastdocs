@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, signal } from '@angular/core';
+import { Component, Input, ViewEncapsulation, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SITE } from '../../generated/site-config';
 import type { ChangelogEntry } from '../../core/models';
@@ -60,6 +60,12 @@ const SELF_ID = 'self';
   encapsulation: ViewEncapsulation.None,
 })
 export class DocChangelogMonths {
+  /**
+   * Limit the index to one source, as 'self' or a `changelog.repos` id. The
+   * generated per-repository pages use it; unset lists every source.
+   */
+  @Input() repo: string | null = null;
+
   protected readonly repos = signal<readonly RepoGroup[]>([]);
   protected readonly loaded = signal(false);
 
@@ -75,7 +81,9 @@ export class DocChangelogMonths {
     const datasets: Array<{ id: string; commits: readonly ChangelogEntry[] }> = [
       { id: SELF_ID, commits: CHANGELOG },
       ...Object.entries(CHANGELOG_BY_REPO).map(([id, commits]) => ({ id, commits })),
-    ].filter((dataset) => dataset.commits.length > 0);
+    ]
+      .filter((dataset) => dataset.commits.length > 0)
+      .filter((dataset) => this.repo === null || dataset.id === this.repo);
 
     // Mirrors the build's decision, so the links match the pages that exist.
     const grouped = groupByRepo === 'auto' ? datasets.length > 1 : Boolean(groupByRepo);
@@ -89,7 +97,7 @@ export class DocChangelogMonths {
             ? `/${monthlyPagesDir}/${source?.slug ?? dataset.id}`
             : `/${monthlyPagesDir}`;
         return {
-          title: grouped ? (source?.title ?? dataset.id) : '',
+          title: grouped && this.repo === null ? (source?.title ?? dataset.id) : '',
           years: this.years(dataset.commits, base),
         };
       }),
