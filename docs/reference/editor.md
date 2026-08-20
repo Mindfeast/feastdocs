@@ -100,9 +100,12 @@ Several people can edit at the same time; what happens depends on the path:
   shared lines shown as context; **Use theirs** drops your staged change and
   loads their version; **Keep mine** explicitly overwrites theirs. Nothing is
   ever overwritten silently.
-- **The final ref update is atomic.** If the branch moves in the instant
-  between the check and the write, GitHub rejects the commit outright
-  (nothing half-written) and the editor asks you to press Commit again.
+- **The final ref update is atomic and self-healing.** If the branch moves in
+  the instant between the check and the write, GitHub rejects the commit
+  (nothing half-written) and the editor automatically re-checks against the
+  new head and retries — up to three times before asking you to try again.
+  Staged deletions of files someone else already deleted are recognised as
+  no-ops rather than failing the commit.
 
 ### Author attribution
 

@@ -782,45 +782,69 @@ export class Editor {
     if (this.pendingCount() === 0 || this.readOnly()) return;
     this.status.set({ kind: 'saving' });
     try {
-      const conflicted = await this.findConflicts();
-      if (conflicted.length > 0) {
-        this.conflicts.set(conflicted);
+      // The branch can move under us at any point; instead of bouncing that
+      // back to the user, re-check and rebuild on the new head, a few times.
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const conflicted = await this.findConflicts();
+        if (conflicted.length > 0) {
+          this.conflicts.set(conflicted);
+          this.status.set({
+            kind: 'error',
+            message: `Someone changed ${conflicted.length} of your staged file${conflicted.length === 1 ? '' : 's'} in the meantime — resolve below, then commit again.`,
+          });
+          return;
+        }
+
+        // A staged deletion of a file that is already gone upstream is a
+        // no-op — and the tree API rejects the whole commit over it (422).
+        // Drop such entries instead of sending them.
+        for (const [path, change] of this.pending()) {
+          if (change.kind === 'delete' && !this.latestShas.has(path)) this.unstage(path);
+        }
+        if (this.pendingCount() === 0) {
+          this.status.set({
+            kind: 'saved',
+            detail: 'Nothing left to commit — the staged deletions were already gone upstream.',
+          });
+          return;
+        }
+
+        const changes = [...this.pending()].map(([path, change]) => ({
+          path,
+          content: change.content,
+        }));
+        const fallback = `docs: update ${changes.length} file${changes.length === 1 ? '' : 's'}`;
+
+        try {
+          await this.github.commitBatch(
+            this.content.site.docsDir,
+            changes,
+            this.commitMessage().trim() || fallback,
+          );
+        } catch (error) {
+          if ((error as { refMoved?: boolean })?.refMoved && attempt < 3) {
+            continue; // head moved mid-commit; loop re-checks against the new head
+          }
+          throw error;
+        }
+
+        const count = changes.length;
+        this.pending.set(new Map());
+        this.commitMessage.set('');
+        this.conflicts.set([]);
+        await this.refreshFiles();
+        const login = this.github.user()?.login ?? 'you';
         this.status.set({
-          kind: 'error',
-          message: `Someone changed ${conflicted.length} of your staged file${conflicted.length === 1 ? '' : 's'} in the meantime — resolve below, then commit again.`,
+          kind: 'saved',
+          detail: `Committed ${count} change${count === 1 ? '' : 's'} to ${this.github.branch} as ${login} — live after the next deploy`,
         });
         return;
       }
-      const changes = [...this.pending()].map(([path, change]) => ({
-        path,
-        content: change.content,
-      }));
-      const fallback = `docs: update ${changes.length} file${changes.length === 1 ? '' : 's'}`;
-      await this.github.commitBatch(
-        this.content.site.docsDir,
-        changes,
-        this.commitMessage().trim() || fallback,
-      );
-      const count = changes.length;
-      this.pending.set(new Map());
-      this.commitMessage.set('');
-      this.conflicts.set([]);
-      await this.refreshFiles();
-      const login = this.github.user()?.login ?? 'you';
       this.status.set({
-        kind: 'saved',
-        detail: `Committed ${count} change${count === 1 ? '' : 's'} to ${this.github.branch} as ${login} — live after the next deploy`,
+        kind: 'error',
+        message: 'The branch kept moving during three attempts — wait a moment and press Commit again.',
       });
     } catch (error) {
-      // The branch moved between our conflict check and the ref update — a
-      // narrow race. Nothing was written; checking again is all it takes.
-      if ((error as { status?: number })?.status === 422) {
-        this.status.set({
-          kind: 'error',
-          message: 'The branch moved while committing — nothing was written. Press Commit again.',
-        });
-        return;
-      }
       this.status.set({ kind: 'error', message: describe(error, 'Commit failed') });
     }
   }

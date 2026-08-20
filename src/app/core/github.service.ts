@@ -180,9 +180,19 @@ export class GithubService {
       parents: [headSha],
     });
 
-    await this.send('PATCH', `/repos/${this.repo}/git/refs/heads/${encodeURIComponent(this.branch)}`, {
-      sha: commit.sha,
-    });
+    try {
+      await this.send('PATCH', `/repos/${this.repo}/git/refs/heads/${encodeURIComponent(this.branch)}`, {
+        sha: commit.sha,
+      });
+    } catch (error) {
+      // Only the ref update can race another writer; tag it so callers can
+      // distinguish "head moved, rebuild and retry" from every other 422
+      // (e.g. an invalid tree entry, which retrying would never fix).
+      if ((error as { status?: number })?.status === 422) {
+        throw Object.assign(new Error('The branch moved during the commit.'), { refMoved: true });
+      }
+      throw error;
+    }
   }
 
   /**
