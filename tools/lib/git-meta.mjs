@@ -49,7 +49,12 @@ export async function collectGitMeta(docsRoot) {
       continue;
     }
     if (!line) continue;
-    const file = docsPrefix === '/' ? line : line.startsWith(docsPrefix) ? line.slice(docsPrefix.length) : null;
+    const file =
+      docsPrefix === '/'
+        ? line
+        : line.startsWith(docsPrefix)
+          ? line.slice(docsPrefix.length)
+          : null;
     if (file && !meta.has(file)) {
       meta.set(file, { author, date });
     }
@@ -60,9 +65,14 @@ export async function collectGitMeta(docsRoot) {
 
 function run(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    execFile(command, args, { cwd, maxBuffer: 64 * 1024 * 1024 }, (error, stdout) => {
-      if (error) reject(error);
-      else resolve(stdout);
-    });
+    execFile(
+      command,
+      args,
+      { cwd, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 },
+      (error, stdout) => {
+        if (error) reject(error);
+        else resolve(stdout);
+      },
+    );
   });
 }

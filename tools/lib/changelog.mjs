@@ -70,7 +70,8 @@ export async function collectRepoChangelog(repo, branch, limit) {
 
     let batch;
     try {
-      const response = await fetch(url, { headers });
+      // A build must never hang on a network that silently drops the request.
+      const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
       if (!response.ok) {
         console.warn(
           `  ${yellow('!')} changelog ${repo}: GitHub API ${response.status} ` +
@@ -193,7 +194,7 @@ function run(command, args) {
     execFile(
       command,
       args,
-      { cwd: process.cwd(), maxBuffer: 64 * 1024 * 1024 },
+      { cwd: process.cwd(), maxBuffer: 64 * 1024 * 1024, timeout: 60_000 },
       (error, stdout) => {
         if (error) reject(error);
         else resolve(stdout);

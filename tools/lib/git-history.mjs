@@ -15,7 +15,13 @@ export async function ensureFullHistory() {
   if (!(await isShallow())) return { shallow: false, deepened: false };
 
   try {
-    await run('git', ['fetch', '--unshallow', '--quiet']);
+    // A build host is not interactive: without these, a checkout whose remote
+    // needs credentials can sit on a prompt until the build times out. The
+    // timeout is the backstop for anything that still blocks.
+    await run('git', ['-c', 'credential.helper=', 'fetch', '--unshallow', '--quiet'], {
+      timeout: 60_000,
+      env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never' },
+    });
   } catch {
     // No remote, no credentials, or an offline build — nothing to do but
     // report it so the caller can pick another source.
@@ -34,12 +40,12 @@ export async function isShallow() {
   }
 }
 
-function run(command, args) {
+function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     execFile(
       command,
       args,
-      { cwd: process.cwd(), maxBuffer: 16 * 1024 * 1024 },
+      { cwd: process.cwd(), maxBuffer: 16 * 1024 * 1024, timeout: 20_000, ...options },
       (error, stdout) => {
         if (error) reject(error);
         else resolve(stdout);
