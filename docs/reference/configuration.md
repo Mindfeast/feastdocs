@@ -147,6 +147,9 @@ a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspect
 | Option | Type | Effect |
 | --- | --- | --- |
 | `changelog.limit` | number | How many commits the build reads from `git log`. Default `150` |
+| `changelog.repos` | array | Other repositories to collect, as `owner/name` or `{provider, org, project, repo}` |
+| `changelog.monthlyPages` | boolean | Generate a page per month under a category per year. Default `false` |
+| `changelog.monthlyPagesDir` | string | Where those pages go, relative to `docsDir`. Default `'changelog'` |
 
 The [`<fd-changelog>`](../components/changelog.md) component renders repository
 history collected at build time. The limit bounds the generated data, so raising

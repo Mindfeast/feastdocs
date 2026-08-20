@@ -130,5 +130,14 @@ export default {
      * including commit messages and author names.
      */
     repos: [],
+
+    /**
+     * Generate a page per month, grouped under a category per year, inside
+     * `monthlyPagesDir` (relative to docsDir). The files are written by the
+     * build and hold only a filter, never the commits — a new commit changes
+     * no file, a new month adds one. Hand edits are overwritten.
+     */
+    monthlyPages: true,
+    monthlyPagesDir: 'changelog',
   },
 };

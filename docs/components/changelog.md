@@ -40,6 +40,45 @@ Renders as:
   Another repository, as <code>owner/name</code>. It must be listed in
   <code>changelog.repos</code>. Unset means this repository.
 </fd-api-field>
+<fd-api-field name="month" type="string">
+  A single month, as <code>YYYY-MM</code>. Grouping headings are dropped, since
+  the page heading already names the month. Used by the generated month pages.
+</fd-api-field>
+
+## A page per month
+
+Set `changelog.monthlyPages` and the build writes a page per month, grouped
+under a category per year:
+
+```text
+Changelog
+├── Changelog            (your own overview page)
+├── Documentation changes
+└── 2026
+    ├── August
+    └── July
+```
+
+```js
+// feastdocs.config.mjs
+changelog: {
+  monthlyPages: true,
+  monthlyPagesDir: 'changelog',   // relative to docsDir
+},
+```
+
+They are ordinary Markdown files, so the sidebar, search, prev/next links,
+prerendering and the sitemap treat them like any other page. Each holds only a
+filter — `<fd-changelog month="2026-08">` — never the commits, so **a new commit
+changes no file and a new month adds one**.
+
+Two consequences worth knowing:
+
+- The files are **overwritten on every build**. Edit them and the change is
+  lost; put anything hand-written on your own page in the section instead.
+- Months that drop out of `changelog.limit` have their pages removed. Only
+  generated files are touched: a page you wrote in a year folder survives, and
+  so does a `_category.json` you wrote yourself.
 
 ## Other repositories
 

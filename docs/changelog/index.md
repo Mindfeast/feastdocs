@@ -14,4 +14,9 @@ Commit messages that follow the [Conventional Commits](https://www.conventionalc
 style (`feat:`, `fix:`, `docs:` …) get a badge; anything else is listed as-is.
 Each hash links to the commit on GitHub.
 
-<fd-changelog></fd-changelog>
+The full record lives in the **year and month pages** in the sidebar. This page
+is the recent view.
+
+## Recent changes
+
+<fd-changelog limit="20"></fd-changelog>

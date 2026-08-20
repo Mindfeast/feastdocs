@@ -10,7 +10,9 @@
   <div class="fd-changelog">
     @for (month of months(); track month.label) {
       <section class="fd-changelog__month">
-        <h3 class="fd-changelog__monthlabel" data-toc="false">{{ month.label }}</h3>
+        @if (month.label) {
+          <h3 class="fd-changelog__monthlabel" data-toc="false">{{ month.label }}</h3>
+        }
 
         @for (entry of month.entries; track entry.hash) {
           <article class="fd-changelog__entry">

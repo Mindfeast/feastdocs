@@ -343,8 +343,17 @@ build deepens a `--depth 1` checkout, or reads the history from the GitHub API
 if it cannot. API entries have no file count (that endpoint carries no file
 list).
 
-The demo site puts it in a **Changelog** section ([`docs/changelog/`](docs/changelog)),
-but the component works on any page — drop it wherever it fits your docs.
+**A page per month.** Set `changelog.monthlyPages: true` and the build writes one
+page per month under a category per year, so the sidebar reads
+Changelog → 2026 → August. They are ordinary Markdown files — sidebar, search,
+prerendering and sitemap all work normally — and each holds only a filter, never
+the commits, so a new commit changes no file and a new month adds one. Generated
+files are overwritten on each build; hand-written pages in those folders are left
+alone.
+
+The demo site puts all of it in a **Changelog** section
+([`docs/changelog/`](docs/changelog)), but the component works on any page — drop
+it wherever it fits your docs.
 
 ## Configuration reference
 
@@ -367,6 +376,7 @@ Everything lives in [`feastdocs.config.mjs`](feastdocs.config.mjs):
 | `github.branch` | string | Branch web edits commit to (default `main`) |
 | `changelog.limit` | number | Commits read from `git log` for `<fd-changelog>` (default `150`) |
 | `changelog.repos` | array | Other repositories to collect history for, as `owner/name` or `{repo, branch}` |
+| `changelog.monthlyPages` | boolean | Generate a page per month under a category per year |
 
 ## Build warnings
 

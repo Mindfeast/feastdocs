@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import path from 'node:path';
 import { ensureFullHistory } from './git-history.mjs';
+import { paths } from './config.mjs';
 import { dim, yellow } from './log.mjs';
 
 /** Conventional-commit prefix: becomes a badge and leaves the headline. */
@@ -42,6 +43,42 @@ export async function collectChangelog(docsDir, limit, github = {}) {
 
   const fromApi = await collectRepoChangelog(github.repo, github.branch, limit);
   return fromApi.length > commits.length ? fromApi : commits;
+}
+
+/**
+ * Every changelog source for one build: this repository plus each entry in
+ * `changelog.repos`. Collected once and reused, because the month pages are
+ * generated from the same data the component renders.
+ */
+export async function collectAllChangelogs(config) {
+  const { limit, repos } = config.changelog;
+
+  startRemoteBudget(Date.now());
+
+  const parsed = (repos ?? []).map(normaliseSource);
+  const valid = parsed.filter(Boolean);
+  const invalid = parsed.length - valid.length;
+  if (invalid > 0) {
+    console.warn(
+      `  ${yellow('!')} changelog: ${invalid} entr${invalid === 1 ? 'y' : 'ies'} in changelog.repos ` +
+        `${dim('ignored — a GitHub entry needs repo, an Azure entry needs org, project and repo')}`,
+    );
+  }
+
+  const collected = await Promise.all(
+    valid.map(async (source) => [source, await collectSourceChangelog(source, limit)]),
+  );
+
+  const commits = await collectChangelog(paths.docs(config), limit, config.github);
+
+  const byRepo = {};
+  const sources = {};
+  for (const [source, entries] of collected) {
+    byRepo[source.id] = entries;
+    sources[source.id] = { label: source.label, commitUrl: source.commitUrl };
+  }
+
+  return { commits, byRepo, sources };
 }
 
 /**

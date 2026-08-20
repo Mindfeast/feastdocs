@@ -38,6 +38,11 @@ export class DocChangelog {
    * `changelog.repos` so the build collects it. Unset means this repository.
    */
   @Input() repo: string | null = null;
+  /**
+   * A single month, as 'YYYY-MM'. The generated month pages use this; grouping
+   * headings are dropped since the page heading already names the month.
+   */
+  @Input() month: string | null = null;
 
   protected readonly months = signal<readonly Month[]>([]);
   protected readonly loaded = signal(false);
@@ -76,6 +81,13 @@ export class DocChangelog {
     let entries: readonly ChangelogEntry[] = this.docsOnly
       ? source.filter((entry) => entry.touchesDocs !== false)
       : source;
+    if (this.month !== null) {
+      // Compare the ISO prefix rather than parsing: a Date would reinterpret
+      // the commit's own offset in the reader's timezone and could move a
+      // commit into a neighbouring month. The build slices it the same way.
+      const prefix = this.month;
+      entries = entries.filter((entry) => entry.date.startsWith(prefix));
+    }
     if (this.limit > 0) entries = entries.slice(0, this.limit);
 
     const formatter = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' });
@@ -87,7 +99,11 @@ export class DocChangelog {
       else grouped.set(label, [entry]);
     }
 
-    this.months.set([...grouped].map(([label, list]) => ({ label, entries: list })));
+    this.months.set(
+      this.month === null
+        ? [...grouped].map(([label, list]) => ({ label, entries: list }))
+        : [{ label: '', entries }],
+    );
     this.loaded.set(true);
   }
 

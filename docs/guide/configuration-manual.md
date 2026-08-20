@@ -155,6 +155,18 @@ changelog: {
 `limit` bounds how many commits the build collects. The data is a lazy chunk, so
 a larger number costs nothing on pages that do not use `<fd-changelog>`.
 
+```js
+changelog: {
+  monthlyPages: true,
+  monthlyPagesDir: 'changelog',
+},
+```
+
+`monthlyPages` writes a page per month under a category per year, so the
+sidebar reads Changelog → 2026 → August. The files are generated on every
+build and hand edits are overwritten — see
+[the component reference](../components/changelog.md#a-page-per-month).
+
 For several products, or repositories on Azure DevOps, and for the tokens each
 needs, see [changelogs for several products](./changelog-repos.md).
 
