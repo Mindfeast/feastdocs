@@ -45,18 +45,26 @@ export class DocTabs {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
-  private readonly source = viewChild.required<ElementRef<HTMLElement>>('source');
+  private readonly source = viewChild<ElementRef<HTMLElement>>('source');
 
   constructor() {
-    afterNextRender(() => {
-      const container = this.source().nativeElement;
-      const panes: TabPane[] = [];
-      for (const child of Array.from(container.querySelectorAll(':scope > [tab]'))) {
-        panes.push({ label: child.getAttribute('tab') ?? '', html: child.innerHTML });
-        child.remove();
-      }
-      if (panes.length > 0) this.panes.set(panes);
-    });
+    // Microtask first: it fires even when no application render follows (the
+    // editor preview recreates this element on every keystroke), with
+    // afterNextRender as fallback. Extraction is idempotent via the guard.
+    queueMicrotask(() => this.extractPanes());
+    afterNextRender(() => this.extractPanes());
+  }
+
+  private extractPanes(): void {
+    if (this.panes().length > 0) return;
+    const container = this.source()?.nativeElement;
+    if (!container) return;
+    const panes: TabPane[] = [];
+    for (const child of Array.from(container.querySelectorAll(':scope > [tab]'))) {
+      panes.push({ label: child.getAttribute('tab') ?? '', html: child.innerHTML });
+      child.remove();
+    }
+    if (panes.length > 0) this.panes.set(panes);
   }
 
   protected select(index: number): void {

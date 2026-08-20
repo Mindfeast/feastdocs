@@ -329,13 +329,13 @@
             <span class="fd-editor__insert">
               <button
                 type="button"
-                (click)="insertMenuOpen.set(!insertMenuOpen())"
+                (click)="openToolbarInsert()"
                 [attr.aria-expanded]="insertMenuOpen()"
                 aria-haspopup="menu"
               >
                 + Insert ▾
               </button>
-              @if (insertMenuOpen()) {
+              @if (insertMenuOpen() && insertAnchor() === 'toolbar') {
                 <div class="fd-editor__insertmenu" role="menu">
                   @for (group of insertGroups; track group) {
                     <span class="fd-editor__insertgroup">{{ group }}</span>
@@ -357,8 +357,42 @@
             spellcheck="false"
             aria-label="File content"
             [value]="contentText()"
-            (input)="contentText.set($any($event.target).value)"
+            (input)="contentText.set($any($event.target).value); updateInlineInsert()"
+            (keyup)="updateInlineInsert()"
+            (click)="updateInlineInsert()"
+            (scroll)="updateInlineInsert()"
           ></textarea>
+
+          @if (inlineInsertTop() !== null) {
+            <button
+              type="button"
+              class="fd-editor__inlineplus"
+              [style.top.px]="inlineInsertTop()"
+              title="Insert here"
+              aria-label="Insert content here"
+              (mousedown)="openInlineInsert($event)"
+            >
+              +
+            </button>
+            @if (insertMenuOpen() && insertAnchor() === 'inline') {
+              <div
+                class="fd-editor__insertmenu fd-editor__insertmenu--inline"
+                role="menu"
+                [style.top.px]="inlineInsertTop()! + 24"
+              >
+                @for (group of insertGroups; track group) {
+                  <span class="fd-editor__insertgroup">{{ group }}</span>
+                  @for (item of insertSnippets; track item.label) {
+                    @if (item.group === group) {
+                      <button type="button" role="menuitem" (mousedown)="$event.preventDefault()" (click)="insert(item)">
+                        {{ item.label }}
+                      </button>
+                    }
+                  }
+                }
+              </div>
+            }
+          }
         </div>
 
         <div class="fd-editor__preview">

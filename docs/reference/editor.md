@@ -24,10 +24,11 @@ and a live Markdown preview on the right.
 - **Batch commits** — in GitHub mode every save, creation and deletion is
   *staged* (`M`/`A`/`D` badges in the file list, ↺ to undo one); the commit bar
   publishes **all staged changes as a single commit**, with an optional message
-- **Insert helper** — the “+ Insert” menu above the editor drops admonitions,
-  code blocks, tables, doc components (`<fd-tabs>`, `<fd-steps>`,
-  `<fd-api-field>`, `<fd-counter>`) and inline extras at the cursor, ready to
-  fill in
+- **Insert helper** — two ways in: the “+ Insert” menu on the toolbar, and an
+  inline **+** that appears beside the caret whenever it rests on an empty
+  line (and stays out of the way while you type). Both drop admonitions, code
+  blocks, tables, doc components (`<fd-tabs>`, `<fd-steps>`, `<fd-api-field>`,
+  `<fd-counter>`) and inline extras at the cursor
 - **Preview while typing** — the right pane re-renders on every keystroke
 - **Jump to the real page** — the “View page” link opens the route the file
   publishes to

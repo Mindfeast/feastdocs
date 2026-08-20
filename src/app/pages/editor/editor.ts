@@ -147,7 +147,63 @@ export class Editor {
   protected readonly insertSnippets = INSERT_SNIPPETS;
   protected readonly insertGroups = [...new Set(INSERT_SNIPPETS.map((s) => s.group))];
 
+  /**
+   * Notion-style inline affordance: when the caret rests on an EMPTY line, a
+   * small + appears beside it; typing on a non-empty line hides it. `top` is
+   * the caret line's offset inside the source pane.
+   */
+  protected readonly inlineInsertTop = signal<number | null>(null);
+  /** Where the open insert menu is anchored: the toolbar or the caret line. */
+  protected readonly insertAnchor = signal<'toolbar' | 'inline'>('toolbar');
+
   private readonly sourceArea = viewChild<ElementRef<HTMLTextAreaElement>>('source');
+
+  /** Recomputes the inline + position from the caret. Cheap; runs per event. */
+  protected updateInlineInsert(): void {
+    const area = this.sourceArea()?.nativeElement;
+    if (!area) return;
+
+    const start = area.selectionStart;
+    if (start === null || area.selectionStart !== area.selectionEnd) {
+      this.inlineInsertTop.set(null);
+      return;
+    }
+
+    const before = area.value.slice(0, start);
+    const lineStart = before.lastIndexOf('\n') + 1;
+    const lineEnd = area.value.indexOf('\n', start);
+    const line = area.value.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    if (line.trim() !== '') {
+      this.inlineInsertTop.set(null);
+      if (this.insertAnchor() === 'inline') this.insertMenuOpen.set(false);
+      return;
+    }
+
+    const style = getComputedStyle(area);
+    const lineHeight = parseFloat(style.lineHeight) || 22;
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const lineIndex = before.split('\n').length - 1;
+    const top = area.offsetTop + paddingTop + lineIndex * lineHeight - area.scrollTop;
+
+    // Hide when the caret line is scrolled out of the visible pane.
+    if (top < area.offsetTop - 4 || top > area.offsetTop + area.clientHeight - lineHeight) {
+      this.inlineInsertTop.set(null);
+      return;
+    }
+    this.inlineInsertTop.set(Math.round(top));
+  }
+
+  /** The inline + opens the same insert menu, anchored at the caret line. */
+  protected openInlineInsert(event: Event): void {
+    event.preventDefault(); // keep the textarea focused and the caret in place
+    this.insertAnchor.set('inline');
+    this.insertMenuOpen.set(!this.insertMenuOpen());
+  }
+
+  protected openToolbarInsert(): void {
+    this.insertAnchor.set('toolbar');
+    this.insertMenuOpen.set(!this.insertMenuOpen());
+  }
 
   protected readonly pendingCount = computed(() => this.pending().size);
 
@@ -233,6 +289,7 @@ export class Editor {
       area.focus();
       const caret = start + text.length;
       area.setSelectionRange(caret, caret);
+      this.updateInlineInsert();
     });
   }
 

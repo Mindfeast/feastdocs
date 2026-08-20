@@ -23,31 +23,44 @@ import { Component, ElementRef, ViewEncapsulation, afterNextRender, inject } fro
 })
 export class DocSteps {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private decorated = false;
 
   constructor() {
-    afterNextRender(() => {
-      const document = this.host.nativeElement.ownerDocument;
-      const steps = Array.from(this.host.nativeElement.querySelectorAll(':scope > [step]'));
+    // Decorate on a microtask: at upgrade time the light-DOM children already
+    // exist, and a microtask fires even when no application render follows —
+    // which is the case in the editor's live preview, where innerHTML
+    // recreates the element on every keystroke. afterNextRender stays as a
+    // fallback for any environment where the microtask is somehow too early;
+    // decoration is idempotent, so running both costs nothing.
+    queueMicrotask(() => this.decorate());
+    afterNextRender(() => this.decorate());
+  }
 
-      steps.forEach((step, index) => {
-        step.classList.add('fd-steps__item');
+  private decorate(): void {
+    if (this.decorated) return;
+    const document = this.host.nativeElement.ownerDocument;
+    const steps = Array.from(this.host.nativeElement.querySelectorAll(':scope > [step]'));
+    if (steps.length === 0) return;
+    this.decorated = true;
 
-        const header = document.createElement('div');
-        header.className = 'fd-steps__header';
+    steps.forEach((step, index) => {
+      step.classList.add('fd-steps__item');
 
-        const marker = document.createElement('span');
-        marker.className = 'fd-steps__marker';
-        marker.textContent = String(index + 1);
+      const header = document.createElement('div');
+      header.className = 'fd-steps__header';
 
-        const title = document.createElement('span');
-        title.className = 'fd-steps__title';
-        title.textContent = step.getAttribute('step') ?? '';
+      const marker = document.createElement('span');
+      marker.className = 'fd-steps__marker';
+      marker.textContent = String(index + 1);
 
-        header.append(marker, title);
-        step.prepend(header);
-      });
+      const title = document.createElement('span');
+      title.className = 'fd-steps__title';
+      title.textContent = step.getAttribute('step') ?? '';
 
-      if (steps.length > 0) this.host.nativeElement.classList.add('fd-steps');
+      header.append(marker, title);
+      step.prepend(header);
     });
+
+    this.host.nativeElement.classList.add('fd-steps');
   }
 }

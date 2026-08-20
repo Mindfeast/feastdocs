@@ -630,6 +630,7 @@
 }
 
 .fd-editor__sourcewrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -721,6 +722,32 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.fd-editor__inlineplus {
+  position: absolute;
+  inset-inline-start: 0.3rem;
+  z-index: 5;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--fd-border-strong);
+  border-radius: 50%;
+  background: var(--fd-surface);
+  color: var(--fd-text-subtle);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--fd-accent);
+    color: var(--fd-accent-strong);
+  }
+}
+
+.fd-editor__insertmenu--inline {
+  position: absolute;
+  inset-inline-start: 0.3rem;
+  z-index: 6;
 }
 
 // --- Merge resolver ----------------------------------------------------------
