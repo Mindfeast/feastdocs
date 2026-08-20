@@ -8,7 +8,7 @@ sidebar_position: 2
 
 `<fd-tabs>` renders its children as a tab group. Each pane is a `div` with a `tab`
 attribute naming its label.
-
+  
 ## Example
 
 ```html
