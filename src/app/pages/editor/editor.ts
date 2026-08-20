@@ -72,6 +72,17 @@ export class Editor {
   protected readonly pending = signal<ReadonlyMap<string, Pending>>(new Map());
   protected readonly commitMessage = signal('');
 
+  /**
+   * Blob SHA each file had when this session last read it — the baseline for
+   * conflict detection. Refreshed wholesale on refreshFiles, per file on open.
+   */
+  private baseShas = new Map<string, string>();
+  /** Branch tree from the last conflict check, for "keep mine" resolutions. */
+  private latestShas = new Map<string, string>();
+
+  /** Files someone else changed between our read and our commit attempt. */
+  protected readonly conflicts = signal<readonly string[]>([]);
+
   protected readonly pendingCount = computed(() => this.pending().size);
 
   protected readonly dirty = computed(() => this.contentText() !== this.savedContent());
@@ -315,7 +326,9 @@ export class Editor {
         );
         this.files.set(result.files);
       } else if (this.mode() === 'github' && this.github.isConnected()) {
-        this.files.set(await this.github.listFiles(this.content.site.docsDir));
+        const tree = await this.github.listTree(this.content.site.docsDir);
+        this.baseShas = tree;
+        this.files.set([...tree.keys()].sort());
       } else {
         return;
       }
@@ -346,6 +359,9 @@ export class Editor {
         this.applyOpened(path, result.content);
       } else {
         const file = await this.github.readFile(this.content.site.docsDir, path);
+        // Opening refreshes the conflict baseline: whatever we just read IS
+        // the version our eventual commit is based on.
+        this.baseShas.set(path, file.sha);
         this.applyOpened(path, file.content);
       }
     } catch {
@@ -449,11 +465,75 @@ export class Editor {
     this.pending.set(next);
   }
 
+  /**
+   * Compares every staged change against the branch as it is NOW. A file whose
+   * blob SHA moved since we read it was changed by someone else — committing
+   * blindly would overwrite their work (the classic lost update).
+   */
+  private async findConflicts(): Promise<readonly string[]> {
+    this.latestShas = await this.github.listTree(this.content.site.docsDir);
+    const conflicted: string[] = [];
+    for (const [path, change] of this.pending()) {
+      const now = this.latestShas.get(path);
+      if (change.kind === 'create') {
+        // Someone created the same file first.
+        if (now !== undefined) conflicted.push(path);
+      } else {
+        const base = this.baseShas.get(path);
+        // Changed upstream (different SHA) or deleted upstream (missing).
+        if (now !== base) conflicted.push(path);
+      }
+    }
+    return conflicted;
+  }
+
+  /** "Use theirs": drop the staged change and adopt the upstream version. */
+  protected async resolveTheirs(path: string): Promise<void> {
+    this.unstage(path);
+    this.conflicts.set(this.conflicts().filter((c) => c !== path));
+    try {
+      const file = await this.github.readFile(this.content.site.docsDir, path);
+      this.baseShas.set(path, file.sha);
+      if (this.selected() === path) this.applyOpened(path, file.content);
+    } catch {
+      // Deleted upstream: nothing to adopt.
+      this.baseShas.delete(path);
+      if (this.selected() === path) {
+        this.selected.set(null);
+        this.contentText.set('');
+        this.savedContent.set('');
+      }
+    }
+    await this.refreshFiles();
+  }
+
+  /** "Keep mine": explicitly overwrite the upstream version with the staged one. */
+  protected resolveMine(path: string): void {
+    const now = this.latestShas.get(path);
+    const change = this.pending().get(path);
+    if (change?.kind === 'create' && now !== undefined) {
+      // The file exists upstream now — keeping ours means overwriting it.
+      this.stage(path, { kind: 'edit', content: change.content });
+    }
+    if (now !== undefined) this.baseShas.set(path, now);
+    else this.baseShas.delete(path);
+    this.conflicts.set(this.conflicts().filter((c) => c !== path));
+  }
+
   /** Publishes every staged change as one commit, authored by the signed-in user. */
   protected async commitAll(): Promise<void> {
     if (this.pendingCount() === 0 || this.readOnly()) return;
     this.status.set({ kind: 'saving' });
     try {
+      const conflicted = await this.findConflicts();
+      if (conflicted.length > 0) {
+        this.conflicts.set(conflicted);
+        this.status.set({
+          kind: 'error',
+          message: `Someone changed ${conflicted.length} of your staged file${conflicted.length === 1 ? '' : 's'} in the meantime — resolve below, then commit again.`,
+        });
+        return;
+      }
       const changes = [...this.pending()].map(([path, change]) => ({
         path,
         content: change.content,
@@ -467,6 +547,7 @@ export class Editor {
       const count = changes.length;
       this.pending.set(new Map());
       this.commitMessage.set('');
+      this.conflicts.set([]);
       await this.refreshFiles();
       const login = this.github.user()?.login ?? 'you';
       this.status.set({
@@ -474,6 +555,15 @@ export class Editor {
         detail: `Committed ${count} change${count === 1 ? '' : 's'} to ${this.github.branch} as ${login} — live after the next deploy`,
       });
     } catch (error) {
+      // The branch moved between our conflict check and the ref update — a
+      // narrow race. Nothing was written; checking again is all it takes.
+      if ((error as { status?: number })?.status === 422) {
+        this.status.set({
+          kind: 'error',
+          message: 'The branch moved while committing — nothing was written. Press Commit again.',
+        });
+        return;
+      }
       this.status.set({ kind: 'error', message: describe(error, 'Commit failed') });
     }
   }

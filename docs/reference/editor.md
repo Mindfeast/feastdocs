@@ -79,6 +79,24 @@ The local file API is probed only in development builds. On a deployed site the
 editor is GitHub-only — a visitor's own `npm start` on their machine is
 invisible to it, so "saving" can never silently land on someone's local disk.
 
+### Concurrent editing and conflicts
+
+Several people can edit at the same time; what happens depends on the path:
+
+- **Git pushes** conflict the way git always has — the second push is rejected
+  and the author merges locally. Nothing new to learn.
+- **Web commits are checked before they publish.** The editor remembers each
+  file's blob SHA from when you read it. At commit time it compares every
+  staged file against the branch as it is *now* — if someone changed (or
+  created, or deleted) one of your files in the meantime, the commit is
+  blocked and a panel lists each conflicted file with two choices:
+  **Use theirs** (drop your staged change, load their version) or
+  **Keep mine** (explicitly overwrite theirs). Nothing is ever overwritten
+  silently.
+- **The final ref update is atomic.** If the branch moves in the instant
+  between the check and the write, GitHub rejects the commit outright
+  (nothing half-written) and the editor asks you to press Commit again.
+
 ### Author attribution
 
 Every page's footer shows **when it last changed and by whom**. That comes from

@@ -298,6 +298,28 @@
         </div>
       }
 
+      <!-- Conflicts: someone else changed these files since we read them. -->
+      @if (conflicts().length > 0) {
+        <div class="fd-editor__conflicts" role="alert">
+          <p class="fd-editor__conflicts-title">
+            Changed by someone else while you were editing — choose per file:
+          </p>
+          @for (path of conflicts(); track path) {
+            <div class="fd-editor__conflict">
+              <code>{{ path }}</code>
+              <span class="fd-editor__conflict-actions">
+                <button type="button" (click)="resolveTheirs(path)" title="Discard my staged change and load their version">
+                  Use theirs
+                </button>
+                <button type="button" class="is-mine" (click)="resolveMine(path)" title="Commit my version over theirs">
+                  Keep mine
+                </button>
+              </span>
+            </div>
+          }
+        </div>
+      }
+
       <div class="fd-editor__panes">
         <textarea
           class="fd-editor__source"

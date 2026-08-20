@@ -95,15 +95,26 @@ export class GithubService {
 
   /** Every doc-ish file under docsDir on the configured branch. */
   async listFiles(docsDir: string): Promise<string[]> {
-    const tree = await this.get<{ tree: Array<{ path: string; type: string }> }>(
+    return [...(await this.listTree(docsDir)).keys()].sort();
+  }
+
+  /**
+   * Path -> blob SHA for every doc file on the branch. The SHAs are the basis
+   * of conflict detection: a file whose SHA changed since it was read has been
+   * edited by someone else in the meantime.
+   */
+  async listTree(docsDir: string): Promise<Map<string, string>> {
+    const tree = await this.get<{ tree: Array<{ path: string; type: string; sha: string }> }>(
       `/repos/${this.repo}/git/trees/${encodeURIComponent(this.branch)}?recursive=1`,
     );
     const prefix = `${docsDir}/`;
-    return tree.tree
-      .filter((entry) => entry.type === 'blob' && entry.path.startsWith(prefix))
-      .map((entry) => entry.path.slice(prefix.length))
-      .filter((path) => /\.(md|markdown|html|scss)$/i.test(path))
-      .sort();
+    const map = new Map<string, string>();
+    for (const entry of tree.tree) {
+      if (entry.type !== 'blob' || !entry.path.startsWith(prefix)) continue;
+      const path = entry.path.slice(prefix.length);
+      if (/\.(md|markdown|html|scss)$/i.test(path)) map.set(path, entry.sha);
+    }
+    return map;
   }
 
   async readFile(docsDir: string, path: string): Promise<GithubFile> {

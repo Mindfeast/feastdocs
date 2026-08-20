@@ -567,6 +567,63 @@
   font-weight: 700;
 }
 
+.fd-editor__conflicts {
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--fd-tone-warning);
+  background: color-mix(in oklab, var(--fd-tone-warning) 12%, transparent);
+}
+
+.fd-editor__conflicts-title {
+  margin: 0 0 0.4rem;
+  color: var(--fd-tone-warning);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.fd-editor__conflict {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+
+  code {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--fd-font-mono);
+    font-size: 0.78rem;
+    color: var(--fd-text-strong);
+  }
+}
+
+.fd-editor__conflict-actions {
+  display: flex;
+  gap: 0.4rem;
+
+  button {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--fd-border-strong);
+    border-radius: var(--fd-radius-sm);
+    background: var(--fd-surface);
+    color: var(--fd-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--fd-text-strong);
+      border-color: var(--fd-accent);
+    }
+
+    &.is-mine:hover {
+      border-color: var(--fd-tone-warning);
+      color: var(--fd-tone-warning);
+    }
+  }
+}
+
 // --- Panes -----------------------------------------------------------------------
 
 .fd-editor__panes {
