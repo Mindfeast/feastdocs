@@ -2,7 +2,7 @@
 title: Angular components in Markdown
 description: Doc components are real Angular components, registered as custom elements — usable in any page.
 sidebar_label: Overview
----
+--- 
 
 # Angular components in Markdown
 
