@@ -74,9 +74,36 @@ async function writeRegistry(modules, sections) {
     `/** Lightweight metadata for all pages — safe to keep in the initial bundle. */\n` +
     `export const DOC_INDEX: readonly DocSummary[] = ${JSON.stringify(index, null, 2)};\n\n` +
     `/** Top-level sections, each with its own sidebar tree. */\n` +
-    `export const SECTIONS: readonly DocSection[] = ${JSON.stringify(sections, null, 2)};\n`;
+    `export const SECTIONS: readonly DocSection[] = ${JSON.stringify(sections, null, 2)};\n\n` +
+    `/**\n` +
+    ` * Source paths in sidebar order. The content manager sorts its file tree\n` +
+    ` * by this, so what an author drags matches what a reader sees.\n` +
+    ` */\n` +
+    `export const PAGE_ORDER: readonly string[] = ${JSON.stringify(pageOrder(modules, sections), null, 2)};\n`;
 
   await writeIfChanged(path.join(paths.generated, 'registry.ts'), contents);
+}
+
+/** Flattens the section trees into source paths, in the order readers see. */
+function pageOrder(modules, sections) {
+  const bySlug = new Map(modules.map(({ doc }) => [doc.slug, doc.sourcePath]));
+  const out = [];
+  const walk = (items) => {
+    for (const item of items) {
+      if (item.type === 'doc') {
+        const source = bySlug.get(item.slug);
+        if (source) out.push(source);
+        continue;
+      }
+      if (item.slug != null) {
+        const source = bySlug.get(item.slug);
+        if (source) out.push(source);
+      }
+      walk(item.items);
+    }
+  };
+  for (const section of sections) walk(section.items);
+  return out;
 }
 
 async function writeSiteConfig(config) {

@@ -183,48 +183,71 @@
       />
 
       <ul class="fd-editor__list">
-        @for (file of visibleFiles(); track file) {
-          <li class="fd-editor__row">
-            <button
-              type="button"
-              class="fd-editor__file"
-              [class.fd-editor__file--active]="file === selected()"
-              [class.fd-editor__file--deleted]="pendingKind(file) === 'delete'"
-              (click)="open(file)"
+        @for (row of tree(); track row.kind + row.path) {
+          @if (row.kind === 'folder') {
+            <li class="fd-editor__treerow" [style.padding-inline-start.px]="row.depth * 12">
+              <button type="button" class="fd-editor__folder" (click)="toggleFolder(row.path)">
+                <svg viewBox="0 0 24 24" aria-hidden="true" [class.is-open]="row.expanded">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+                {{ row.name }}
+              </button>
+            </li>
+          } @else {
+            <li
+              class="fd-editor__treerow fd-editor__row"
+              [class.is-dragging]="dragPath() === row.path"
+              [class.drop-before]="dropHint(row.path) === 'before'"
+              [class.drop-after]="dropHint(row.path) === 'after'"
+              [style.padding-inline-start.px]="row.depth * 12"
+              [attr.draggable]="row.draggable ? true : null"
+              (dragstart)="onDragStart(row.path, $event)"
+              (dragover)="onDragOver(row.path, $event)"
+              (drop)="onDrop($event)"
+              (dragend)="onDragEnd()"
             >
-              {{ file }}
-              @switch (pendingKind(file)) {
-                @case ('edit') {
-                  <span class="fd-editor__badge fd-editor__badge--edit" title="Staged edit">M</span>
+              <button
+                type="button"
+                class="fd-editor__file"
+                [class.fd-editor__file--active]="row.path === selected()"
+                [class.fd-editor__file--deleted]="pendingKind(row.path) === 'delete'"
+                [attr.title]="row.path"
+                (click)="open(row.path)"
+              >
+                {{ row.name }}
+                @switch (pendingKind(row.path)) {
+                  @case ('edit') {
+                    <span class="fd-editor__badge fd-editor__badge--edit" title="Staged edit">M</span>
+                  }
+                  @case ('create') {
+                    <span class="fd-editor__badge fd-editor__badge--create" title="Staged new file">A</span>
+                  }
+                  @case ('delete') {
+                    <span class="fd-editor__badge fd-editor__badge--delete" title="Staged deletion">D</span>
+                  }
                 }
-                @case ('create') {
-                  <span class="fd-editor__badge fd-editor__badge--create" title="Staged new file">A</span>
-                }
-                @case ('delete') {
-                  <span class="fd-editor__badge fd-editor__badge--delete" title="Staged deletion">D</span>
-                }
+              </button>
+              @if (pendingKind(row.path) !== null && mode() === 'github') {
+                <button
+                  type="button"
+                  class="fd-editor__rowaction"
+                  title="Undo staged change"
+                  (click)="unstage(row.path, $event)"
+                >
+                  &#8634;
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="fd-editor__rowaction fd-editor__rowaction--danger"
+                  [attr.title]="mode() === 'github' ? 'Stage deletion' : 'Delete file'"
+                  (click)="remove(row.path, $event)"
+                >
+                  &#10005;
+                </button>
               }
-            </button>
-            @if (pendingKind(file) !== null && mode() === 'github') {
-              <button
-                type="button"
-                class="fd-editor__rowaction"
-                title="Undo staged change"
-                (click)="unstage(file, $event)"
-              >
-                ↺
-              </button>
-            } @else {
-              <button
-                type="button"
-                class="fd-editor__rowaction fd-editor__rowaction--danger"
-                [attr.title]="mode() === 'github' ? 'Stage deletion' : 'Delete file'"
-                (click)="remove(file, $event)"
-              >
-                ✕
-              </button>
-            }
-          </li>
+            </li>
+          }
         }
       </ul>
 

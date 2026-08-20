@@ -13,6 +13,7 @@ import { DomSanitizer, Title, type SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
 import { GithubService } from '../../core/github.service';
+import { PAGE_ORDER } from '../../generated/registry';
 import { createPreviewRenderer } from './markdown-preview';
 import { diffLines, type DiffHunk } from './line-diff';
 
@@ -36,6 +37,23 @@ interface Pending {
 interface ResolveHunk extends DiffHunk {
   choice: 'theirs' | 'mine' | 'both' | null;
 }
+
+/** One rendered line of the file tree — a folder or a file. */
+interface TreeRow {
+  readonly kind: 'folder' | 'file';
+  /** Display name: the folder or file name, not the whole path. */
+  readonly name: string;
+  /** Full path for files; the folder path for folders. */
+  readonly path: string;
+  readonly depth: number;
+  readonly expanded: boolean;
+  /** Files that are pages can be dragged to reorder; others cannot. */
+  readonly draggable: boolean;
+}
+
+const FOLDERS_KEY = 'feastdocs:editor-folders';
+/** Positions are rewritten in tens, leaving room to insert by hand later. */
+const POSITION_STEP = 10;
 
 /** Snippets the Insert menu can drop at the cursor. */
 const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: string }> = [
@@ -259,6 +277,234 @@ export class Editor {
 
   protected pendingKind(path: string): Pending['kind'] | null {
     return this.pending().get(path)?.kind ?? null;
+  }
+
+  // --- File tree -------------------------------------------------------------
+
+  /** Collapsed folders, persisted per reader. */
+  private readonly collapsedFolders = signal<ReadonlySet<string>>(this.readCollapsedFolders());
+  /** Base order: how the sidebar sorted pages at the last build. */
+  private readonly baseOrder = new Map(PAGE_ORDER.map((path, index) => [path, index]));
+  /**
+   * Order applied by a drag this session. The tree must show the new order
+   * immediately, before the rebuild that would refresh PAGE_ORDER.
+   */
+  private readonly orderOverride = signal<ReadonlyMap<string, number>>(new Map());
+
+  /** Drag state: what is moving, and where it would land. */
+  protected readonly dragPath = signal<string | null>(null);
+  protected readonly dropTarget = signal<{ path: string; after: boolean } | null>(null);
+
+  /**
+   * The file list as a tree. Filtering flattens it to matches — a filtered
+   * tree hides the very rows you searched for behind collapsed parents.
+   */
+  protected readonly tree = computed<readonly TreeRow[]>(() => {
+    const files = this.visibleFiles();
+    if (this.filter().trim()) {
+      return files.map((path) => ({
+        kind: 'file' as const,
+        name: path,
+        path,
+        depth: 0,
+        expanded: false,
+        draggable: false,
+      }));
+    }
+
+    interface Node {
+      folders: Map<string, Node>;
+      files: string[];
+    }
+    const root: Node = { folders: new Map(), files: [] };
+    for (const path of files) {
+      const parts = path.split('/');
+      let node = root;
+      for (const folder of parts.slice(0, -1)) {
+        let child = node.folders.get(folder);
+        if (!child) {
+          child = { folders: new Map(), files: [] };
+          node.folders.set(folder, child);
+        }
+        node = child;
+      }
+      node.files.push(path);
+    }
+
+    const collapsed = this.collapsedFolders();
+    const rows: TreeRow[] = [];
+    const walk = (node: Node, prefix: string, depth: number): void => {
+      for (const name of [...node.folders.keys()].sort()) {
+        const path = prefix ? `${prefix}/${name}` : name;
+        const isCollapsed = collapsed.has(path);
+        rows.push({ kind: 'folder', name, path, depth, expanded: !isCollapsed, draggable: false });
+        if (!isCollapsed) walk(node.folders.get(name)!, path, depth + 1);
+      }
+      for (const path of this.sortSiblings(node.files)) {
+        rows.push({
+          kind: 'file',
+          name: path.slice(path.lastIndexOf('/') + 1),
+          path,
+          depth,
+          expanded: false,
+          draggable: this.isReorderable(path),
+        });
+      }
+    };
+    walk(root, '', 0);
+    return rows;
+  });
+
+  protected toggleFolder(path: string): void {
+    this.collapsedFolders.update((current) => {
+      const next = new Set(current);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      try {
+        localStorage.setItem(FOLDERS_KEY, JSON.stringify([...next]));
+      } catch {
+        // Expansion state is a convenience; losing it is not worth surfacing.
+      }
+      return next;
+    });
+  }
+
+  /** Sidebar order, with any reorder from this session applied on top. */
+  private sortSiblings(paths: readonly string[]): readonly string[] {
+    const override = this.orderOverride();
+    const rank = (path: string) => override.get(path) ?? this.baseOrder.get(path) ?? Number.MAX_SAFE_INTEGER;
+    return [...paths].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  }
+
+  /**
+   * Only pages carry a sidebar position. Stylesheets, templates and a folder's
+   * own index page (always first in its sidebar) are not draggable.
+   */
+  private isReorderable(path: string): boolean {
+    if (path.startsWith('_') || !/\.(md|markdown|html)$/i.test(path)) return false;
+    return !/(^|\/)index\.[^.]+$/i.test(path);
+  }
+
+  private readCollapsedFolders(): ReadonlySet<string> {
+    try {
+      const stored = localStorage.getItem(FOLDERS_KEY);
+      if (stored) return new Set<string>(JSON.parse(stored) as string[]);
+    } catch {
+      // Unreadable — start fully expanded.
+    }
+    return new Set();
+  }
+
+  // --- Drag to reorder -------------------------------------------------------
+
+  protected onDragStart(path: string, event: DragEvent): void {
+    this.dragPath.set(path);
+    event.dataTransfer?.setData('text/plain', path);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  protected onDragOver(path: string, event: DragEvent): void {
+    const dragged = this.dragPath();
+    if (!dragged || dragged === path || !this.isReorderable(path)) return;
+    // Reordering is within one folder; a cross-folder drag would be a move,
+    // which also has to rewrite every link to the page.
+    if (parentFolder(dragged) !== parentFolder(path)) return;
+
+    event.preventDefault();
+    const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.dropTarget.set({ path, after: event.clientY > box.top + box.height / 2 });
+  }
+
+  protected onDragEnd(): void {
+    this.dragPath.set(null);
+    this.dropTarget.set(null);
+  }
+
+  protected dropHint(path: string): 'before' | 'after' | null {
+    const target = this.dropTarget();
+    if (!target || target.path !== path) return null;
+    return target.after ? 'after' : 'before';
+  }
+
+  /**
+   * Renumbers the folder's pages in tens and writes `sidebar_position` into
+   * each changed page's front matter. Local mode saves them; GitHub mode
+   * stages them, so a whole reshuffle lands as one commit.
+   */
+  protected async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    const dragged = this.dragPath();
+    const target = this.dropTarget();
+    this.onDragEnd();
+    if (!dragged || !target) return;
+
+    const folder = parentFolder(dragged);
+    const siblings = this.sortSiblings(
+      this.visibleFiles().filter((path) => parentFolder(path) === folder && this.isReorderable(path)),
+    );
+
+    const next = siblings.filter((path) => path !== dragged);
+    const anchor = next.indexOf(target.path);
+    if (anchor === -1) return;
+    next.splice(target.after ? anchor + 1 : anchor, 0, dragged);
+    if (next.join('\n') === siblings.join('\n')) return;
+
+    this.status.set({ kind: 'saving' });
+    try {
+      // Show the new order at once; the rebuild refreshes PAGE_ORDER later.
+      this.orderOverride.update((current) => {
+        const map = new Map(current);
+        next.forEach((path, index) => map.set(path, index));
+        return map;
+      });
+
+      let changed = 0;
+      for (const [index, path] of next.entries()) {
+        const position = (index + 1) * POSITION_STEP;
+        const before = await this.readForEdit(path);
+        const after = setSidebarPosition(before, position);
+        if (after === before) continue;
+        changed += 1;
+
+        if (this.mode() === 'local') {
+          await firstValueFrom(this.http.put(`${LOCAL_API}/file`, { path, content: after }));
+        } else {
+          this.stage(path, { kind: 'edit', content: after });
+        }
+        // Keep the open file in sync, or saving it would undo the reorder.
+        if (this.selected() === path) this.applyOpened(path, after);
+      }
+
+      if (this.mode() === 'local') {
+        await this.refreshFiles();
+        this.status.set({
+          kind: 'saved',
+          detail: `Reordered ${changed} page${changed === 1 ? '' : 's'} — the site rebuilds in a moment`,
+        });
+      } else {
+        this.status.set({
+          kind: 'saved',
+          detail: `Reordered ${changed} page${changed === 1 ? '' : 's'} — staged, ${this.pendingCount()} change${this.pendingCount() === 1 ? '' : 's'} ready to commit`,
+        });
+      }
+    } catch (error) {
+      this.status.set({ kind: 'error', message: describe(error, 'Could not reorder the pages') });
+    }
+  }
+
+  /** Current content of a file: the staged version if any, else the backend. */
+  private async readForEdit(path: string): Promise<string> {
+    const staged = this.pending().get(path);
+    if (staged?.content != null) return staged.content;
+    if (this.mode() === 'local') {
+      const result = await firstValueFrom(
+        this.http.get<{ content: string }>(`${LOCAL_API}/file`, { params: { path } }),
+      );
+      return result.content;
+    }
+    const file = await this.github.readFile(this.content.site.docsDir, path);
+    this.baseShas.set(path, file.sha); // reading here also refreshes the conflict baseline
+    return file.content;
   }
 
   /**
@@ -958,4 +1204,27 @@ function humanize(value: string): string {
     .replace(/[-_]+/g, ' ')
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** '' for a file at the docs root, otherwise the folder holding it. */
+function parentFolder(path: string): string {
+  const cut = path.lastIndexOf('/');
+  return cut === -1 ? '' : path.slice(0, cut);
+}
+
+/**
+ * Rewrites (or inserts) `sidebar_position` in a page's front matter, leaving
+ * the rest of the file byte-identical. A page without front matter gets one.
+ */
+function setSidebarPosition(content: string, position: number): string {
+  const line = `sidebar_position: ${position}`;
+  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
+  if (!match) return `---\n${line}\n---\n\n${content}`;
+
+  const front = match[1];
+  const updated = /^sidebar_position\s*:/m.test(front)
+    ? front.replace(/^sidebar_position\s*:.*$/m, line)
+    : `${front}\n${line}`;
+  if (updated === front) return content;
+  return `---\n${updated}\n---\n${content.slice(match[0].length)}`;
 }

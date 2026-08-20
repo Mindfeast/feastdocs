@@ -12,6 +12,15 @@ and a live Markdown preview on the right.
 
 ## What it can do
 
+- **Browse as a folder tree** — collapsible folders (expansion is remembered),
+  files listed by name, in **sidebar order** rather than alphabetically, so the
+  tree mirrors what readers see. Typing in the filter flattens it to matches.
+- **Reorder pages by dragging** them within their folder. The drop indicator
+  shows where the page will land; releasing renumbers that folder's
+  `sidebar_position` values in tens and writes them into front matter. In
+  GitHub mode the rewrites are *staged*, so a whole reshuffle commits once.
+  A folder's own `index.md` stays pinned first and templates are not
+  draggable.
 - **Edit** any `.md`, `.html` or `.scss` file under `docs/`, with
   <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (GitHub)
 - **Create** pages — type a path like `guide/deploying.md` and it is scaffolded

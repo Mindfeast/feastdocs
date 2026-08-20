@@ -362,6 +362,82 @@
   }
 }
 
+.fd-editor__treerow {
+  display: flex;
+  align-items: center;
+}
+
+.fd-editor__folder {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.28rem 0.5rem;
+  border: 0;
+  border-radius: var(--fd-radius-sm);
+  background: none;
+  color: var(--fd-text-strong);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: var(--fd-text-subtle);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 120ms ease;
+  }
+
+  svg.is-open {
+    transform: rotate(90deg);
+  }
+}
+
+// --- Drag to reorder ---------------------------------------------------------
+
+.fd-editor__row[draggable='true'] .fd-editor__file {
+  cursor: grab;
+}
+
+.fd-editor__row.is-dragging {
+  opacity: 0.45;
+}
+
+// The drop indicator is drawn on the row the pointer is over, above or below
+// it, so the landing spot is unambiguous.
+.fd-editor__row.drop-before,
+.fd-editor__row.drop-after {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0.3rem 0.3rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--fd-accent);
+  }
+}
+
+.fd-editor__row.drop-before::after {
+  top: -1px;
+}
+
+.fd-editor__row.drop-after::after {
+  bottom: -1px;
+}
+
 .fd-editor__rowaction {
   position: absolute;
   inset-inline-end: 0.3rem;
