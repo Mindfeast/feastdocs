@@ -1,46 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="FeastDocs">
-  <!--
-    FeastDocs mark, vector recreation of the brand icon: a document with an
-    amber fold, structured content rows, and a node graph branching out of the
-    page — structured knowledge being generated. Dashed arc = the build loop.
-  -->
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Camada_2" data-name="Camada 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 245.68 348.7">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #d96714;
+        stroke: #d96714;
+      }
 
-  <!-- Charcoal disc -->
-  <circle cx="256" cy="256" r="208" fill="#262b34"/>
+      .cls-2 {
+        fill: #3b2517;
+        stroke: #3b2517;
+      }
 
-  <!-- Dashed build arc with a solid waypoint dot -->
-  <path
-    d="M 334 88 A 185 185 0 1 1 88 334"
-    fill="none" stroke="#f18a1e" stroke-width="14" stroke-linecap="round"
-    stroke-dasharray="185 145 999"
-  />
-  <circle cx="329" cy="426" r="16" fill="#f18a1e"/>
+      .cls-3 {
+        fill: #f49f15;
+        stroke: #f49f15;
+      }
 
-  <!-- Document outline with folded corner -->
-  <path
-    d="M 190 130 H 296 L 348 182 V 366 Q 348 382 332 382 H 190 Q 174 382 174 366 V 146 Q 174 130 190 130 Z"
-    fill="#262b34" stroke="#ffffff" stroke-width="15" stroke-linejoin="round"
-  />
-  <path
-    d="M 296 130 L 348 182 H 312 Q 296 182 296 166 Z"
-    fill="#f18a1e" stroke="#ffffff" stroke-width="15" stroke-linejoin="round"
-  />
+      .cls-4 {
+        fill: #ea860e;
+        stroke: #ea860e;
+      }
 
-  <!-- Content: amber heading, then dotted rows -->
-  <rect x="196" y="206" width="76" height="17" rx="8.5" fill="#f18a1e"/>
+      .cls-5 {
+        fill: #d86714;
+        stroke: #d86714;
+      }
 
-  <circle cx="201" cy="252" r="8.5" fill="#f18a1e"/>
-  <rect x="218" y="243.5" width="92" height="17" rx="8.5" fill="#ffffff"/>
+      .cls-6 {
+        fill: #070b0c;
+        stroke: #070b0c;
+      }
 
-  <circle cx="201" cy="298" r="8.5" fill="#f18a1e"/>
-  <rect x="218" y="289.5" width="92" height="17" rx="8.5" fill="#ffffff"/>
+      .cls-7 {
+        fill: #1d1d1d;
+        stroke: #1d1d1d;
+      }
 
-  <circle cx="201" cy="344" r="8.5" fill="#f18a1e"/>
-  <rect x="218" y="335.5" width="92" height="17" rx="8.5" fill="#ffffff"/>
-
-  <!-- The branch: content flowing out of the page as connected nodes -->
-  <path d="M 330 298 H 354" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round"/>
-  <path d="M 354 298 L 404 266 M 354 298 L 398 338" fill="none" stroke="#f18a1e" stroke-width="13" stroke-linecap="round"/>
-  <circle cx="412" cy="261" r="17" fill="#f18a1e"/>
-  <circle cx="404" cy="343" r="13" fill="#f18a1e"/>
+      .cls-8 {
+        fill: #e9860e;
+        stroke: #e9860e;
+      }
+    
+      path, polygon {
+        stroke-width: 2.2;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <g id="Camada_1-2" data-name="Camada 1">
+    <path class="cls-6" d="M34.94,224.28c0,.19,0,.38,0,.56.03,6.15-.12,12.33.12,18.48l88.02,54.79,87.55-54.78c.24-6.15.09-12.33.12-18.48,0-.19,0-.38,0-.56l34.37-20.85.28,67.61-122.36,77.66L.56,271.34v-67.9l34.37,20.85Z"/>
+    <polygon class="cls-3" points="210.75 99.75 122.66 45.18 34.94 99.75 34.94 53.83 122.61 0 210.75 53.83 210.75 99.75"/>
+    <path class="cls-8" d="M210.75,118.35v21.41c0,7.88,0,15.78,0,23.67-5.44-2.88-10.54-6.37-15.77-9.58-24.01-14.74-47.81-29.83-71.93-44.4l-43.02,25.81v-45.64l40.4-24.68,3.13-1.15,87.2,54.56Z"/>
+    <path class="cls-1" d="M34.94,140.32l29.02,18.59.84-9.58c.04,2.67-.63,8.97.8,10.75l23.43,14.6c-.07,19.71,0,39.45,0,59.17-18.14-10.85-36.2-21.98-54.1-33.25-11.68-7.35-23.27-14.89-34.94-22.26v-58.89l34.94,20.85Z"/>
+    <path class="cls-6" d="M122.84,127.93v151.58l-2.45-.64c-10.06-6.94-20.64-13.1-30.97-19.63-.5-.32-.34-1.11-.39-1.14v-24.23c0-19.71-.07-39.45,0-59.17.03-8.78-.13-17.59.12-26.37l31.7-19.88,1.99-.52Z"/>
+    <path class="cls-5" d="M223.14,133.56c1.15-.72,2.91-2.59,4.56-3.62,5.84-3.65,11.78-7.57,17.98-10.47v58.89c-11.65,7.39-23.26,14.91-34.94,22.26-29.19,18.37-58.57,36.52-87.91,54.66v-23.1l52.41-32.96v-38.04c4.18,1.69,7.93,4.45,11.83,6.76l.56.56c.14.08.42-.08.56,0l.56.56c.37.2.76.37,1.13.56l.56.56c.37.19.75.41,1.13.56l.56.56c.16.04.37-.02.56,0l14.28,8.9,15.63-9.71.52-36.95Z"/>
+    <path class="cls-5" d="M122.84,218.08v-90.16l.53-.26,39.2,25.05.31,39.2-.94,1.88-39.1,24.29Z"/>
+    <path class="cls-2" d="M210.75,200.62c-.02,7.88.03,15.79,0,23.67,0,.19,0,.38,0,.56l-87.91,54.66v-24.23c29.34-18.14,58.71-36.29,87.91-54.66Z"/>
+    <path class="cls-2" d="M89.03,233.86v24.23c-1.27-.8-3.48-1.6-5.02-2.58-16.3-10.31-32.44-20.9-49.07-30.66,0-.19,0-.38,0-.56-.03-7.88.02-15.79,0-23.67,17.9,11.27,35.96,22.39,54.1,33.25Z"/>
+    <path class="cls-4" d="M64.8,100.88c.02.37-.03.76,0,1.13-.95,3.07-.94,7.68,0,10.71.02,2.25-.01,4.51,0,6.76-.95.89-.94,3.64,0,4.51,0,.56,0,1.13,0,1.69l-.55.28.55.28c.02,5.25-.04,10.53,0,15.78-.88.23-.84,2.07,0,2.25.01,1.69-.03,3.39,0,5.07l-.84,9.58-29.02-18.59.12-22.43,28.62-17.58,1.13.56Z"/>
+    <path class="cls-2" d="M223.14,133.56l-.52,36.95-15.63,9.71-14.28-8.9c.74.07,1.51-.04,2.26,0v-17.47c5.23,3.21,10.33,6.7,15.77,9.58.01-7.88,0-15.78,0-23.67,3.95-.45,7.44-3.8,10.76-5.88.56-.35,1.44-.2,1.63-.32Z"/>
+    <path class="cls-7" d="M89.03,258.09c.05.03-.1.82.39,1.14,10.32,6.53,20.9,12.69,30.97,19.63l2.45.64,87.91-54.66c-.03,6.15.12,12.33-.12,18.48l-87.55,54.78-88.02-54.79c-.24-6.15-.09-12.33-.12-18.48,16.63,9.76,32.77,20.36,49.07,30.66,1.55.98,3.75,1.78,5.02,2.58Z"/>
+  </g>
 </svg>
