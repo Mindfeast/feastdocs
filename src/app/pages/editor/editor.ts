@@ -157,6 +157,42 @@ export class Editor {
   protected readonly insertAnchor = signal<'toolbar' | 'inline'>('toolbar');
 
   private readonly sourceArea = viewChild<ElementRef<HTMLTextAreaElement>>('source');
+  private readonly previewPane = viewChild<ElementRef<HTMLElement>>('previewPane');
+
+  /**
+   * Echo guard: setting the follower's scrollTop fires its own scroll event,
+   * which must not sync back. The follower is remembered briefly; its next
+   * event inside the window is the echo and gets swallowed. Time-based rather
+   * than rAF-based on purpose — rAF never fires in hidden tabs.
+   */
+  private scrollSyncTarget: HTMLElement | null = null;
+  private scrollSyncAt = 0;
+
+  /**
+   * Keeps source and preview aligned proportionally: scrolling 40% into one
+   * pane scrolls 40% into the other. Proportional is an approximation — the
+   * rendered page is taller or shorter than its markdown — but it keeps the
+   * same region of the document in view on both sides.
+   */
+  protected syncScroll(from: 'source' | 'preview'): void {
+    const source = this.sourceArea()?.nativeElement;
+    const preview = this.previewPane()?.nativeElement;
+    if (!source || !preview) return;
+
+    const [leader, follower] = from === 'source' ? [source, preview] : [preview, source];
+
+    if (this.scrollSyncTarget === leader && performance.now() - this.scrollSyncAt < 150) {
+      return; // the echo of our own programmatic scroll
+    }
+
+    const leaderMax = leader.scrollHeight - leader.clientHeight;
+    if (leaderMax <= 0) return;
+
+    this.scrollSyncTarget = follower;
+    this.scrollSyncAt = performance.now();
+    follower.scrollTop =
+      (leader.scrollTop / leaderMax) * (follower.scrollHeight - follower.clientHeight);
+  }
 
   /** Recomputes the inline + position from the caret. Cheap; runs per event. */
   protected updateInlineInsert(): void {

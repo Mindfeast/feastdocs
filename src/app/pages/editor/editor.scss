@@ -446,6 +446,9 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  // Grid items default to min-height auto, letting tall content push the
+  // pane past its track — which silently kills the panes' own scrollbars.
+  min-height: 0;
 }
 
 .fd-editor__bar {

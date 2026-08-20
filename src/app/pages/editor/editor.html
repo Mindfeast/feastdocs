@@ -360,7 +360,7 @@
             (input)="contentText.set($any($event.target).value); updateInlineInsert()"
             (keyup)="updateInlineInsert()"
             (click)="updateInlineInsert()"
-            (scroll)="updateInlineInsert()"
+            (scroll)="updateInlineInsert(); syncScroll('source')"
           ></textarea>
 
           @if (inlineInsertTop() !== null) {
@@ -395,7 +395,7 @@
           }
         </div>
 
-        <div class="fd-editor__preview">
+        <div class="fd-editor__preview" #previewPane (scroll)="syncScroll('preview')">
           @if (isMarkdown()) {
             <div class="fd-markdown" [innerHTML]="preview()"></div>
           } @else {
