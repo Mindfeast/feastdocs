@@ -1,7 +1,7 @@
 ---
 title: Steps
 description: Numbered tutorial steps with a connector line.
-sidebar_position: 3
+sidebar_position: 20
 ---
  
 # Steps

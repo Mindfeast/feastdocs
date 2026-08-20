@@ -1,7 +1,7 @@
 ---
 title: Tabs
 description: Tabbed content for package managers, languages, or platforms.
-sidebar_position: 2
+sidebar_position: 10
 ---
 
 # Tabs
