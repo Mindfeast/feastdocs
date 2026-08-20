@@ -94,6 +94,18 @@
     background: var(--fd-surface-strong);
     color: var(--fd-text-muted);
   }
+
+  /* Housekeeping: present, but never competing with feat and fix. */
+  &[data-type='chore'],
+  &[data-type='ci'],
+  &[data-type='build'],
+  &[data-type='test'],
+  &[data-type='style'],
+  &[data-type='refactor'] {
+    border-color: var(--fd-border);
+    background: transparent;
+    color: var(--fd-text-subtle);
+  }
 }
 
 .fd-changelog__body {

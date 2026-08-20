@@ -119,6 +119,14 @@ export interface SiteConfig {
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+/** Where one changelog source lives, so commit links work per host. */
+export interface ChangelogSource {
+  /** Human-readable name of the repository. */
+  readonly label: string;
+  /** Commit URL prefix — the hash is appended. null when unknown. */
+  readonly commitUrl: string | null;
+}
+
 /** One repository commit, as shown by the <fd-changelog> component. */
 export interface ChangelogEntry {
   readonly hash: string;

@@ -317,13 +317,23 @@ and whether the commit touched `docs/`.
 <fd-changelog repo="acme/api"></fd-changelog>    <!-- another repository -->
 ```
 
-**Several products, several repositories.** List them in `changelog.repos`
-(`['acme/api', { repo: 'acme/app', branch: 'release' }]`) and the build reads
-each from the GitHub API, so one docs site can carry a changelog per product.
-Private repositories work too — put a token with read access in the build
-environment as `GITHUB_TOKEN`, in the host's secret store, never in the config
-file. Note that whatever you collect becomes publicly readable on the deployed
-page, commit messages and author names included.
+**Several products, several repositories.** List them in `changelog.repos` and
+one docs site carries a changelog per product — **GitHub and Azure DevOps**:
+
+```js
+repos: [
+  'acme/api',                                                    // GitHub
+  { repo: 'acme/app', branch: 'release' },                       // GitHub
+  { provider: 'azure', org: 'contoso', project: 'Pay',           // Azure DevOps
+    repo: 'pay-api', id: 'pay' },
+]
+```
+
+Commit links follow the source. Private repositories work too — the token goes
+in the build environment (`GITHUB_TOKEN`, `AZURE_DEVOPS_PAT`) via the host's
+secret store, never in the config file. Note that whatever you collect becomes
+publicly readable on the deployed page, commit messages and author names
+included. Full walk-through: [`docs/guide/changelog-repos.md`](docs/guide/changelog-repos.md).
 
 Commits are grouped by month. A [Conventional Commits](https://www.conventionalcommits.org)
 prefix (`feat:`, `fix:`, `docs:`) becomes a badge and is stripped from the

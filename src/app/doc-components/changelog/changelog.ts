@@ -42,19 +42,25 @@ export class DocChangelog {
   protected readonly months = signal<readonly Month[]>([]);
   protected readonly loaded = signal(false);
   protected readonly error = signal<string | null>(null);
+  private readonly commitUrlBase = signal<string | null>(
+    SITE.github.repo === null ? null : `https://github.com/${SITE.github.repo}/commit/`,
+  );
 
   constructor() {
     void this.load();
   }
 
   private async load(): Promise<void> {
-    const { CHANGELOG, CHANGELOG_BY_REPO } = await import('../../generated/changelog');
+    const { CHANGELOG, CHANGELOG_BY_REPO, CHANGELOG_SOURCES } =
+      await import('../../generated/changelog');
 
     let source: readonly ChangelogEntry[];
     if (this.repo === null) {
       source = CHANGELOG;
     } else {
       const collected = CHANGELOG_BY_REPO[this.repo];
+      // Each source knows its own host, so Azure DevOps commits link to Azure.
+      this.commitUrlBase.set(CHANGELOG_SOURCES[this.repo]?.commitUrl ?? null);
       if (collected === undefined) {
         // An authoring mistake, not a runtime failure — say which repo and how
         // to fix it rather than rendering an empty page.
@@ -90,7 +96,7 @@ export class DocChangelog {
   }
 
   protected commitUrl(hash: string): string | null {
-    const repo = this.repo ?? SITE.github.repo;
-    return repo === null ? null : `https://github.com/${repo}/commit/${hash}`;
+    const base = this.commitUrlBase();
+    return base === null ? null : `${base}${hash}`;
   }
 }

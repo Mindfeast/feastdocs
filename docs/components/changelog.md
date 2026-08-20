@@ -44,13 +44,17 @@ Renders as:
 ## Other repositories
 
 One docs site often covers several products, each with its own repository. List
-them in `changelog.repos` and the build collects each one from the GitHub API:
+them in `changelog.repos` — GitHub and Azure DevOps are both supported:
 
 ```js
 // feastdocs.config.mjs
 changelog: {
   limit: 150,
-  repos: ['acme/checkout-api', { repo: 'acme/mobile-app', branch: 'release' }],
+  repos: [
+    'acme/checkout-api',
+    { repo: 'acme/mobile-app', branch: 'release' },
+    { provider: 'azure', org: 'contoso', project: 'Payments', repo: 'payments-api', id: 'payments' },
+  ],
 },
 ```
 
@@ -58,14 +62,20 @@ Then point a page at one:
 
 ```html
 <fd-changelog repo="acme/checkout-api" limit="30"></fd-changelog>
+<fd-changelog repo="payments"></fd-changelog>
 ```
 
-A repository that is not in `changelog.repos` renders a notice naming it,
-rather than an empty page.
+Commit links follow the source, so Azure entries link to Azure DevOps. A
+repository that is not in `changelog.repos` renders a notice naming it, rather
+than an empty page.
+
+Full walk-through, including tokens per host and how to read the build log:
+[changelogs for several products](../guide/changelog-repos.md).
 
 ### Private repositories
 
-They work the same way, with a token in the **build environment**:
+They work the same way, with a token in the **build environment** — see the
+[manual](../guide/changelog-repos.md#3-give-the-build-a-token) for each host:
 
 <fd-steps>
   <div step="Create a token">

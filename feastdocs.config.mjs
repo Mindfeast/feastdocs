@@ -115,13 +115,16 @@ export default {
 
     /**
      * Other repositories to collect history for, so one docs site can carry a
-     * changelog per product. Each entry is 'owner/name' (or
-     * `{ repo, branch }`), read from the GitHub API at build time and used as
-     * `<fd-changelog repo="owner/name">`.
+     * changelog per product. Read at build time and used as
+     * `<fd-changelog repo="…">`.
      *
-     * Private repositories work the same way, but need a token in the build
-     * environment (GITHUB_TOKEN or GH_TOKEN) with read access to them. Put it
-     * in the host's secret store — never in this file.
+     *   'owner/name'                                     GitHub, branch main
+     *   { repo: 'owner/name', branch: 'release' }         GitHub
+     *   { provider: 'azure', org, project, repo, id }     Azure DevOps
+     *
+     * Tokens go in the build environment, never in this file: GITHUB_TOKEN for
+     * private or rate-limited GitHub sources, AZURE_DEVOPS_PAT for every Azure
+     * source. See docs/guide/changelog-repos.md.
      *
      * Whatever is listed here ends up publicly readable on the deployed page,
      * including commit messages and author names.

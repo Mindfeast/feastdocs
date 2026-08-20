@@ -7,10 +7,14 @@ import { dim, yellow } from './log.mjs';
 const TYPE_PREFIX = /^(\w+)(?:\([^)]*\))?!?:/;
 const TYPE_STRIP = /^\w+(?:\([^)]*\))?!?:\s*/;
 
+/** Azure DevOps prefixes a squashed pull request with "Merged PR 482: ". */
+const AZURE_PR_PREFIX = /^Merged PR \d+:\s*/;
+
 /** Field and record separators that cannot appear in commit text. */
 const RECORD = String.fromCharCode(0);
 const FIELD = String.fromCharCode(31);
 const NEWLINE = String.fromCharCode(10);
+const LINE_BREAK = new RegExp(String.fromCharCode(13) + '?' + String.fromCharCode(10));
 
 /**
  * Commits for this repository, for the site's own changelog.
@@ -41,6 +45,65 @@ export async function collectChangelog(docsDir, limit, github = {}) {
 }
 
 /**
+ * One entry from `changelog.repos`, normalised. Accepts the GitHub shorthand
+ * ('owner/name'), an object, and an explicit `id` so a page can refer to a
+ * long Azure DevOps path by a short name.
+ */
+export function normaliseSource(entry) {
+  const spec = typeof entry === 'string' ? { repo: entry } : { ...entry };
+  const provider = (spec.provider ?? 'github').toLowerCase();
+
+  if (provider === 'azure' || provider === 'azure-devops') {
+    const { org, project, repo, branch = 'main' } = spec;
+    if (!org || !project || !repo) return null;
+    return {
+      id: spec.id ?? `azure:${org}/${project}/${repo}`,
+      provider: 'azure',
+      label: `${project}/${repo}`,
+      commitUrl: `https://dev.azure.com/${org}/${encodeURIComponent(project)}/_git/${repo}/commit/`,
+      org,
+      project,
+      repo,
+      branch,
+    };
+  }
+
+  if (!spec.repo) return null;
+  return {
+    id: spec.id ?? spec.repo,
+    provider: 'github',
+    label: spec.repo,
+    commitUrl: `https://github.com/${spec.repo}/commit/`,
+    repo: spec.repo,
+    branch: spec.branch ?? 'main',
+  };
+}
+
+/**
+ * Total wall-clock budget for reading remote history. Deploy time is not worth
+ * more than this: a slow or unreachable host stops paginating and the page
+ * shows whatever arrived.
+ */
+const REMOTE_BUDGET_MS = 90_000;
+let deadline = null;
+
+/** Starts the shared budget. Called once per build, before any source. */
+export function startRemoteBudget(now) {
+  deadline = now + REMOTE_BUDGET_MS;
+}
+
+function outOfTime(now) {
+  return deadline !== null && now > deadline;
+}
+
+/** Dispatches one normalised source to the right provider. */
+export async function collectSourceChangelog(source, limit) {
+  return source.provider === 'azure'
+    ? collectFromAzure(source, limit)
+    : collectRepoChangelog(source.repo, source.branch, limit);
+}
+
+/**
  * Commits for any repository, read from the GitHub API. This is how a docs
  * site covers products that live in other repositories, and the fallback when
  * the local checkout has no usable history.
@@ -64,6 +127,12 @@ export async function collectRepoChangelog(repo, branch, limit) {
 
   const commits = [];
   for (let page = 1; commits.length < limit && page <= 10; page += 1) {
+    if (outOfTime(Date.now())) {
+      console.warn(
+        `  ${yellow('!')} changelog ${repo}: out of time ${dim(`— ${plural(commits.length, 'commit')} collected`)}`,
+      );
+      break;
+    }
     const url =
       `https://api.github.com/repos/${repo}/commits` +
       `?sha=${encodeURIComponent(branch ?? 'main')}&per_page=100&page=${page}`;
@@ -114,6 +183,109 @@ export async function collectRepoChangelog(repo, branch, limit) {
   if (commits.length > 0) {
     console.log(
       `  ${dim(`changelog ${repo}: ${plural(commits.length, 'commit')} from the GitHub API`)}`,
+    );
+  }
+  return commits;
+}
+
+/**
+ * Commits for an Azure DevOps repository.
+ *
+ * Azure reports `changeCounts` per commit, so file counts survive — unlike the
+ * GitHub commits endpoint. It does not report parents, so merge commits cannot
+ * be filtered out; in Azure that is usually welcome, since a squashed pull
+ * request lands as "Merged PR 123: …" and is the change worth showing.
+ *
+ * Auth is a personal access token with **Code (Read)**, sent as HTTP Basic
+ * with an empty username — the scheme Azure documents. Read from
+ * AZURE_DEVOPS_PAT or AZURE_DEVOPS_TOKEN in the build environment.
+ */
+async function collectFromAzure({ org, project, repo, branch, label }, limit) {
+  const pat = process.env.AZURE_DEVOPS_PAT ?? process.env.AZURE_DEVOPS_TOKEN;
+  if (!pat) {
+    console.warn(
+      `  ${yellow('!')} changelog ${label}: ` +
+        dim('no AZURE_DEVOPS_PAT in the build environment — history unavailable'),
+    );
+    return [];
+  }
+
+  const headers = {
+    accept: 'application/json',
+    // Azure expects Basic with an empty user and the PAT as the password.
+    authorization: `Basic ${Buffer.from(`:${pat}`).toString('base64')}`,
+  };
+
+  const commits = [];
+  for (let skip = 0; commits.length < limit && skip < 1000; skip += 100) {
+    if (outOfTime(Date.now())) {
+      console.warn(
+        `  ${yellow('!')} changelog ${label}: out of time ${dim(`— ${plural(commits.length, 'commit')} collected`)}`,
+      );
+      break;
+    }
+    const top = Math.min(100, limit - commits.length);
+    const url =
+      `https://dev.azure.com/${org}/${encodeURIComponent(project)}/_apis/git/repositories/` +
+      `${encodeURIComponent(repo)}/commits?api-version=7.1` +
+      `&searchCriteria.itemVersion.version=${encodeURIComponent(branch)}` +
+      `&searchCriteria.$top=${top}&searchCriteria.$skip=${skip}`;
+
+    let payload;
+    try {
+      const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
+      if (!response.ok) {
+        console.warn(
+          `  ${yellow('!')} changelog ${label}: Azure DevOps ${response.status} ` +
+            dim(
+              response.status === 401 || response.status === 203
+                ? '— check the PAT and its Code (Read) scope'
+                : `— ${plural(commits.length, 'commit')} collected`,
+            ),
+        );
+        break;
+      }
+      payload = await response.json();
+    } catch (error) {
+      console.warn(`  ${yellow('!')} changelog ${label}: ${error.message}`);
+      break;
+    }
+
+    const batch = Array.isArray(payload?.value) ? payload.value : [];
+    if (batch.length === 0) break;
+
+    for (const item of batch) {
+      const message = String(item.comment ?? '');
+      const [rawSubject, ...rest] = message.split(LINE_BREAK);
+      // A squashed pull request lands as "Merged PR 482: fix: …". Drop that
+      // prefix so the conventional-commit type inside it still becomes a badge;
+      // the commit link leads to the pull request anyway.
+      const subject = rawSubject.replace(AZURE_PR_PREFIX, '');
+      const counts = item.changeCounts ?? {};
+      const files = Object.values(counts).reduce((sum, n) => sum + (Number(n) || 0), 0);
+
+      // `comment` is capped by Azure; commentTruncated says the rest was cut.
+      const body = cleanBody(rest.join(NEWLINE));
+
+      commits.push({
+        hash: String(item.commitId ?? '').slice(0, 7),
+        author: item.author?.name ?? '',
+        date: item.author?.date ?? '',
+        type: TYPE_PREFIX.exec(subject)?.[1]?.toLowerCase() ?? null,
+        subject: subject.replace(TYPE_STRIP, ''),
+        body: body && item.commentTruncated ? `${body} …` : body,
+        files: files > 0 ? files : null,
+        touchesDocs: null,
+      });
+      if (commits.length >= limit) break;
+    }
+
+    if (batch.length < top) break;
+  }
+
+  if (commits.length > 0) {
+    console.log(
+      `  ${dim(`changelog ${label}: ${plural(commits.length, 'commit')} from Azure DevOps`)}`,
     );
   }
   return commits;
