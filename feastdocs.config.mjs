@@ -79,5 +79,12 @@ export default {
      * functions/api/oauth/token.js). null falls back to pasting a token.
      */
     oauthClientId: 'Ov23lirZ0YGPoFFlFRP3',
+    /**
+     * Scope asked for at sign-in. This repository is public, so 'public_repo'
+     * is enough to commit — and the consent screen stays modest, which matters
+     * when you invite people to sign in just to look around. Use 'repo' if
+     * your docs repository is private.
+     */
+    oauthScope: 'public_repo',
   },
 };

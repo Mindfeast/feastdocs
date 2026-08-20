@@ -99,6 +99,12 @@ export interface SiteConfig {
     readonly branch: string;
     /** OAuth App client id for "Sign in with GitHub"; null = token paste only. */
     readonly oauthClientId: string | null;
+    /**
+     * OAuth scope requested at sign-in. 'public_repo' is enough for a public
+     * repository and asks for far less on the consent screen; 'repo' is
+     * required if the docs repository is private.
+     */
+    readonly oauthScope: string;
   };
 }
 

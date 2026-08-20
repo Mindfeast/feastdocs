@@ -83,9 +83,26 @@ To enable the sign-in button:
 
 :::caution Access is still the repository's
 Signing in proves who the visitor is; **what they may do is decided by GitHub**.
-Accounts without write access to the repo get a read-only editor, and every
-write is rejected server-side by GitHub regardless of the UI.
+Every write is rejected server-side by GitHub regardless of what the UI allows.
 :::
+
+### Sandbox mode for everyone else
+
+Signing in and having write access are separate things, and that is useful: a
+visitor with a GitHub account but no push rights gets the whole editor in
+**sandbox mode** — browse the tree, open any page, type, watch the live
+preview, try the components — with Stage, Commit, Create and Delete disabled.
+Their edits live in the browser tab and never go anywhere.
+
+That makes the editor a safe place to explore for people you have not given
+repository access to, while your collaborator list stays the only thing that
+decides who can publish. Grant someone write access on GitHub and the same
+screen becomes fully functional, no deploy needed.
+
+The scope requested at sign-in is `github.oauthScope`. For a public docs
+repository `public_repo` is enough to commit and keeps the consent screen
+modest — worth doing if you invite people to sign in just to look. A private
+repository needs `repo`.
 
 ### Production never touches local files
 

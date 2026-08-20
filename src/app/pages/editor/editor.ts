@@ -668,7 +668,7 @@ export class Editor {
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: `${location.origin}/_editor`,
-      scope: 'repo',
+      scope: this.content.site.github.oauthScope,
       state,
     });
     location.assign(`https://github.com/login/oauth/authorize?${params}`);
@@ -830,7 +830,8 @@ export class Editor {
     if (this.readOnly()) {
       this.status.set({
         kind: 'error',
-        message: 'Read-only: your GitHub account has no write access to this repository.',
+        message:
+          'Sandbox mode — your edits stay in this browser. Publishing needs write access to the repository.',
       });
       return;
     }
@@ -869,7 +870,8 @@ export class Editor {
     if (this.readOnly()) {
       this.status.set({
         kind: 'error',
-        message: 'Read-only: your GitHub account has no write access to this repository.',
+        message:
+          'Sandbox mode — your edits stay in this browser. Publishing needs write access to the repository.',
       });
       return;
     }
@@ -1099,7 +1101,8 @@ export class Editor {
     if (this.readOnly()) {
       this.status.set({
         kind: 'error',
-        message: 'Read-only: your GitHub account has no write access to this repository.',
+        message:
+          'Sandbox mode — your edits stay in this browser. Publishing needs write access to the repository.',
       });
       return;
     }

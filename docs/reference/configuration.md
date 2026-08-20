@@ -105,6 +105,8 @@ authoring date matters, drive it from your VCS instead.
 | --- | --- | --- |
 | `github.repo` | string \| null | `owner/name`; enables the content manager's GitHub mode (web edits become commits) |
 | `github.branch` | string | Branch that web edits are committed to (default `main`) |
+| `github.oauthClientId` | string \| null | OAuth App client id; enables the "Sign in with GitHub" button |
+| `github.oauthScope` | string | Scope requested at sign-in — `public_repo` for a public repo, `repo` if private (default `repo`) |
 
 See [Use it for your own docs](../guide/your-own-docs.md) for a full setup
 walk-through, including CI.

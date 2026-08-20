@@ -107,9 +107,10 @@
         </div>
         @if (readOnly()) {
           <p class="fd-editor__readonly">
-            Read-only — this account has no write access to
-            <code>{{ github.repo }}</code>. Ask the repository owner for access
-            to edit.
+            <strong>Sandbox mode.</strong> Explore and edit anything — type,
+            preview, try the components. Nothing leaves your browser, because
+            this account cannot push to <code>{{ github.repo }}</code>. Ask the
+            owner for write access to publish.
           </p>
         }
       }
