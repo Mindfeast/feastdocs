@@ -111,6 +111,17 @@ authoring date matters, drive it from your VCS instead.
 See [Use it for your own docs](../guide/your-own-docs.md) for a full setup
 walk-through, including CI.
 
+## Editor
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `editor.invite` | string \| null | Label on the navbar's content-manager link, shown until a reader opens it once. `null` (the default) keeps a plain icon |
+
+Teams running their own docs already know the editor is there, so the default is
+a quiet icon. A **public demo** is the case for an invitation — set
+`invite: 'Try it now'` (any wording, in any language) and first-time visitors
+get a labelled link that retires itself after they use it.
+
 ## Sidebar
 
 `autoCollapse` is reserved for collapsing every category except the active one.

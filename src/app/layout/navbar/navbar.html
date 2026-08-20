@@ -65,8 +65,14 @@
 
       <app-search-box />
 
+      <!--
+        Until someone has opened the content manager, this is a labelled
+        invitation rather than a bare icon; afterwards it quietly becomes an
+        icon again (see UiStateService.editorVisited).
+      -->
       <a
-        class="fd-icon-button"
+        class="fd-icon-button fd-navbar__editor"
+        [class.fd-navbar__editor--invite]="showEditorInvite()"
         routerLink="/_editor"
         title="Content manager"
         aria-label="Content manager"
@@ -74,6 +80,9 @@
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 20h4l11-11-4-4L4 16v4zM13.5 6.5l4 4" />
         </svg>
+        @if (showEditorInvite()) {
+          <span class="fd-navbar__editor-label">{{ site.editor.invite }}</span>
+        }
       </a>
 
       <button

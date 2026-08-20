@@ -106,6 +106,15 @@ export interface SiteConfig {
      */
     readonly oauthScope: string;
   };
+  readonly editor: {
+    /**
+     * Label for the navbar's content-manager link, shown until a reader has
+     * opened it once. null (the default) keeps a plain icon — teams running
+     * their own docs already know the editor is there. Set it on a public
+     * demo site, where visitors need the invitation.
+     */
+    readonly invite: string | null;
+  };
 }
 
 export type ThemeMode = 'light' | 'dark' | 'system';

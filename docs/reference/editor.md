@@ -7,7 +7,8 @@ sidebar_position: 5
 # Content manager
 
 The content manager lives at [`/_editor`](/_editor) — the pencil icon in the
-navbar. It shows the `docs/` tree on the left, the file's source in the middle,
+navbar (optionally labelled, see
+[`editor.invite`](/reference/configuration#editor)). It shows the `docs/` tree on the left, the file's source in the middle,
 and a live Markdown preview on the right.
 
 ## What it can do

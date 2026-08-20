@@ -146,3 +146,38 @@
     display: none;
   }
 }
+
+// --- Content-manager link ----------------------------------------------------
+
+.fd-navbar__editor {
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+// The invitation (see SiteConfig.editor.invite): wide enough for a label,
+// tinted just enough to catch the eye, never louder than the accent already
+// present in the navbar. Retires itself once the reader opens the editor.
+.fd-navbar__editor--invite {
+  width: auto;
+  padding: 0 0.6rem;
+  border-color: var(--fd-accent);
+  background: var(--fd-accent-soft);
+  color: var(--fd-accent-strong);
+
+  &:hover {
+    border-color: var(--fd-accent-strong);
+    background: var(--fd-accent-soft);
+    color: var(--fd-accent-strong);
+  }
+}
+
+.fd-navbar__editor-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  // On narrow screens the icon speaks for itself.
+  @media (max-width: 860px) {
+    display: none;
+  }
+}

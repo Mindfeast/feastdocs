@@ -16,6 +16,7 @@ const DEFAULTS = {
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },
+  editor: { invite: null },
 };
 
 /**
@@ -37,6 +38,7 @@ export async function loadConfig({ bust = false } = {}) {
     theme: { ...DEFAULTS.theme, ...user.theme },
     sidebar: { ...DEFAULTS.sidebar, ...user.sidebar },
     github: { ...DEFAULTS.github, ...user.github },
+    editor: { ...DEFAULTS.editor, ...user.editor },
   };
 }
 

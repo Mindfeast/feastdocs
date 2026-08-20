@@ -53,6 +53,14 @@ export class Navbar {
     this.suppressedTab.set(sectionId);
   }
 
+  /**
+   * The content-manager invitation: only when a site asks for one, and only
+   * until this reader has actually opened the editor.
+   */
+  protected readonly showEditorInvite = computed(
+    () => this.site.editor.invite !== null && !this.ui.editorVisited(),
+  );
+
   protected readonly themeLabel = computed(() =>
     this.theme.resolved() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
   );

@@ -87,4 +87,14 @@ export default {
      */
     oauthScope: 'public_repo',
   },
+
+  editor: {
+    /**
+     * Label on the navbar's content-manager link, shown until a reader opens
+     * it once. This site is a public demo, so visitors get an invitation;
+     * leave it null (the default) for a team's own docs, where everyone
+     * already knows the editor exists.
+     */
+    invite: 'Try it now',
+  },
 };

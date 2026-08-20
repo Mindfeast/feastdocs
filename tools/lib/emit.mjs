@@ -119,6 +119,7 @@ async function writeSiteConfig(config) {
     editUrl: config.editUrl,
     showLastUpdated: config.showLastUpdated,
     github: config.github,
+    editor: config.editor,
   };
   const contents =
     `${BANNER}\n` +

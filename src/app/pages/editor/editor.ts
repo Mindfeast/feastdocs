@@ -13,6 +13,7 @@ import { DomSanitizer, Title, type SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
 import { GithubService } from '../../core/github.service';
+import { UiStateService } from '../../core/ui-state.service';
 import { PAGE_ORDER } from '../../generated/registry';
 import { createPreviewRenderer } from './markdown-preview';
 import { diffLines, type DiffHunk } from './line-diff';
@@ -612,6 +613,8 @@ export class Editor {
 
   constructor() {
     inject(Title).setTitle('Content manager · FeastDocs');
+    // Reaching this page retires the navbar's invitation for good.
+    inject(UiStateService).markEditorVisited();
     void this.start();
 
     // Warn about unsaved or uncommitted work when leaving the tab.
