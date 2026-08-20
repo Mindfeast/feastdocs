@@ -116,29 +116,49 @@
 
       <div class="fd-editor__files-head">
         <span>docs/</span>
-        <button
-          type="button"
-          class="fd-editor__new"
-          (click)="creating.set(!creating())"
-          [attr.aria-expanded]="creating()"
-        >
-          + New
-        </button>
+        <span class="fd-editor__newgroup">
+          <button
+            type="button"
+            class="fd-editor__new"
+            (click)="startBlank()"
+            [attr.aria-expanded]="creating()"
+          >
+            + New
+          </button>
+          @if (templates().length > 0) {
+            <span class="fd-editor__tpl">
+              <button
+                type="button"
+                class="fd-editor__new"
+                (click)="templateMenuOpen.set(!templateMenuOpen())"
+                [attr.aria-expanded]="templateMenuOpen()"
+                aria-haspopup="menu"
+              >
+                From template ▾
+              </button>
+              @if (templateMenuOpen()) {
+                <div class="fd-editor__tplmenu" role="menu">
+                  @for (t of templates(); track t) {
+                    <button type="button" role="menuitem" (click)="startFromTemplate(t)">
+                      {{ templateLabel(t) }}
+                    </button>
+                  }
+                </div>
+              }
+            </span>
+          }
+        </span>
       </div>
 
       @if (creating()) {
         <form class="fd-editor__create" (submit)="$event.preventDefault(); create()">
-          @if (templates().length > 0) {
-            <select
-              aria-label="Template for the new page"
-              [value]="newTemplate()"
-              (change)="newTemplate.set($any($event.target).value)"
-            >
-              <option value="">Blank page</option>
-              @for (t of templates(); track t) {
-                <option [value]="t">{{ templateLabel(t) }}</option>
-              }
-            </select>
+          @if (newTemplate()) {
+            <span class="fd-editor__tplchip">
+              From template: <strong>{{ templateLabel(newTemplate()) }}</strong>
+              <button type="button" aria-label="Use a blank page instead" (click)="newTemplate.set('')">
+                ✕
+              </button>
+            </span>
           }
           <div class="fd-editor__create-row">
             <input

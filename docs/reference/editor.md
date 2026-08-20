@@ -16,9 +16,9 @@ and a live Markdown preview on the right.
   <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (GitHub)
 - **Create** pages — type a path like `guide/deploying.md` and it is scaffolded
   with front matter, in the right section
-- **New from template** — the create form offers every file in `docs/_templates/`
-  as a starting point; `{{title}}` and `{{date}}` tokens are filled in from the
-  new file's name and today's date
+- **New from template** — a dedicated button with a submenu of everything in
+  `docs/_templates/`; `{{title}}` and `{{date}}` tokens are filled in from the
+  new file's name and today's date. Plain **+ New** stays a one-click blank page
 - **Delete** files — the ✕ on each file row (deletes immediately in local mode,
   stages the deletion in GitHub mode)
 - **Batch commits** — in GitHub mode every save, creation and deletion is
@@ -147,7 +147,7 @@ everything the editor does can also be done in any text editor.
 ## Templates
 
 `docs/_templates/` is one flat folder of starter pages. Anything in it shows up
-in the create form's template picker, and — because underscore paths never
+in the "From template" submenu next to the + New button, and — because underscore paths never
 publish — templates are versioned with the repo and editable right here in the
 editor, without ever appearing on the site.
 
@@ -157,6 +157,10 @@ Two tokens are substituted at creation time:
 | --- | --- |
 | `{{title}}` | The new file's name, humanised (`release-2-1.md` → "Release 2 1") |
 | `{{date}}` | Today's date, `YYYY-MM-DD` |
+
+Every created page — blank or templated — is guaranteed to start with the
+`title` / `description` / `sidebar_position` front matter, so nothing shippable
+is ever missing it.
 
 The project ships four starters — guide page, tutorial (with `<fd-steps>`), API
 reference (with `<fd-api-field>`), and release notes. Add your own by dropping a

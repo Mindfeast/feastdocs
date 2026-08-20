@@ -39,7 +39,10 @@ interface Pending {
   selector: 'app-editor',
   templateUrl: './editor.html',
   styleUrl: './editor.scss',
-  host: { '(document:keydown)': 'onKeydown($event)' },
+  host: {
+    '(document:keydown)': 'onKeydown($event)',
+    '(document:click)': 'onDocumentClick($event)',
+  },
 })
 export class Editor {
   private readonly http = inject(HttpClient);
@@ -60,6 +63,8 @@ export class Editor {
   protected readonly newPath = signal('');
   /** Path of the chosen template inside _templates/, or '' for a blank page. */
   protected readonly newTemplate = signal('');
+  /** The "From template ▾" submenu. */
+  protected readonly templateMenuOpen = signal(false);
   protected readonly tokenInput = signal('');
   protected readonly connecting = signal(false);
 
@@ -100,6 +105,32 @@ export class Editor {
 
   protected templateLabel(path: string): string {
     return humanize(path.slice('_templates/'.length).replace(/\.[^.]+$/, ''));
+  }
+
+  /** "+ New": a blank page — the default, no template involved. */
+  protected startBlank(): void {
+    this.templateMenuOpen.set(false);
+    if (this.creating() && !this.newTemplate()) {
+      this.creating.set(false);
+      return;
+    }
+    this.newTemplate.set('');
+    this.creating.set(true);
+  }
+
+  /** A pick in the "From template" submenu opens the create form pre-armed. */
+  protected startFromTemplate(template: string): void {
+    this.newTemplate.set(template);
+    this.templateMenuOpen.set(false);
+    this.creating.set(true);
+  }
+
+  /** Closes the template submenu on any click outside it. */
+  protected onDocumentClick(event: MouseEvent): void {
+    if (!this.templateMenuOpen()) return;
+    if (!(event.target as HTMLElement | null)?.closest('.fd-editor__tpl')) {
+      this.templateMenuOpen.set(false);
+    }
   }
 
   /** Live preview only makes sense for markdown; other files get a notice. */
@@ -495,6 +526,12 @@ export class Editor {
         template = source
           .replace(/\{\{\s*title\s*\}\}/g, title)
           .replace(/\{\{\s*date\s*\}\}/g, new Date().toISOString().slice(0, 10));
+
+        // Every page needs its front matter; a template that forgot it still
+        // produces a well-formed document.
+        if (!template.trimStart().startsWith('---')) {
+          template = `---\ntitle: "${title}"\ndescription: \nsidebar_position: 10\n---\n\n${template}`;
+        }
       }
 
       if (this.mode() === 'local') {
