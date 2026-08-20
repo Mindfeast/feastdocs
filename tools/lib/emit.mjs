@@ -113,7 +113,7 @@ function pageOrder(modules, sections) {
  * so it is a lazy chunk: the initial bundle never carries it.
  */
 async function writeChangelog(config) {
-  const commits = await collectChangelog(paths.docs(config), config.changelog.limit);
+  const commits = await collectChangelog(paths.docs(config), config.changelog.limit, config.github);
   const contents =
     `${BANNER}
 ` +

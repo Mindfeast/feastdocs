@@ -28,7 +28,9 @@
             <p class="fd-changelog__meta">
               <span>{{ day(entry.date) }}</span>
               <span>{{ entry.author }}</span>
-              <span>{{ entry.files }} file{{ entry.files === 1 ? '' : 's' }}</span>
+              @if (entry.files !== null) {
+                <span>{{ entry.files }} file{{ entry.files === 1 ? '' : 's' }}</span>
+              }
               @if (commitUrl(entry.hash); as url) {
                 <a [href]="url" target="_blank" rel="noopener noreferrer">{{ entry.hash }}</a>
               } @else {

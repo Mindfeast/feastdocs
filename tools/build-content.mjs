@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { loadConfig } from './lib/config.mjs';
 import { collectDocs } from './lib/collect.mjs';
 import { emit } from './lib/emit.mjs';
+import { ensureFullHistory } from './lib/git-history.mjs';
 import { dim, green, red, yellow } from './lib/log.mjs';
 
 /**
@@ -13,6 +14,9 @@ import { dim, green, red, yellow } from './lib/log.mjs';
 export async function buildContent({ bust = false, label = 'docs' } = {}) {
   const started = performance.now();
   const config = await loadConfig({ bust });
+  // Author attribution and the changelog both read git history, so deepen a
+  // shallow checkout before anything asks for it. No-op on a normal clone.
+  await ensureFullHistory();
   const { docs, sections, assets, warnings } = await collectDocs(config);
   await emit({ config, docs, sections, assets });
 

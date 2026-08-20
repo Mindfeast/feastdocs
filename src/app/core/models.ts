@@ -130,8 +130,10 @@ export interface ChangelogEntry {
   /** Subject with any conventional-commit prefix removed. */
   readonly subject: string;
   readonly body: string;
-  readonly files: number;
-  readonly touchesDocs: boolean;
+  /** Files the commit touched, or null when the history came from the API. */
+  readonly files: number | null;
+  /** null when unknown — the GitHub commits endpoint carries no file list. */
+  readonly touchesDocs: boolean | null;
 }
 
 export interface Breadcrumb {

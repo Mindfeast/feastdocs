@@ -295,9 +295,13 @@ exists only on localhost during development.
 Every page footer shows **"Last updated {date} by {author}"**, read from
 `git log` at build time. Both editing strategies end as commits, so attribution
 is always truthful and updates on the next build. Fallback: not a git repo (or
-uncommitted file) → file date, no author. **In CI, check out with
-`fetch-depth: 0`** — a shallow clone has one commit of history and blanks out
-most authors.
+uncommitted file) → file date, no author.
+
+Shallow checkouts (Cloudflare Pages clones with `--depth 1`, as does any CI
+step missing `fetch-depth: 0`) would blank out most authors and reduce the
+changelog to one entry, so **the build deepens the clone itself** before
+reading history — and falls back to the GitHub API when it cannot. Setting
+`fetch-depth: 0` in your own pipeline is still the cheapest path.
 
 ## Repository changelog
 
@@ -315,8 +319,10 @@ and whether the commit touched `docs/`.
 Commits are grouped by month. A [Conventional Commits](https://www.conventionalcommits.org)
 prefix (`feat:`, `fix:`, `docs:`) becomes a badge and is stripped from the
 headline; each hash links to the commit on GitHub when `github.repo` is set.
-Same caveat as attribution: the history must be there, so clone with full depth
-in CI.
+Same source as attribution, so the same shallow-clone handling applies: the
+build deepens a `--depth 1` checkout, or reads the history from the GitHub API
+if it cannot. API entries have no file count (that endpoint carries no file
+list).
 
 The demo site puts it in a **Changelog** section ([`docs/changelog/`](docs/changelog)),
 but the component works on any page — drop it wherever it fits your docs.

@@ -44,9 +44,18 @@ The build reads `changelog.limit` commits (default `150`) — see
 generated module and is imported lazily, so pages without the component never
 download it.
 
-:::warning
-Attribution needs the real git history. A shallow clone gives the build one
-commit, so CI must check out with full depth: `fetch-depth: 0` on GitHub
-Actions, `fetchDepth: 0` on Azure Pipelines, and no `--depth` flag in a
-Dockerfile clone. The bundled workflows already do this.
+:::info Shallow checkouts are handled for you
+The changelog needs real history, and several hosts clone with `--depth 1` —
+Cloudflare Pages does, and so does any CI step missing `fetch-depth: 0`. That
+would leave a one-entry changelog and blank author attribution.
+
+The build handles it: it deepens a shallow checkout (`git fetch --unshallow`)
+before reading anything. If deepening is impossible — no credentials in the
+checkout, or an offline build — it reads the history from the GitHub API
+instead, using `github.repo` and `github.branch`. Set `GITHUB_TOKEN` in the
+build environment if the repository is private.
+
+The API path carries no file list, so entries show no file count and the
+`docs-only` view keeps everything it cannot rule out. Setting `fetch-depth: 0`
+in your own pipeline still gives the best result, and the bundled workflows do.
 :::

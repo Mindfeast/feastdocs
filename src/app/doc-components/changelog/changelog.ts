@@ -46,7 +46,7 @@ export class DocChangelog {
   private async load(): Promise<void> {
     const { CHANGELOG } = await import('../../generated/changelog');
     let entries: readonly ChangelogEntry[] = this.docsOnly
-      ? CHANGELOG.filter((entry) => entry.touchesDocs)
+      ? CHANGELOG.filter((entry) => entry.touchesDocs !== false)
       : CHANGELOG;
     if (this.limit > 0) entries = entries.slice(0, this.limit);
 
