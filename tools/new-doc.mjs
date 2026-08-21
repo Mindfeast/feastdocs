@@ -16,11 +16,11 @@ const config = await loadConfig();
 const relative = target.replace(/^\/+/, '').replace(/\.md$/i, '');
 
 // Deepest allowed nesting: a section plus four category levels.
-const MAX_FOLDER_DEPTH = 5;
+const MAX_FOLDER_DEPTH = 8;
 const depth = relative.split('/').length - 1;
 if (depth > MAX_FOLDER_DEPTH) {
   console.error(
-    `${red('✗')} too deep: ${depth} folders. The maximum is ${MAX_FOLDER_DEPTH} levels (a section plus four category levels).`,
+    `${red('✗')} too deep: ${depth} folders. The maximum is ${MAX_FOLDER_DEPTH} levels (a section plus seven category levels).`,
   );
   process.exit(1);
 }

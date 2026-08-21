@@ -59,7 +59,7 @@ typo cannot block a deploy. Warnings you should act on:
 | --- | --- | --- |
 | `link to "/x" does not match any document` | A relative link points at a file that does not exist, or a page was renamed | Update the link, or restore the page |
 | `Duplicate route "/x": a.md and b.md` | Two files resolve to the same slug — usually a `slug:` override colliding with a real file, or `page.md` next to `page/index.md`. The **first file wins; the second is dropped** | Rename one of them, or change the `slug:` override |
-| `nested N folders deep — the maximum is 5` | A page sits deeper than a section plus four category levels | Flatten the tree or split into another section |
+| `nested N folders deep — the maximum is 8` | A page sits deeper than a section plus seven category levels | Flatten the tree or split into another section |
 | `relative link "x" has no .md/.html extension` | The link was treated as an asset — add the extension if it is a page | Link to the file, not the route |
 | `<file>.scss: <sass error>` | A page stylesheet failed to compile; the page renders unstyled | Fix the SCSS — the error names the line |
 | `Language "x" was not pre-loaded` | A code fence uses a language Shiki doesn't know; it renders as plain text | Check the fence's language tag |

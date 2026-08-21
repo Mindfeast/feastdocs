@@ -156,7 +156,7 @@ to `SiteConfig` in `src/app/core/models.ts`. Document it in
 `docs/reference/configuration.md` and the README.
 
 **A section:** a top-level folder in `docs/`. `_section.json` sets its label and
-order; `_category.json` does the same for nested folders. Max depth 5.
+order; `_category.json` does the same for nested folders. Max depth 8.
 
 ## The starter template
 

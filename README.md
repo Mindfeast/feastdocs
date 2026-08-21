@@ -118,7 +118,7 @@ docs/
   **dropdown of the section's tree**, with nested categories as flyout submenus.
 - **Categories** (nested folders) become collapsible sidebar groups; collapse
   state persists per reader, and the active page's branch auto-reveals.
-- **Depth limit: 5 folders** (a section plus four category levels). The editor
+- **Depth limit: 8 folders** (a section plus seven category levels). The editor
   and `docs:new` refuse deeper paths; the build warns if one appears anyway.
 - **Prev/next** links follow sidebar order and never cross a section boundary.
 - **Breadcrumbs** and the **"On this page"** table of contents (`h2`/`h3`, with
