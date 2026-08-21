@@ -1,29 +1,20 @@
 ---
-title: "Bookings API"
-description: "A small, invented API used to demonstrate generated endpoint pages. Nothing here is real — it exists so the documentation has something to show."
-sidebar_label: "Overview"
+title: APIs
+description: Reference documentation for each API, generated from its OpenAPI or Swagger document.
+sidebar_label: Overview
+sidebar_position: 1
 ---
 
-<!-- AUTO-GENERATED from an OpenAPI document — edits are overwritten. -->
+# APIs
 
-A small, invented API used to demonstrate generated endpoint pages.
-Nothing here is real — it exists so the documentation has something to show.
+Every API here is generated from its own OpenAPI document — endpoint pages,
+parameters, schemas and examples. Nothing on these pages is written by hand, so
+they cannot drift from the spec.
 
+<fd-category-index></fd-category-index>
 
-**Version 1.4**
-
-## Servers
-
-- `https://api.example.com/v1` — Production
-- `https://sandbox.example.com/v1` — Sandbox
-
-## Endpoints
-
-| | Endpoint | |
-| --- | --- | --- |
-| `GET` | `/reservations` | List reservations |
-| `POST` | `/reservations` | Create a reservation |
-| `GET` | `/reservations/{id}` | Get a reservation |
-| `DELETE` | `/reservations/{id}` | Cancel a reservation |
-| `GET` | `/availability` | Check availability |
-| `GET` | `/rates` | List rate plans _(deprecated)_ |
+:::note Two documents, one section
+Each API is a category, produced by one entry in `openapi` with a nested
+`outDir`. See [API reference from OpenAPI](../guide/openapi.md#several-apis-in-one-section)
+for the configuration.
+:::

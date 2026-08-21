@@ -74,13 +74,25 @@ async function generate(config, { spec: specPath, outDir, label }) {
 
   await fs.mkdir(root, { recursive: true });
 
-  // Without this the section is named after its folder — "Api" rather than
-  // whatever the document calls itself.
+  // Without this the folder names itself — "Api" rather than whatever the
+  // document calls itself. Which sidecar depends on depth: a top-level outDir
+  // is a section, a nested one is a category, and only the matching file is
+  // read. Nesting several specs under one folder is how a site groups APIs.
   const title = label ?? document.info?.title ?? 'API';
+  const nested = outDir.includes('/');
   written += await write(
-    path.join(root, '_section.json'),
+    path.join(root, nested ? '_category.json' : '_section.json'),
     expected,
-    `${JSON.stringify({ label: title, description: oneLine(document.info?.description), position: 50, generated: true }, null, 2)}
+    `${JSON.stringify(
+      {
+        label: title,
+        description: oneLine(document.info?.description),
+        position: 50,
+        generated: true,
+      },
+      null,
+      2,
+    )}
 `,
   );
 

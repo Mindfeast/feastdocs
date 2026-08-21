@@ -45,22 +45,28 @@ export class DocCategoryIndex {
     const items = findCategory(SECTIONS, target);
     if (items === null) return [];
 
-    return items.map((item) => {
-      if (item.type === 'doc') {
-        return {
-          label: item.label,
-          description: DOC_INDEX.find((doc) => doc.slug === item.slug)?.description ?? '',
-          route: `/${item.slug}`,
-          pages: null,
-        };
-      }
-      return {
-        label: item.label,
-        description: '',
-        route: item.slug === null ? null : `/${item.slug}`,
-        pages: countPages(item.items),
-      };
-    });
+    return (
+      items
+        // A section's items include its own landing page, and a page listing
+        // itself is a link to nowhere.
+        .filter((item) => !(item.type === 'doc' && item.slug === target))
+        .map((item) => {
+          if (item.type === 'doc') {
+            return {
+              label: item.label,
+              description: DOC_INDEX.find((doc) => doc.slug === item.slug)?.description ?? '',
+              route: `/${item.slug}`,
+              pages: null,
+            };
+          }
+          return {
+            label: item.label,
+            description: '',
+            route: item.slug === null ? null : `/${item.slug}`,
+            pages: countPages(item.items),
+          };
+        })
+    );
   });
 
   constructor() {
@@ -86,6 +92,9 @@ function findCategory(
   };
 
   for (const section of sections) {
+    // A section's own landing page is a legitimate place for these cards — it is
+    // where several generated APIs, or any group of categories, are listed.
+    if (section.slug === slug) return section.items;
     const found = walk(section.items);
     if (found !== null) return found;
   }

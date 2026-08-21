@@ -120,7 +120,10 @@ export default {
    * OpenAPI documents to turn into endpoint pages. Each becomes a section
    * folder under docs/, one page per operation, grouped by tag.
    */
-  openapi: [{ spec: 'examples/petstore.yaml', outDir: 'api', label: 'Bookings API' }],
+  openapi: [
+    { spec: 'examples/petstore.yaml', outDir: 'api/bookings', label: 'Bookings API' },
+    { spec: 'examples/rates-api.json', outDir: 'api/rates', label: 'Rates API' },
+  ],
 
   /**
    * Documented versions, newest first. The one marked default owns the bare

@@ -22,7 +22,54 @@ openapi: [
 | `outDir` | Folder under `docsDir` to write into. A top-level folder becomes a section |
 | `label` | Section name. Defaults to `info.title` from the document |
 
-More than one API? Add more entries, each with its own `outDir`.
+## Several APIs in one section
+
+Give each spec a **nested** `outDir` and every API becomes a category inside one
+section, rather than a top-level tab of its own:
+
+```js title="feastdocs.config.mjs"
+openapi: [
+  { spec: 'examples/petstore.yaml', outDir: 'api/bookings', label: 'Bookings API' },
+  { spec: 'examples/rates-api.json', outDir: 'api/rates', label: 'Rates API' },
+],
+```
+
+```text
+APIs                        ← docs/api/, one section
+├── Overview                ← docs/api/index.md, yours
+├── Bookings API            ← generated category
+│   ├── Reservations
+│   └── Availability
+└── Rates API               ← generated category
+    └── Rates
+```
+
+The depth decides the sidecar: a top-level `outDir` gets a `_section.json`, a
+nested one gets a `_category.json`, each labelled from the document's title.
+
+Two files are yours to write, and only because they carry your words:
+
+```json title="docs/api/_section.json"
+{ "label": "APIs", "description": "Reference for every API.", "position": 50 }
+```
+
+```markdown title="docs/api/index.md"
+---
+title: APIs
+sidebar_label: Overview
+---
+
+# APIs
+
+<fd-category-index></fd-category-index>
+```
+
+`<fd-category-index>` lists the APIs as cards with a page count each, so the
+landing page keeps itself up to date as specs are added. Skip it and the section
+tab simply opens the first API instead.
+
+The [APIs section](/api) on this site is exactly this: two documents — one
+OpenAPI 3, one Swagger 2.0 — under one tab.
 
 ## Swagger 2.0 and OpenAPI 3
 

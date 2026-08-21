@@ -1,0 +1,48 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Legacy Rates API", "version": "1.0", "description": "A Swagger 2.0 document." },
+  "host": "legacy.example.com",
+  "basePath": "/api/v1",
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "tags": [{ "name": "Rates", "description": "Rate plans." }],
+  "paths": {
+    "/rates": {
+      "get": {
+        "operationId": "listRates",
+        "tags": ["Rates"],
+        "summary": "List rate plans",
+        "parameters": [
+          { "name": "propertyId", "in": "query", "required": true, "type": "string", "description": "Property to query." }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rate plans.",
+            "schema": { "type": "array", "items": { "$ref": "#/definitions/Rate" } }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRate",
+        "tags": ["Rates"],
+        "summary": "Create a rate plan",
+        "parameters": [
+          { "name": "body", "in": "body", "required": true, "schema": { "$ref": "#/definitions/Rate" }, "description": "The rate plan." }
+        ],
+        "responses": { "201": { "description": "Created.", "schema": { "$ref": "#/definitions/Rate" } } }
+      }
+    }
+  },
+  "definitions": {
+    "Rate": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "validFrom": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}
