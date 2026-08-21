@@ -82,10 +82,17 @@
                 <a
                   class="fd-sidebar__link"
                   [class.fd-sidebar__link--active]="isActive(row.slug)"
+                  [class.fd-sidebar__link--badged]="row.badge"
                   [routerLink]="'/' + row.slug"
                   (mouseenter)="prefetch(row.slug)"
-                  >{{ row.label }}</a
                 >
+                  @if (row.badge) {
+                    <span class="fd-sidebar__badge" [attr.data-badge]="row.badge">{{
+                      row.badge
+                    }}</span>
+                  }
+                  <span class="fd-sidebar__label">{{ row.label }}</span>
+                </a>
               }
             </li>
           }

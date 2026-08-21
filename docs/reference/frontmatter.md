@@ -28,6 +28,7 @@ toc: true
 | `description` | string | empty | Shown under the heading and used as the meta description |
 | `sidebar_label` | string | `title` | Overrides the label in the sidebar when the title is too long for it |
 | `sidebar_position` | number | `999` | Sort order among siblings, ascending |
+| `sidebar_badge` | string | empty | Short marker before the sidebar label. HTTP methods are colour-coded |
 | `slug` | string | derived from the path | Replaces the route entirely |
 | `toc` | boolean | `true` | Set `false` to hide the table of contents |
 | `hidden` | boolean | `false` | Reachable by URL and search, but absent from the sidebar |

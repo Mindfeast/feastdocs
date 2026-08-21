@@ -2,6 +2,7 @@
 title: "Get a reservation"
 description: "GET /reservations/{id}"
 sidebar_label: "Get a reservation"
+sidebar_badge: "GET"
 sidebar_position: 3
 ---
 

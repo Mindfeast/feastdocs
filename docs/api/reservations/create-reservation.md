@@ -2,6 +2,7 @@
 title: "Create a reservation"
 description: "Books a room for a date range. The range is half-open — checkout is not counted."
 sidebar_label: "Create a reservation"
+sidebar_badge: "POST"
 sidebar_position: 2
 ---
 

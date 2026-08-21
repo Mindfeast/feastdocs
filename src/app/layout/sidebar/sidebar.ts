@@ -17,6 +17,7 @@ interface Row {
   readonly depth: number;
   readonly expandable: boolean;
   readonly expanded: boolean;
+  readonly badge?: string;
 }
 
 /**
@@ -125,6 +126,7 @@ export class Sidebar {
             depth,
             expandable: false,
             expanded: false,
+            badge: item.badge,
           });
           continue;
         }

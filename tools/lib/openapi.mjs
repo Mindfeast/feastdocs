@@ -277,6 +277,9 @@ function operationPage(operation, document, index) {
       title: operation.summary,
       description: oneLine(operation.description) || `${operation.method} ${operation.route}`,
       sidebar_label: operation.summary,
+      // The method in the sidebar makes an API section scannable: a reader
+      // looking for the delete endpoint spots it without reading labels.
+      sidebar_badge: operation.method,
       sidebar_position: index + 1,
     }) +
     `${MARKER}\n\n` +

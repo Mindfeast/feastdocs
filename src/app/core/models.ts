@@ -46,6 +46,8 @@ export interface SidebarDoc {
   readonly slug: string;
   readonly label: string;
   readonly position: number;
+  /** Short marker shown before the label, e.g. an HTTP method. */
+  readonly badge?: string;
 }
 
 export interface SidebarCategory {

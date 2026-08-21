@@ -2,6 +2,7 @@
 title: "List rate plans"
 description: "Superseded by `/availability`, which returns rates inline."
 sidebar_label: "List rate plans"
+sidebar_badge: "GET"
 sidebar_position: 2
 ---
 

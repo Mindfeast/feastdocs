@@ -296,6 +296,9 @@ async function buildDoc(file, { renderer, docsRoot, warn, gitMeta, reuse }) {
     description: (data.description ?? '').toString(),
     sidebarLabel: (data.sidebar_label ?? data.sidebarLabel ?? title).toString(),
     sidebarPosition: toNumber(rawPosition, 999),
+    // A short marker beside the label — an HTTP method, a status, anything
+    // worth scanning for. Generated API pages set it to their method.
+    sidebarBadge: (data.sidebar_badge ?? data.sidebarBadge ?? '').toString(),
     hasExplicitPosition: rawPosition != null,
     hidden: data.hidden === true,
     draft: data.draft === true,
@@ -465,6 +468,7 @@ function buildTree(docs, categories, sectionFolder, generatedIndexes = []) {
       type: 'doc',
       slug: doc.slug,
       label: doc.sidebarLabel,
+      badge: doc.sidebarBadge || undefined,
       // The section landing sits at the top unless it asks for another spot.
       position: isIndex && !doc.hasExplicitPosition ? -1 : doc.sidebarPosition,
     });

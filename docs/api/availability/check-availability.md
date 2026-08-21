@@ -2,6 +2,7 @@
 title: "Check availability"
 description: "Rooms bookable for a date range, with nightly rates."
 sidebar_label: "Check availability"
+sidebar_badge: "GET"
 sidebar_position: 1
 ---
 

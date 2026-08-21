@@ -245,3 +245,53 @@
   color: var(--fd-text-subtle);
   font-size: 0.8125rem;
 }
+
+// --- Row badges (HTTP methods on generated API pages) ------------------------
+
+.fd-sidebar__link--badged {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.fd-sidebar__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fd-sidebar__badge {
+  flex: none;
+  min-width: 2.9rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: var(--fd-surface-strong);
+  color: var(--fd-text-subtle);
+  font-family: var(--fd-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: center;
+
+  // The usual method colours, so a verb reads before the label does.
+  &[data-badge='GET'] {
+    background: color-mix(in srgb, #3b82f6 20%, transparent);
+    color: #60a5fa;
+  }
+
+  &[data-badge='POST'] {
+    background: color-mix(in srgb, #22c55e 20%, transparent);
+    color: #4ade80;
+  }
+
+  &[data-badge='PUT'],
+  &[data-badge='PATCH'] {
+    background: color-mix(in srgb, #f59e0b 22%, transparent);
+    color: #fbbf24;
+  }
+
+  &[data-badge='DELETE'] {
+    background: color-mix(in srgb, #ef4444 20%, transparent);
+    color: #f87171;
+  }
+}
