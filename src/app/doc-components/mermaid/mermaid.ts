@@ -57,8 +57,17 @@ export class DocMermaid {
     });
   }
 
+  /** Mermaid renders into a temporary `d{id}` node on <body>; clear it. */
+  private removeStrays(id: string): void {
+    for (const candidate of [`d${id}`, id]) {
+      const stray = document.getElementById(candidate);
+      if (stray && !this.host.contains(stray)) stray.remove();
+    }
+  }
+
   private async draw(): Promise<void> {
     const dark = this.theme.resolved() === 'dark';
+    const id = `${this.id}-${dark ? 'd' : 'l'}`;
 
     try {
       const { default: mermaid } = await import('mermaid');
@@ -67,15 +76,23 @@ export class DocMermaid {
         securityLevel: 'strict',
         theme: dark ? 'dark' : 'default',
         fontFamily: 'inherit',
-      });
+        // On a parse failure mermaid otherwise appends its own "Syntax error in
+        // text" graphic to <body>, outside this component and below the page
+        // footer. This component reports the failure in place instead.
+        // Undeclared in the shipped types, but honoured by the runtime.
+        suppressErrorRendering: true,
+      } as Parameters<typeof mermaid.initialize>[0]);
 
-      const { svg } = await mermaid.render(`${this.id}-${dark ? 'd' : 'l'}`, this.source);
+      const { svg } = await mermaid.render(id, this.source);
       this.host.innerHTML = `<div class="fd-mermaid__figure">${svg}</div>`;
       this.failed.set(false);
     } catch (error) {
       // A broken diagram must not take the page with it: keep the source
       // visible and say what mermaid objected to.
       const message = error instanceof Error ? error.message : String(error);
+      // Belt and braces: older mermaid builds ignore suppressErrorRendering and
+      // leave a detached container behind.
+      this.removeStrays(id);
       this.host.innerHTML =
         `<div class="fd-mermaid__error"><p>This diagram could not be rendered.</p>` +
         `<p class="fd-mermaid__reason"></p>` +
