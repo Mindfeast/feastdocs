@@ -85,6 +85,55 @@ not free: every level is another click, and a reader eight levels down has lost
 sight of where they are. Prefer another section before reaching for the last few
 levels.
 
+## Controlling what starts open
+
+By default every category in a section starts **expanded** — a reader clicking
+into a section sees the whole shape of it at once. Two flags change that.
+
+### Per section
+
+`_section.json` decides how that section's categories start:
+
+```json title="docs/changelog/_section.json"
+{ "label": "Changelog", "expand": "active" }
+```
+
+| Value | Effect |
+| --- | --- |
+| `all` | Everything expanded. The default |
+| `active` | Only the branch containing the current page |
+| `none` | Everything collapsed |
+
+`active` suits a deep, generated tree — the changelog section on this site uses
+it, so landing on it shows the repositories rather than every month of every
+year, and opening a month reveals just that branch.
+
+Without the flag, a section follows `sidebar.autoCollapse` in
+[the site config](../reference/configuration.md), where `true` means `active`.
+
+### Per category
+
+`_category.json` overrides its section:
+
+```json title="docs/guide/advanced/_category.json"
+{ "label": "Advanced", "expand": "always" }
+```
+
+| Value | Effect |
+| --- | --- |
+| `"always"` | Pinned open. No toggle, and no stored state can close it |
+| `true` | Starts open |
+| `false` | Starts closed. `"collapsed": true` still works and means the same |
+
+`"always"` is for the one branch that should never be hidden — the section a
+reader is always coming back to. The **Advanced** category in this Guide is
+pinned that way: it has no chevron, because a control that cannot change
+anything is worse than none.
+
+Everything else is remembered per reader: collapse a category and it stays
+collapsed on the next visit, on that browser. Opening a page always reveals its
+own branch, so a link never lands somewhere hidden.
+
 ## Category landing pages
 
 A folder becomes a category in the sidebar. Give it an `index.md` and that page

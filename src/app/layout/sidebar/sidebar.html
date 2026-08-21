@@ -48,17 +48,27 @@
             <li class="fd-sidebar__item" [style.padding-inline-start.px]="row.depth * 14">
               @if (row.kind === 'category') {
                 <div class="fd-sidebar__category">
-                  <button
-                    type="button"
-                    class="fd-sidebar__twisty"
-                    [attr.aria-expanded]="row.expanded"
-                    [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.label"
-                    (click)="toggle(row.key)"
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" [class.is-open]="row.expanded">
-                      <path d="M9 6l6 6-6 6" />
-                    </svg>
-                  </button>
+                  @if (row.locked) {
+                    <!-- Pinned open: a control that cannot change anything is
+                         worse than no control, so the space is kept and left
+                         empty rather than showing a dead chevron. -->
+                    <span
+                      class="fd-sidebar__twisty fd-sidebar__twisty--locked"
+                      aria-hidden="true"
+                    ></span>
+                  } @else {
+                    <button
+                      type="button"
+                      class="fd-sidebar__twisty"
+                      [attr.aria-expanded]="row.expanded"
+                      [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.label"
+                      (click)="toggle(row.key)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" [class.is-open]="row.expanded">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  }
 
                   @if (row.slug !== null) {
                     <a
@@ -68,6 +78,12 @@
                       (mouseenter)="prefetch(row.slug)"
                       >{{ row.label }}</a
                     >
+                  } @else if (row.locked) {
+                    <span
+                      class="fd-sidebar__link fd-sidebar__link--category fd-sidebar__link--plain"
+                    >
+                      {{ row.label }}
+                    </span>
                   } @else {
                     <button
                       type="button"

@@ -58,6 +58,11 @@ export interface SidebarCategory {
   /** Set when the folder has an index page, making the category itself clickable. */
   readonly slug: string | null;
   readonly items: readonly SidebarItem[];
+  /**
+   * 'always' keeps the category open and removes its toggle; true or false
+   * set only the starting state. Unset follows the section.
+   */
+  readonly expand?: 'always' | boolean;
 }
 
 export type SidebarItem = SidebarDoc | SidebarCategory;
@@ -88,6 +93,12 @@ export interface DocSection {
   readonly items: readonly SidebarItem[];
   /** Version this section belongs to; empty when the site is unversioned. */
   readonly version?: string;
+  /**
+   * How this section's categories start: 'all' expanded, 'active' only the
+   * branch holding the current page, 'none' collapsed. Unset follows
+   * sidebar.autoCollapse.
+   */
+  readonly expand?: 'all' | 'active' | 'none';
 }
 
 export interface NavLink {

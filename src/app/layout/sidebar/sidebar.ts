@@ -18,6 +18,8 @@ interface Row {
   readonly expandable: boolean;
   readonly expanded: boolean;
   readonly badge?: string;
+  /** Pinned open by configuration: rendered without a toggle. */
+  readonly locked?: boolean;
 }
 
 /**
@@ -37,6 +39,8 @@ export class Sidebar {
   private readonly router = inject(Router);
 
   protected readonly filterText = signal('');
+  /** Categories pinned open by `expand: 'always'`; filled by readCollapsed. */
+  private readonly locked = new Set<string>();
   private readonly collapsed = signal<ReadonlySet<string>>(this.readCollapsed());
 
   /** Ancestor category keys for each page, so the tree can reveal the active page. */
@@ -97,6 +101,7 @@ export class Sidebar {
   }
 
   protected toggle(key: string): void {
+    if (this.locked.has(key)) return;
     this.collapsed.update((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
@@ -132,15 +137,17 @@ export class Sidebar {
         }
 
         const key = `${parentKey}/${item.label}`;
-        const isCollapsed = collapsed.has(key);
+        const locked = item.expand === 'always';
+        const isCollapsed = !locked && collapsed.has(key);
         rows.push({
           key,
           kind: 'category',
           label: item.label,
           slug: item.slug,
           depth,
-          expandable: true,
+          expandable: !locked,
           expanded: !isCollapsed,
+          locked,
         });
         if (!isCollapsed) walk(item.items, depth + 1, key);
       }
@@ -193,21 +200,47 @@ export class Sidebar {
     }
   }
 
+  /**
+   * Which categories start collapsed.
+   *
+   * Precedence, narrowest first: a category's own `expand`, then its legacy
+   * `collapsed`, then the section's `expand`, then `sidebar.autoCollapse`.
+   * A category pinned with `expand: 'always'` is never in this set and is
+   * recorded in `locked` instead, so no stored state can close it.
+   */
   private readCollapsed(): ReadonlySet<string> {
     const fromConfig = new Set<string>();
-    const walk = (items: readonly SidebarItem[], parentKey: string): void => {
-      for (const item of items) {
-        if (item.type !== 'category') continue;
-        const key = `${parentKey}/${item.label}`;
-        if (item.collapsed) fromConfig.add(key);
-        walk(item.items, key);
-      }
-    };
-    for (const section of this.content.sections) walk(section.items, '');
+
+    for (const section of this.content.sections) {
+      // 'active' means only the branch holding the current page is open, which
+      // is what autoCollapse has always meant.
+      const mode = section.expand ?? (this.content.site.sidebar.autoCollapse ? 'active' : 'all');
+
+      const walk = (items: readonly SidebarItem[], parentKey: string): void => {
+        for (const item of items) {
+          if (item.type !== 'category') continue;
+          const key = `${parentKey}/${item.label}`;
+
+          if (item.expand === 'always') this.locked.add(key);
+          else if (item.expand === true) {
+            /* explicitly open */
+          } else if (item.expand === false || item.collapsed) fromConfig.add(key);
+          else if (mode !== 'all') fromConfig.add(key);
+
+          walk(item.items, key);
+        }
+      };
+      walk(section.items, '');
+    }
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) return new Set<string>(JSON.parse(stored) as string[]);
+      if (stored) {
+        const set = new Set<string>(JSON.parse(stored) as string[]);
+        // A reader's own choices win, except over a pinned category.
+        for (const key of this.locked) set.delete(key);
+        return set;
+      }
     } catch {
       // Unreadable or unparseable — fall back to the configured defaults.
     }

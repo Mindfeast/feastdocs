@@ -1,5 +1,6 @@
 {
   "label": "Changelog",
   "description": "Every change made to this repository.",
-  "position": 5
+  "position": 5,
+  "expand": "active"
 }

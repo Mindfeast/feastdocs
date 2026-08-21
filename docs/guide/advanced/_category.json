@@ -1,1 +1,5 @@
-{ "label": "Advanced", "position": 20, "collapsed": false }
+{
+  "label": "Advanced",
+  "position": 20,
+  "expand": "always"
+}

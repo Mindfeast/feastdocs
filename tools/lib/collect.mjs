@@ -432,6 +432,8 @@ function buildSections(docs, categories, sectionMeta, generatedIndexes = []) {
     sections.push({
       id: folder,
       label: String(meta.label ?? humanize(folder)),
+      // 'all' | 'active' | 'none' — how this section's categories start.
+      expand: normaliseSectionExpand(meta.expand),
       description: String(meta.description ?? ''),
       position: toNumber(meta.position, 999),
       slug: landing,
@@ -443,6 +445,18 @@ function buildSections(docs, categories, sectionMeta, generatedIndexes = []) {
     (a, b) =>
       a.position - b.position || a.label.localeCompare(b.label, undefined, { numeric: true }),
   );
+}
+
+/** `expand` on a category: 'always', or a plain boolean, or unset. */
+function normaliseExpand(value) {
+  if (value === 'always') return 'always';
+  if (value === true || value === false) return value;
+  return undefined;
+}
+
+/** `expand` on a section: how its categories start out. */
+function normaliseSectionExpand(value) {
+  return value === 'all' || value === 'active' || value === 'none' ? value : undefined;
 }
 
 /** Turns one section's pages into its nested sidebar tree. */
@@ -508,6 +522,10 @@ function buildTree(docs, categories, sectionFolder, generatedIndexes = []) {
         label,
         position: toNumber(meta.position ?? child.indexDoc?.sidebarPosition, 999),
         collapsed: meta.collapsed === true,
+        // 'always' pins a category open and removes its toggle — for the one
+        // or two branches a reader should never have to go looking for.
+        // true/false simply set the starting state for this category.
+        expand: normaliseExpand(meta.expand),
         slug: child.indexDoc ? child.indexDoc.slug : childPath,
         items: items_,
       });

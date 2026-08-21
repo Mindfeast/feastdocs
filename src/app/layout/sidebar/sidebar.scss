@@ -295,3 +295,10 @@
     color: #f87171;
   }
 }
+
+// A pinned category keeps the twisty's footprint so its label stays aligned
+// with every other category in the tree.
+.fd-sidebar__twisty--locked {
+  display: inline-block;
+  pointer-events: none;
+}
