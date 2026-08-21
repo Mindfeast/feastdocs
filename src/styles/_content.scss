@@ -341,3 +341,33 @@
   background: color-mix(in srgb, #ef4444 18%, transparent);
   color: #f87171;
 }
+
+// --- Measure -----------------------------------------------------------------
+//
+// Text runs the full width of the column, as Docusaurus does. A narrower
+// measure reads better for long prose, so the hook is here and unset: give
+// --fd-prose-max a value (76ch is a good starting point) in custom.scss and
+// paragraphs, lists and headings honour it while tables, code, diagrams and
+// card grids keep the whole column.
+//
+// Only direct children are affected — text inside a component or an admonition
+// already sits in a box of its own.
+
+.fd-markdown {
+  --fd-prose-max: none;
+
+  > p,
+  > ul,
+  > ol,
+  > dl,
+  > blockquote,
+  > h1,
+  > h2,
+  > h3,
+  > h4,
+  > h5,
+  > h6 {
+    max-width: var(--fd-prose-max);
+  }
+}
+

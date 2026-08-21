@@ -17,9 +17,57 @@ in both light and dark mode.
 
 ```scss title="src/styles/_tokens.scss"
 :root {
-  --fd-content-max: 820px;
-  --fd-sidebar-width: 280px;
+  --fd-content-max: 1080px;
+  --fd-sidebar-width: 284px;
+  --fd-toc-width: 240px;
   --fd-accent: var(--fd-accent-light);
+}
+```
+
+### Layout widths
+
+| Token | What it sets | Default |
+| --- | --- | --- |
+| `--fd-content-max` | The content column | `1080px` |
+| `--fd-toc-width` | The on-this-page column | `240px` |
+| `--fd-sidebar-width` | The section sidebar | `284px` |
+| `--fd-prose-max` | Optional cap on text width | `none` |
+
+A page with a table of contents is `--fd-content-max` plus `--fd-toc-width`
+wide; one without is the content column alone. The sidebar sits outside both.
+
+Text runs the full width of the column. If you prefer a narrower measure for
+long prose — past roughly 90 characters a line the eye starts losing its place
+returning to the left margin — set `--fd-prose-max`. Paragraphs, lists and
+headings honour it while tables, code blocks, diagrams and card grids keep the
+whole column:
+
+```scss title="src/styles/custom.scss"
+.fd-markdown {
+  --fd-prose-max: 76ch;
+}
+```
+
+### Two widths, on purpose
+
+`--fd-content-max` is the width of the column. `--fd-prose-max` is the width of
+the *text* inside it, and it is deliberately narrower:
+
+| Token | Applies to | Default |
+| --- | --- | --- |
+| `--fd-content-max` | The whole content column | `1010px` |
+| `--fd-prose-max` | Paragraphs, lists and headings | `76ch` |
+
+Tables, code blocks, diagrams and card grids want room. Prose does not: past
+roughly 90 characters a line, the eye loses its place coming back to the left
+margin. So the column is wide and the text within it is capped — a wide table
+uses every pixel while a paragraph beside it stays readable.
+
+Raise the measure if you disagree:
+
+```scss title="src/styles/custom.scss"
+.fd-markdown {
+  --fd-prose-max: 90ch;
 }
 ```
 
@@ -55,7 +103,7 @@ write inside Markdown:
 
 ```scss title="src/styles/custom.scss"
 :root {
-  --fd-content-max: 940px;
+  --fd-content-max: 1140px;
 }
 
 .fd-markdown .highlight-box {
