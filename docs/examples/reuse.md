@@ -34,13 +34,62 @@ left exactly as written, so examples stay correct.
 
 ## Snippets
 
-A file in `docs/_snippets/` included wherever it is needed. This is
-`_snippets/install.md`, written once:
+A snippet is a piece of content written **once** and included in several pages,
+so the pages cannot drift apart.
 
-{{ snippet:install }}
+The problem it solves is ordinary: some things have to be said in more than one
+place. A prerequisite. A warning about a footgun. The support address. Who to ask
+for access. Copy them and they are correct on the day you write them — a year
+later, one has been updated three times and the others are quietly wrong.
 
-Change that file and every page including it changes with it. Snippets may use
-variables, and may include other snippets.
+**This site had exactly that.** The warning about shallow clones belonged on the
+changelog page, the attribution section and the configuration manual, and it was
+written out three times in three slightly different wordings. It is now one file,
+`_snippets/shallow-clone.md`, included in each. This is that file:
+
+{{ snippet:shallow-clone }}
+
+The [configuration manual](../guide/configuration-manual.md#4-repository-links-and-attribution)
+shows the same block, from the same source. Change the file and both pages change.
+
+### Writing one
+
+Put a Markdown file in `docs/_snippets/`, then include it by name:
+
+```markdown
+{{ snippet:shallow-clone }}
+```
+
+A snippet is ordinary Markdown — admonitions, components and code all work — and
+may use variables or include other snippets. Subfolders work too:
+`_snippets/api/auth.md` is `{{ snippet:api/auth }}`.
+
+### When to reach for one
+
+<fd-columns>
+  <div>
+
+**Worth a snippet**
+
+- A prerequisite repeated across a section
+- A deprecation or migration notice
+- Auth steps shared by every API page
+- Support contacts, SLAs, environment URLs
+
+  </div>
+  <div>
+
+**Not worth it**
+
+- Text that appears once
+- Something two pages happen to share today but for unrelated reasons
+- Anything a reader should see spelled out in place
+
+  </div>
+</fd-columns>
+
+A snippet used in one place is indirection with no payoff: the reader has to open
+another file to see what the page says.
 
 ## Expandable
 

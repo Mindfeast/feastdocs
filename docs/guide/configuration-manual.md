@@ -78,11 +78,7 @@ showLastUpdated: true,
 footer and navbar, the commit links in changelogs, and web editing. `editUrl`
 is the plain "Edit this page" link for people who prefer their own editor.
 
-Attribution comes from `git log`, so it needs real history. A shallow clone
-(`--depth 1`) leaves most pages without an author. The build deepens a shallow
-checkout itself and falls back to the host API where it cannot, but a full
-checkout in CI is still the cheapest path: `fetch-depth: 0` on GitHub Actions,
-`fetchDepth: 0` on Azure Pipelines.
+{{ snippet:shallow-clone }}
 
 **Check:** any page footer reads "Last updated {date} by {author}".
 
