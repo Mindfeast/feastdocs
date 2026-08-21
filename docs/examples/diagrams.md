@@ -12,6 +12,19 @@ as they are.
 
 ## Flowchart
 
+````markdown
+```mermaid
+flowchart TD
+  A[Markdown in docs/] --> B{Build}
+  B --> C[Generated modules]
+  B --> D[Prerendered HTML]
+  C --> E[Angular app]
+  D --> E
+```
+````
+
+Renders as:
+
 ```mermaid
 flowchart TD
   A[Markdown in docs/] --> B{Build}
@@ -22,6 +35,21 @@ flowchart TD
 ```
 
 ## Sequence
+
+````markdown
+```mermaid
+sequenceDiagram
+  participant Author
+  participant Editor as Content manager
+  participant GitHub
+  Author->>Editor: Edit a page
+  Editor->>GitHub: Commit as the signed-in user
+  GitHub-->>Editor: New blob SHA
+  Editor-->>Author: Published
+```
+````
+
+Renders as:
 
 ```mermaid
 sequenceDiagram
@@ -36,6 +64,19 @@ sequenceDiagram
 
 ## State
 
+````markdown
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Review: open a pull request
+  Review --> Draft: changes requested
+  Review --> Published: merged
+  Published --> [*]
+```
+````
+
+Renders as:
+
 ```mermaid
 stateDiagram-v2
   [*] --> Draft
@@ -46,6 +87,24 @@ stateDiagram-v2
 ```
 
 ## Class
+
+````markdown
+```mermaid
+classDiagram
+  class Page {
+    +string title
+    +string slug
+    +render()
+  }
+  class Section {
+    +string label
+    +number position
+  }
+  Section "1" --> "*" Page : contains
+```
+````
+
+Renders as:
 
 ```mermaid
 classDiagram
@@ -63,6 +122,21 @@ classDiagram
 
 ## Entity relationship
 
+````markdown
+```mermaid
+erDiagram
+  SECTION ||--o{ PAGE : contains
+  PAGE ||--o{ HEADING : has
+  PAGE {
+    string slug
+    string title
+    date lastUpdated
+  }
+```
+````
+
+Renders as:
+
 ```mermaid
 erDiagram
   SECTION ||--o{ PAGE : contains
@@ -75,6 +149,21 @@ erDiagram
 ```
 
 ## Gantt
+
+````markdown
+```mermaid
+gantt
+  title Release plan
+  dateFormat YYYY-MM-DD
+  section Build
+  Draft docs   :a1, 2026-01-06, 5d
+  Review       :after a1, 3d
+  section Ship
+  Publish      :2026-01-20, 2d
+```
+````
+
+Renders as:
 
 ```mermaid
 gantt
@@ -89,6 +178,17 @@ gantt
 
 ## Pie
 
+````markdown
+```mermaid
+pie title Where the time goes
+  "Writing" : 45
+  "Reviewing" : 30
+  "Publishing" : 25
+```
+````
+
+Renders as:
+
 ```mermaid
 pie title Where the time goes
   "Writing" : 45
@@ -100,6 +200,16 @@ pie title Where the time goes
 
 Mermaid is strict. Rather than breaking the page or vanishing, a diagram it
 cannot read shows your source and its complaint:
+
+````markdown
+```mermaid
+flowchart TD
+  A --> B
+  this line is not valid mermaid
+```
+````
+
+Renders as:
 
 ```mermaid
 flowchart TD

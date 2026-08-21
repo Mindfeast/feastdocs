@@ -12,13 +12,14 @@ the caret rests on an empty line. Both drop ready-to-fill snippets at the
 cursor.
 
 This section shows **every item in that menu**: the exact text the menu
-inserts, next to how it renders. Four groups, matching the menu:
+inserts, next to how it renders. Five groups, matching the menu:
 
 | Group | Items |
 | --- | --- |
 | [Admonitions](./admonitions.md) | Note, Tip, Warning, Danger |
 | [Blocks](./blocks.md) | Code block, Table |
-| [Components](./components.md) | Tabs, Steps, API field, Counter |
+| [Components](./components.md) | Tabs, Steps, API field, Counter, Changelog |
+| [Diagrams](./diagrams.md) | Flowchart, Sequence, State machine, Class, Entity relationship, Gantt, Pie |
 | [Inline](./inline.md) | Lead paragraph, Callout line, Link, Image |
 
 :::tip Try it on this section

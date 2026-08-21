@@ -37,9 +37,18 @@ next page) — otherwise it stays literal text.
 | `<fd-steps>` | Numbered tutorial steps with a connector line |
 | `<fd-counter>` | Minimal interactive demo of live Angular state |
 | `<fd-api-field>` | One documented option/parameter, for API references |
+| `<fd-mermaid>` | A [Mermaid diagram](./mermaid.md) — written as a ```` ```mermaid ```` fence |
+| `<fd-changelog>` | [Repository history](./changelog.md) read from git at build time |
+| `<fd-changelog-months>` | An index of the generated changelog pages |
+| `<fd-changelog-repos>` | Cards linking to each repository's changelog |
+| `<fd-category-index>` | Cards for everything inside a category |
 
 Each has its own page in this section, with the source Markdown shown next to the
 live result.
+
+Diagrams are the one component you never write as a tag: a fenced
+```` ```mermaid ```` block becomes one, so diagrams from another documentation
+tool work unchanged. See [Diagrams](./mermaid.md).
 
 ## Adding your own
 
