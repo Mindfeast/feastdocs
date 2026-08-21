@@ -52,6 +52,15 @@ export class Sidebar {
 
   protected readonly section = computed(() => this.content.sectionOf(this.currentSlug()));
 
+  /**
+   * Sections for the mobile drawer, scoped to the version being read — the
+   * drawer is the only navigation on a narrow screen, so listing another
+   * version's sections there would be a trapdoor out of v1.
+   */
+  protected readonly visibleSections = computed(() =>
+    this.content.sectionsFor(this.content.versionOf(this.currentSlug())),
+  );
+
   protected readonly rows = computed<readonly Row[]>(() => {
     const section = this.section();
     if (!section) return [];

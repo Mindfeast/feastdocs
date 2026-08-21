@@ -30,8 +30,8 @@ export async function buildContent({ bust = false, label = 'docs' } = {}) {
   // once they are real files, everything downstream treats them as pages.
   await writeOpenApiPages(config);
 
-  const { docs, sections, assets, warnings } = await collectDocs(config);
-  await emit({ config, docs, sections, assets, changelog });
+  const { docs, sections, assets, warnings, versions } = await collectDocs(config);
+  await emit({ config, docs, sections, assets, changelog, versions });
 
   const elapsed = Math.round(performance.now() - started);
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;

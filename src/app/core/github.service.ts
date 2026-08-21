@@ -156,7 +156,11 @@ export class GithubService {
    * current head, wrap it in a commit, advance the ref. The token's user is
    * recorded as author, exactly like the single-file path.
    */
-  async commitBatch(docsDir: string, changes: readonly BatchChange[], message: string): Promise<void> {
+  async commitBatch(
+    docsDir: string,
+    changes: readonly BatchChange[],
+    message: string,
+  ): Promise<void> {
     const ref = await this.get<{ object: { sha: string } }>(
       `/repos/${this.repo}/git/ref/heads/${encodeURIComponent(this.branch)}`,
     );
@@ -170,7 +174,12 @@ export class GithubService {
       tree: changes.map((change) =>
         change.content === null
           ? { path: `${docsDir}/${change.path}`, mode: '100644', type: 'blob', sha: null }
-          : { path: `${docsDir}/${change.path}`, mode: '100644', type: 'blob', content: change.content },
+          : {
+              path: `${docsDir}/${change.path}`,
+              mode: '100644',
+              type: 'blob',
+              content: change.content,
+            },
       ),
     });
 
@@ -181,9 +190,13 @@ export class GithubService {
     });
 
     try {
-      await this.send('PATCH', `/repos/${this.repo}/git/refs/heads/${encodeURIComponent(this.branch)}`, {
-        sha: commit.sha,
-      });
+      await this.send(
+        'PATCH',
+        `/repos/${this.repo}/git/refs/heads/${encodeURIComponent(this.branch)}`,
+        {
+          sha: commit.sha,
+        },
+      );
     } catch (error) {
       // Only the ref update can race another writer; tag it so callers can
       // distinguish "head moved, rebuild and retry" from every other 422

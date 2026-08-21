@@ -58,13 +58,27 @@ export async function writeChangelogPages(config, changelog) {
       ...changelog.sources[id],
       commits,
     })),
-  ].filter((dataset) => dataset.commits.length > 0);
+  ]
+    .filter((dataset) => dataset.commits.length > 0)
+    // Nothing to write for a source that could not be read; its existing pages
+    // are protected below.
+    .filter((dataset) => !(changelog.unreadable ?? new Set()).has(dataset.id));
 
   if (datasets.length === 0) return;
 
   const grouped = groupByRepo === 'auto' ? datasets.length > 1 : Boolean(groupByRepo);
   const expected = new Set();
   let written = 0;
+
+  // A source whose host could not be read this build keeps whatever it already
+  // has. Deleting a product's changelog because GitHub rate-limited the build
+  // would be a silent, confusing loss.
+  const unreadable = changelog.unreadable ?? new Set();
+  for (const id of unreadable) {
+    const source = changelog.sources[id];
+    if (!source) continue;
+    await keepEverythingUnder(path.join(root, source.slug), expected);
+  }
 
   for (const [order, dataset] of datasets.entries()) {
     const base = grouped ? path.join(root, dataset.slug) : root;
@@ -268,6 +282,15 @@ async function subdirectories(dir, pattern = null) {
 async function removeIfEmpty(dir) {
   const left = await fs.readdir(dir).catch(() => ['keep']);
   if (left.length === 0) await fs.rmdir(dir).catch(() => {});
+}
+
+/** Marks every file under a folder as expected, so pruning leaves it alone. */
+async function keepEverythingUnder(dir, expected) {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) await keepEverythingUnder(full, expected);
+    else expected.add(full);
+  }
 }
 
 /** Returns true when the file was actually written. */

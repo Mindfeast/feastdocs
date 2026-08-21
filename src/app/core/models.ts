@@ -26,6 +26,10 @@ export interface DocContent {
   /** Page-scoped CSS compiled from a sibling .scss file. */
   readonly css: string;
   readonly html: string;
+  /** Version this page belongs to; empty when the site is unversioned. */
+  readonly version?: string;
+  /** Absolute edit URL, when a version supplies its own. */
+  readonly editUrl?: string | null;
 }
 
 /** Metadata for every page, small enough to keep in the initial bundle. */
@@ -60,6 +64,17 @@ export type SidebarItem = SidebarDoc | SidebarCategory;
  * A top-level documentation section — one folder directly under docs/, one tab
  * in the navbar, one sidebar tree of its own.
  */
+/** One documented version of the site. */
+export interface DocVersion {
+  /** Stable id, e.g. 'v1'. Empty on an unversioned site. */
+  readonly id: string;
+  /** What the version switcher shows. */
+  readonly label: string;
+  /** Route prefix; empty for the default version, which owns the bare routes. */
+  readonly prefix: string;
+  readonly isDefault: boolean;
+}
+
 export interface DocSection {
   /** The folder name, which is also the slug prefix of every page inside. */
   readonly id: string;
@@ -69,6 +84,8 @@ export interface DocSection {
   /** Landing page: the section's index.md, or its first page. */
   readonly slug: string;
   readonly items: readonly SidebarItem[];
+  /** Version this section belongs to; empty when the site is unversioned. */
+  readonly version?: string;
 }
 
 export interface NavLink {
@@ -172,6 +189,8 @@ export interface Breadcrumb {
 }
 
 export interface SearchRecord {
+  /** Version the page belongs to; empty on an unversioned site. */
+  readonly version?: string;
   readonly slug: string;
   readonly section: string;
   readonly page: string;

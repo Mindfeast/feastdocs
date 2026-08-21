@@ -122,6 +122,16 @@ export default {
    */
   openapi: [{ spec: 'examples/petstore.yaml', outDir: 'api', label: 'Bookings API' }],
 
+  /**
+   * Documented versions, newest first. The one marked default owns the bare
+   * routes; the rest are served under their own prefix. Omit the whole option
+   * for an unversioned site.
+   */
+  versions: [
+    { id: 'v2', label: 'v2 (current)', docsDir: 'docs', default: true },
+    { id: 'v1', label: 'v1 (archived)', docsDir: 'versioned_docs/v1' },
+  ],
+
   editor: {
     /**
      * Label on the navbar's content-manager link, shown until a reader opens

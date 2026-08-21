@@ -142,6 +142,15 @@ The URL is absolute, built from `siteUrl`, so link previews only work once
 `siteUrl` is set. Platforms cache aggressively: after changing the image, force
 a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
 
+## Versions
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `versions` | array | Documented versions. Omit for an unversioned site |
+
+Each entry is `{ id, label, docsDir, default, slug, editUrl }`. See
+[versioning](../guide/versioning.md).
+
 ## API reference
 
 | Option | Type | Effect |

@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
-import { DOC_INDEX, DOC_LOADERS, SECTIONS } from '../generated/registry';
+import { DOC_INDEX, DOC_LOADERS, SECTIONS, VERSIONS } from '../generated/registry';
 import { SITE } from '../generated/site-config';
-import type { Breadcrumb, DocContent, DocSection, DocSummary, SidebarItem } from './models';
+import type {
+  Breadcrumb,
+  DocContent,
+  DocSection,
+  DocSummary,
+  DocVersion,
+  SidebarItem,
+} from './models';
 
 /**
  * Single entry point to the generated content: page lookup, lazy loading,
@@ -11,6 +18,9 @@ import type { Breadcrumb, DocContent, DocSection, DocSummary, SidebarItem } from
 export class ContentService {
   readonly site = SITE;
   readonly sections = SECTIONS;
+  readonly versions = VERSIONS;
+  /** True when more than one version is documented. */
+  readonly versioned = VERSIONS.length > 1;
   readonly pages = DOC_INDEX;
 
   private readonly summaries = new Map<string, DocSummary>(
@@ -34,6 +44,38 @@ export class ContentService {
   toSlug(path: string): string {
     const clean = path.split(/[?#]/, 1)[0];
     return decodeURIComponent(clean).replace(/^\/+|\/+$/g, '');
+  }
+
+  /**
+   * Which version a slug belongs to. Resolved from the route prefix, longest
+   * first so 'v1' never shadows 'v1-beta'.
+   */
+  versionOf(slug: string): DocVersion {
+    const prefixed = [...VERSIONS]
+      .filter((version) => version.prefix !== '')
+      .sort((a, b) => b.prefix.length - a.prefix.length);
+    for (const version of prefixed) {
+      if (slug === version.prefix || slug.startsWith(`${version.prefix}/`)) return version;
+    }
+    return VERSIONS.find((version) => version.isDefault) ?? VERSIONS[0];
+  }
+
+  /** Sections belonging to one version — what the navbar and sidebar show. */
+  sectionsFor(version: DocVersion): readonly DocSection[] {
+    if (!this.versioned) return SECTIONS;
+    return SECTIONS.filter((section) => (section.version ?? '') === version.id);
+  }
+
+  /**
+   * The same page in another version, or that version's first page when it has
+   * no equivalent — switching versions should never land on a 404.
+   */
+  translate(slug: string, to: DocVersion): string {
+    const from = this.versionOf(slug);
+    const bare = from.prefix === '' ? slug : slug.slice(from.prefix.length + 1);
+    const candidate = to.prefix === '' ? bare : `${to.prefix}/${bare}`;
+    if (this.exists(candidate)) return candidate;
+    return this.sectionsFor(to)[0]?.slug ?? (to.prefix === '' ? '' : to.prefix);
   }
 
   exists(slug: string): boolean {

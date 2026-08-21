@@ -197,3 +197,30 @@
     display: none;
   }
 }
+
+// --- Version switcher --------------------------------------------------------
+
+.fd-navbar__version {
+  display: flex;
+  align-items: center;
+}
+
+.fd-navbar__versionselect {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  color: var(--fd-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--fd-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fd-accent);
+    outline-offset: 1px;
+  }
+}

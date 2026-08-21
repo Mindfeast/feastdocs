@@ -25,10 +25,20 @@ export class SearchService {
   private readonly records = signal<readonly SearchRecord[] | null>(null);
   private request: Promise<void> | null = null;
 
+  /**
+   * Which version to search. Set by the shell as the reader moves around; on an
+   * unversioned site it stays '' and matches every record.
+   */
+  readonly version = signal('');
+
   readonly results = computed<readonly SearchHit[]>(() => {
-    const records = this.records();
+    const all = this.records();
     const terms = tokenize(this.query());
-    if (!records || terms.length === 0) return [];
+    if (!all || terms.length === 0) return [];
+    // Results from another version would send a v1 reader into v2 without
+    // saying so, which is worse than finding nothing.
+    const version = this.version();
+    const records = all.filter((record) => (record.version ?? '') === version);
     return rank(records, terms, this.query().trim().toLowerCase());
   });
 

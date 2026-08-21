@@ -30,7 +30,25 @@ export class Navbar {
     const repo = this.content.site.sourceRepo ?? this.content.site.github.repo;
     return repo === null ? null : `https://github.com/${repo}`;
   })();
-  protected readonly sections = this.content.sections;
+  /** Only the current version's sections — a v1 reader sees v1's tabs. */
+  protected readonly sections = computed(() =>
+    this.content.sectionsFor(this.content.versionOf(this.currentSlug())),
+  );
+
+  protected readonly versions = this.content.versions;
+  protected readonly versioned = this.content.versioned;
+  protected readonly currentVersion = computed(() => this.content.versionOf(this.currentSlug()));
+
+  /**
+   * Switching version keeps the reader on the same page when the other version
+   * has it, and lands on that version's first section when it does not.
+   */
+  protected onVersionChange(event: Event): void {
+    const id = (event.target as HTMLSelectElement).value;
+    const target = this.content.versions.find((version) => version.id === id);
+    if (!target) return;
+    void this.router.navigateByUrl(`/${this.content.translate(this.currentSlug(), target)}`);
+  }
 
   private readonly currentSlug = toSignal(
     this.router.events.pipe(

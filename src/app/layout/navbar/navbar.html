@@ -26,8 +26,21 @@
     <!-- Section tabs: one per top-level docs folder, Docusaurus-style.
          Hover or focus opens a dropdown of the section's tree, with nested
          categories flying out as submenus. -->
+    @if (versioned) {
+      <div class="fd-navbar__version">
+        <label class="fd-visually-hidden" for="fd-version">Version</label>
+        <select id="fd-version" class="fd-navbar__versionselect" (change)="onVersionChange($event)">
+          @for (version of versions; track version.id) {
+            <option [value]="version.id" [selected]="version.id === currentVersion().id">
+              {{ version.label }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+
     <nav class="fd-navbar__sections" aria-label="Sections">
-      @for (section of sections; track section.id) {
+      @for (section of sections(); track section.id) {
         <div
           class="fd-navbar__tab"
           [class.fd-navbar__tab--suppressed]="suppressedTab() === section.id"

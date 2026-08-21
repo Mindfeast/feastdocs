@@ -89,7 +89,10 @@ export async function collectAllChangelogs(config) {
   };
 
   const byRepo = {};
-  for (const [source, entries] of collected) {
+  const unreadable = new Set();
+  for (const [source, result] of collected) {
+    const { entries, ok } = result;
+    if (!ok) unreadable.add(source.id);
     byRepo[source.id] = entries;
     sources[source.id] = {
       title: source.title,
@@ -98,7 +101,7 @@ export async function collectAllChangelogs(config) {
     };
   }
 
-  return { commits, byRepo, sources };
+  return { commits, byRepo, sources, unreadable };
 }
 
 /**
@@ -171,11 +174,28 @@ function outOfTime(now) {
   return deadline !== null && now > deadline;
 }
 
-/** Dispatches one normalised source to the right provider. */
+/**
+ * Dispatches one normalised source to the right provider.
+ *
+ * Returns `ok: false` when the host could not be read. That is not the same as
+ * a repository with no commits, and the difference matters: pages are pruned
+ * for the second and kept for the first, so a rate-limited build does not
+ * delete a product's changelog.
+ */
 export async function collectSourceChangelog(source, limit) {
-  return source.provider === 'azure'
-    ? collectFromAzure(source, limit)
-    : collectRepoChangelog(source.repo, source.branch, limit);
+  const before = failures.size;
+  const entries =
+    source.provider === 'azure'
+      ? await collectFromAzure(source, limit)
+      : await collectRepoChangelog(source.repo, source.branch, limit);
+  return { entries, ok: failures.size === before };
+}
+
+/** Sources whose host refused or failed during this build. */
+const failures = new Set();
+
+function noteFailure(id) {
+  failures.add(id);
 }
 
 /**
@@ -217,6 +237,7 @@ export async function collectRepoChangelog(repo, branch, limit) {
       // A build must never hang on a network that silently drops the request.
       const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
       if (!response.ok) {
+        noteFailure(repo);
         console.warn(
           `  ${yellow('!')} changelog ${repo}: GitHub API ${response.status} ` +
             dim(
@@ -229,6 +250,7 @@ export async function collectRepoChangelog(repo, branch, limit) {
       }
       batch = await response.json();
     } catch (error) {
+      noteFailure(repo);
       console.warn(`  ${yellow('!')} changelog ${repo}: ${error.message}`);
       break;
     }
@@ -278,6 +300,7 @@ export async function collectRepoChangelog(repo, branch, limit) {
 async function collectFromAzure({ org, project, repo, branch, label }, limit) {
   const pat = process.env.AZURE_DEVOPS_PAT ?? process.env.AZURE_DEVOPS_TOKEN;
   if (!pat) {
+    noteFailure(label);
     console.warn(
       `  ${yellow('!')} changelog ${label}: ` +
         dim('no AZURE_DEVOPS_PAT in the build environment — history unavailable'),
@@ -310,6 +333,7 @@ async function collectFromAzure({ org, project, repo, branch, label }, limit) {
     try {
       const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
       if (!response.ok) {
+        noteFailure(label);
         console.warn(
           `  ${yellow('!')} changelog ${label}: Azure DevOps ${response.status} ` +
             dim(
@@ -322,6 +346,7 @@ async function collectFromAzure({ org, project, repo, branch, label }, limit) {
       }
       payload = await response.json();
     } catch (error) {
+      noteFailure(label);
       console.warn(`  ${yellow('!')} changelog ${label}: ${error.message}`);
       break;
     }

@@ -24,7 +24,71 @@ const NON_ASSET = /\.(md|markdown|html|scss|sass|css)$/i;
  * section and render without a sidebar — that is how the landing page works.
  */
 export async function collectDocs(config) {
-  const docsRoot = paths.docs(config);
+  const versions = normaliseVersions(config);
+
+  // The common case is one unversioned docs folder, and it must stay exactly
+  // as it was: same slugs, same section ids, no prefixes anywhere.
+  const collected = [];
+  for (const version of versions) {
+    collected.push(await collectVersion(config, version));
+  }
+
+  // Links are checked once, after every version is in: a link from one version
+  // to another is legitimate, and checking per version would call it broken.
+  const allDocs = collected.flatMap((one) => one.docs);
+  const allWarnings = collected.flatMap((one) => one.warnings);
+  validateLinks(allDocs, new Map(allDocs.map((doc) => [doc.slug, doc])), (message) =>
+    allWarnings.push(message),
+  );
+
+  return {
+    docs: allDocs,
+    sections: collected.flatMap((one) => one.sections),
+    assets: [...new Set(collected.flatMap((one) => one.assets))],
+    warnings: allWarnings,
+    versions: versions.map(({ id, label, prefix, isDefault }) => ({
+      id,
+      label,
+      prefix,
+      isDefault,
+    })),
+  };
+}
+
+/**
+ * One entry per documented version, newest first, with the default version
+ * carrying no route prefix. An empty `versions` config yields a single
+ * unversioned entry, which is what most sites are.
+ */
+export function normaliseVersions(config) {
+  const declared = config.versions ?? [];
+  if (declared.length === 0) {
+    return [
+      { id: '', label: '', prefix: '', docsDir: config.docsDir, isDefault: true, editUrl: null },
+    ];
+  }
+
+  const defaultIndex = Math.max(
+    0,
+    declared.findIndex((version) => version.default === true),
+  );
+
+  return declared.map((version, index) => {
+    const isDefault = index === defaultIndex;
+    return {
+      id: String(version.id),
+      label: String(version.label ?? version.id),
+      // The default version owns the bare routes; the rest are namespaced.
+      prefix: isDefault ? '' : String(version.slug ?? version.id),
+      docsDir: version.docsDir ?? config.docsDir,
+      isDefault,
+      editUrl: version.editUrl ?? null,
+    };
+  });
+}
+
+async function collectVersion(config, version) {
+  const docsRoot = path.join(paths.root, version.docsDir);
   const warnings = [];
   const warn = (message) => warnings.push(message);
 
@@ -85,7 +149,6 @@ export async function collectDocs(config) {
   }
 
   const pages = [...bySlug.values()].filter((doc) => !doc.draft);
-  validateLinks(pages, bySlug, warn);
 
   const [categories, sectionMeta] = await Promise.all([
     readJsonSidecars(docsRoot, '**/_category.json'),
@@ -111,7 +174,45 @@ export async function collectDocs(config) {
     onlyFiles: true,
   }).then((all) => all.filter((f) => !NON_ASSET.test(f)).map((f) => f.split(path.sep).join('/')));
 
+  if (version.prefix !== '') applyPrefix(pages, sections, version);
+  for (const doc of pages) doc.version = version.id;
+  for (const section of sections) section.version = version.id;
+
   return { docs: pages, sections, assets, warnings };
+}
+
+/**
+ * Namespaces a non-default version under its own route prefix. Slugs, section
+ * ids and the links between pages all move together, so a v1 page never links
+ * into v2 by accident.
+ */
+function applyPrefix(pages, sections, version) {
+  const prefix = version.prefix;
+  const move = (slug) => (slug == null ? slug : `${prefix}/${slug}`.replace(/\/+$/, ''));
+
+  for (const doc of pages) {
+    doc.slug = move(doc.slug);
+    doc.section = doc.section === null ? null : `${prefix}--${doc.section}`;
+    doc.prev = move(doc.prev);
+    doc.next = move(doc.next);
+    // An edit link must point at the file that was actually read.
+    doc.editUrl =
+      version.editUrl === null ? null : `${version.editUrl.replace(/\/?$/, '/')}${doc.sourcePath}`;
+    if (version.editUrl === null) doc.sourcePath = '';
+    doc.html = doc.html.replace(/(href=")\/(?!\/)/g, (match, head) => `${head}/${prefix}/`);
+  }
+
+  const walk = (items) => {
+    for (const item of items) {
+      if (item.slug != null) item.slug = move(item.slug);
+      if (item.items) walk(item.items);
+    }
+  };
+  for (const section of sections) {
+    section.id = `${prefix}--${section.id}`;
+    section.slug = move(section.slug);
+    walk(section.items);
+  }
 }
 
 /**

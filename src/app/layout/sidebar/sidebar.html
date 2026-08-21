@@ -9,7 +9,7 @@
   <!-- Mobile drawer only: the section tabs live here when the top row is gone,
        so the hamburger always opens a complete navigation. -->
   <nav class="fd-sidebar__all-sections" aria-label="Sections">
-    @for (s of content.sections; track s.id) {
+    @for (s of visibleSections(); track s.id) {
       <a
         class="fd-sidebar__section-link"
         [class.fd-sidebar__section-link--active]="s.id === section()?.id"
