@@ -2,13 +2,16 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
-  max-width: var(--fd-content-max);
+  // One container width for every page, whether or not it has a table of
+  // contents. Sizing to the content alone made a page without one visibly
+  // narrower and adrift in the middle of the screen, so moving between pages
+  // shifted the text under the reader's eye.
+  max-width: calc(var(--fd-content-max) + var(--fd-toc-width));
   margin: 0 auto;
   padding: 2rem clamp(1rem, 4vw, 3rem) 4rem;
 }
 
 .fd-page--with-toc {
-  max-width: calc(var(--fd-content-max) + var(--fd-toc-width));
   grid-template-columns: minmax(0, 1fr) var(--fd-toc-width);
 
   @media (max-width: 1200px) {
