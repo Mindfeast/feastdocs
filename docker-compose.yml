@@ -1,0 +1,26 @@
+# One-command local run of the production image:
+#
+#   docker compose up --build      → http://localhost:8080
+#
+# This builds the site and serves it with nginx, exactly as a deployed
+# container does. For writing docs use `npm start` instead — it has the live
+# reload and the content manager, which a production image deliberately omits.
+
+services:
+  site:
+    build:
+      context: .
+      # Build-time secrets, needed only when changelog.repos includes a private
+      # repository. Uncomment along with the `secrets:` block below.
+      # secrets:
+      #   - github_token
+      #   - azure_devops_pat
+    image: feastdocs:local
+    ports:
+      - '8080:80'
+    restart: unless-stopped
+# secrets:
+#   github_token:
+#     environment: GITHUB_TOKEN
+#   azure_devops_pat:
+#     environment: AZURE_DEVOPS_PAT
