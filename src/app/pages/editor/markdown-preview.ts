@@ -38,8 +38,18 @@ export function createPreviewRenderer(): (source: string) => string {
   md.renderer.rules['fence'] = (tokens, idx) => {
     const token = tokens[idx];
     const lang = token.info.trim().split(/\s+/, 1)[0] ?? '';
+    // Same handling as the build renderer, so the preview shows the diagram an
+    // author will actually publish rather than its source.
+    if (lang === 'mermaid') {
+      return (
+        `<fd-mermaid><pre class="fd-mermaid__source">` +
+        `${escapeHtml(token.content.replace(/\n$/, ''))}</pre></fd-mermaid>\n`
+      );
+    }
     const title = /title=(?:"([^"]*)"|'([^']*)')/.exec(token.info);
-    const header = title ? `<div class="fd-code__title">${escapeHtml(title[1] ?? title[2])}</div>` : '';
+    const header = title
+      ? `<div class="fd-code__title">${escapeHtml(title[1] ?? title[2])}</div>`
+      : '';
     return (
       `<div class="fd-code" data-lang="${escapeHtml(lang || 'text')}">${header}` +
       `<pre class="shiki fd-code__plain"><code>${escapeHtml(token.content.replace(/\n$/, ''))}</code></pre></div>\n`

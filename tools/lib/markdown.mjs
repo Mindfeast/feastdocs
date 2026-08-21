@@ -126,6 +126,14 @@ export async function createRenderer({ langs = [], onWarning = () => {} } = {}) 
     const { lang, title } = parseFenceInfo(token.info);
     const code = token.content.replace(/\n$/, '');
 
+    // ```mermaid is the convention every other docs tool uses, so diagrams
+    // migrate without being rewritten. The source travels inside the element:
+    // the component renders it in the browser, and it stays readable as text
+    // for crawlers and anyone without JavaScript.
+    if (lang === 'mermaid') {
+      return `<fd-mermaid><pre class="fd-mermaid__source">${escapeHtml(code)}</pre></fd-mermaid>\n`;
+    }
+
     let resolved = lang;
     if (resolved && !loaded.has(resolved)) {
       if (resolved in bundledLanguages) {
@@ -226,13 +234,16 @@ export async function createRenderer({ langs = [], onWarning = () => {} } = {}) 
           const withoutId = rawAttrs.replace(/\s*id=["'][^"']*["']/i, '');
           return `<h${level}${withoutId} id="${escapeHtml(id)}">${inner}</h${level}>`;
         })
-        .replace(/(<(?:a|img|source)\b[^>]*\b(?:href|src)=)["']([^"']+)["']/gi, (full, prefix, value) => {
-          if (classifyHref(value) !== 'internal') return full;
-          const rewritten = DOC_EXTENSIONS.test(value.split('#')[0])
-            ? resolveDocHref(value, ctx, onWarning)
-            : resolveAssetHref(value, ctx);
-          return `${prefix}"${rewritten}"`;
-        });
+        .replace(
+          /(<(?:a|img|source)\b[^>]*\b(?:href|src)=)["']([^"']+)["']/gi,
+          (full, prefix, value) => {
+            if (classifyHref(value) !== 'internal') return full;
+            const rewritten = DOC_EXTENSIONS.test(value.split('#')[0])
+              ? resolveDocHref(value, ctx, onWarning)
+              : resolveAssetHref(value, ctx);
+            return `${prefix}"${rewritten}"`;
+          },
+        );
       return { html, headings };
     },
   };

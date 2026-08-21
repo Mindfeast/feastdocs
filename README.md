@@ -182,6 +182,24 @@ CommonMark plus:
   — everything except the Markdown parsing). Inside block-level HTML, wrap
   Markdown content in blank lines or it stays literal.
 
+### Diagrams
+
+A fenced block tagged `mermaid` renders as a diagram — the same syntax GitHub
+and Docusaurus use, so a migrating project keeps its diagrams unchanged:
+
+````markdown
+```mermaid
+graph LR
+  A[Write] --> B[Commit] --> C[Deploy]
+```
+````
+
+Mermaid is ~500kB, so it loads only on pages that contain a diagram and is not
+in the initial bundle. Diagrams render in the browser and therefore do not
+appear in prerendered HTML — the source does, as text, so the content stays
+indexable. A diagram that will not parse shows its source and Mermaid's error
+rather than breaking the page.
+
 ## Angular components in Markdown
 
 Doc components are real Angular components registered as **custom elements**

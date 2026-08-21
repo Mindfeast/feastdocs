@@ -1,0 +1,59 @@
+fd-mermaid {
+  display: block;
+  margin: 1.5rem 0;
+}
+
+.fd-mermaid__figure {
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Shown until the diagram renders, and kept when it cannot. */
+.fd-mermaid__source {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  color: var(--fd-text-muted);
+  font-family: var(--fd-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.fd-mermaid__error {
+  border: 1px solid color-mix(in srgb, #f0883e 45%, transparent);
+  border-radius: var(--fd-radius);
+  background: color-mix(in srgb, #f0883e 8%, transparent);
+  padding: 1rem 1.1rem;
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .fd-mermaid__reason {
+    color: var(--fd-text-muted);
+    font-family: var(--fd-font-mono);
+    font-size: 0.8rem;
+    font-weight: 400;
+    white-space: pre-wrap;
+  }
+
+  .fd-mermaid__source {
+    background: transparent;
+  }
+}

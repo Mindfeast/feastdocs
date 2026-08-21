@@ -93,6 +93,11 @@ const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: strin
     group: 'Components',
     text: '\n<fd-changelog limit="20"></fd-changelog>\n',
   },
+  {
+    label: 'Diagram (Mermaid)',
+    group: 'Components',
+    text: '\n```mermaid\ngraph TD\n  A[Start] --> B{Decision}\n  B -->|yes| C[Done]\n  B -->|no| A\n```\n',
+  },
   { label: 'Lead paragraph', group: 'Inline', text: '\nOpening paragraph.{.lead}\n' },
   { label: 'Callout line', group: 'Inline', text: '\nImportant line.{.callout}\n' },
   { label: 'Link', group: 'Inline', text: '[text](./page.md)' },

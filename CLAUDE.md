@@ -78,6 +78,12 @@ and an empty credential helper, and every `fetch()` carries an
 `AbortSignal.timeout`. Remote history collection shares a 90s budget. Keep it
 that way: fail soft, log, move on.
 
+**Mermaid must stay lazy.** It is ~500kB. The component imports it with a
+dynamic `import('mermaid')`, so it lands in its own chunk and pages without a
+diagram never pay for it. Importing it statically anywhere would put it in the
+initial bundle. It also bakes colours into the SVG, so a theme change requires
+a re-render rather than a restyle.
+
 **`writeIfChanged` everywhere in the emitter.** Rewriting an identical file
 retriggers the dev server, which retriggers the build.
 
