@@ -11,7 +11,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "npm run docs:build && ng test",
     "format": "prettier --write .",
-    "template:sync": "node tools/sync-template.mjs"
+    "template:sync": "node tools/sync-template.mjs",
+    "upgrade": "node tools/upgrade.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.0",

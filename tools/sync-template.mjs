@@ -82,6 +82,16 @@ async function main() {
 
   const overlaid = await copyTree(path.join(ROOT, OVERLAY), out);
 
+  // A site needs to know what it is running before it can be told an upgrade
+  // exists. Written last so it always matches the files just copied.
+  const stamp = (await git(['rev-parse', 'HEAD'], ROOT)).trim();
+  await fs.writeFile(
+    path.join(out, '.feastdocs-version'),
+    `${stamp}
+`,
+    'utf8',
+  );
+
   console.log(
     `${green('✓')} template: ${keep.length} framework files, ${overlaid} from ${OVERLAY}/ ` +
       dim(`→ ${out}`),
