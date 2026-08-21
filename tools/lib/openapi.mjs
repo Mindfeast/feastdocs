@@ -50,6 +50,10 @@ async function generate(config, { spec: specPath, outDir, label }) {
     return;
   }
 
+  // A Swagger 2.0 document describes the same API in a different shape. Convert
+  // once, here, so nothing downstream has to know which version it came from.
+  if (String(document.swagger ?? '').startsWith('2')) document = fromSwagger2(document);
+
   const root = path.join(paths.docs(config), outDir);
   const operations = collectOperations(document);
   if (operations.length === 0) {
@@ -115,6 +119,112 @@ async function generate(config, { spec: specPath, outDir, label }) {
   console.log(
     `  ${dim(`openapi ${path.basename(specPath)}: ${operations.length} operations, ${written} written, ${pruned} removed`)}`,
   );
+}
+
+/**
+ * Rewrites a Swagger 2.0 document into the OpenAPI 3 shape this generator
+ * reads. Only the parts that actually differ are touched:
+ *
+ *   host + basePath + schemes  ->  servers
+ *   parameter with in: body    ->  requestBody
+ *   type/format on a parameter ->  parameter.schema
+ *   response.schema            ->  response.content[type].schema
+ *
+ * `definitions` is left where it is: local $refs are resolved by walking the
+ * pointer, so `#/definitions/Rate` needs no rewriting.
+ */
+function fromSwagger2(document) {
+  const out = { ...document };
+
+  if (!out.servers && document.host) {
+    const schemes = document.schemes?.length ? document.schemes : ['https'];
+    out.servers = schemes.map((scheme) => ({
+      url: `${scheme}://${document.host}${document.basePath ?? ''}`,
+    }));
+  }
+
+  const consumes = document.consumes?.[0] ?? 'application/json';
+  const produces = document.produces?.[0] ?? 'application/json';
+
+  out.paths = Object.fromEntries(
+    Object.entries(document.paths ?? {}).map(([route, item]) => {
+      if (item === null || typeof item !== 'object') return [route, item];
+      const converted = { ...item };
+
+      for (const method of METHODS) {
+        const operation = item[method];
+        if (!operation || typeof operation !== 'object') continue;
+
+        const parameters = [];
+        let requestBody = operation.requestBody;
+
+        for (const parameter of operation.parameters ?? []) {
+          if (parameter?.in === 'body') {
+            requestBody = {
+              required: parameter.required === true,
+              description: parameter.description,
+              content: { [consumes]: { schema: parameter.schema } },
+            };
+            continue;
+          }
+          if (parameter?.in === 'formData') {
+            const existing = requestBody?.content?.['application/x-www-form-urlencoded']
+              ?.schema ?? {
+              type: 'object',
+              properties: {},
+            };
+            existing.properties[parameter.name] = pickSchema(parameter);
+            if (parameter.required)
+              existing.required = [...(existing.required ?? []), parameter.name];
+            requestBody = {
+              required: true,
+              content: { 'application/x-www-form-urlencoded': { schema: existing } },
+            };
+            continue;
+          }
+          parameters.push(
+            parameter?.schema ? parameter : { ...parameter, schema: pickSchema(parameter) },
+          );
+        }
+
+        converted[method] = {
+          ...operation,
+          parameters,
+          ...(requestBody ? { requestBody } : {}),
+          responses: Object.fromEntries(
+            Object.entries(operation.responses ?? {}).map(([code, response]) => [
+              code,
+              response?.schema
+                ? { ...response, content: { [produces]: { schema: response.schema } } }
+                : response,
+            ]),
+          ),
+        };
+      }
+
+      return [route, converted];
+    }),
+  );
+
+  return out;
+}
+
+/** The schema fields Swagger 2.0 puts directly on a parameter. */
+function pickSchema(parameter) {
+  const schema = {};
+  for (const key of [
+    'type',
+    'format',
+    'enum',
+    'default',
+    'items',
+    'minimum',
+    'maximum',
+    'pattern',
+  ]) {
+    if (parameter?.[key] !== undefined) schema[key] = parameter[key];
+  }
+  return Object.keys(schema).length > 0 ? schema : { type: 'string' };
 }
 
 /** Flattens paths × methods into a list, resolving shared path parameters. */

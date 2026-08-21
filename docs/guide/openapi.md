@@ -24,6 +24,21 @@ openapi: [
 
 More than one API? Add more entries, each with its own `outDir`.
 
+## Swagger 2.0 and OpenAPI 3
+
+Both work. A Swagger 2.0 document (`"swagger": "2.0"`, as older .NET and Java
+tooling emits) is converted to the OpenAPI 3 shape in memory before anything
+reads it, so you do not have to migrate a spec to document it:
+
+| Swagger 2.0 | Becomes |
+| --- | --- |
+| `host` + `basePath` + `schemes` | `servers`, so the `curl` line has the real host |
+| a parameter with `in: body` | the request body, with its schema and example |
+| a parameter with `in: formData` | a form-encoded request body |
+| `type` / `format` / `enum` on a parameter | that parameter's schema |
+| `response.schema` | the response content, so examples are generated |
+| `definitions` | resolved in place — `$ref: '#/definitions/X'` needs no rewriting |
+
 ## What it generates
 
 ```text
