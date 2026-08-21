@@ -106,6 +106,16 @@ export default {
   /** This link leads to the starter, not to this site's own source. */
   sourceLabel: 'Start with the template',
 
+  /**
+   * Values usable in any page as {{ name }}, resolved at build time. Nested
+   * objects work too: {{ support.email }}.
+   */
+  variables: {
+    framework: 'FeastDocs',
+    minNode: '20.19',
+    angular: '21',
+  },
+
   editor: {
     /**
      * Label on the navbar's content-manager link, shown until a reader opens

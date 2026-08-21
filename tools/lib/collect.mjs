@@ -6,6 +6,7 @@ import * as sass from 'sass';
 import { paths } from './config.mjs';
 import { createRenderer, collectFenceLanguages } from './markdown.mjs';
 import { collectGitMeta } from './git-meta.mjs';
+import { applyReuse, loadSnippets } from './reuse.mjs';
 
 const DOC_GLOB = ['**/*.md', '**/*.markdown', '**/*.html'];
 /** Deepest allowed nesting: a section plus four category levels. */
@@ -48,13 +49,18 @@ export async function collectDocs(config) {
     }),
   );
 
-  const [renderer, gitMeta] = await Promise.all([
-    createRenderer({
-      langs: collectFenceLanguages(files.map((f) => f.raw)),
-      onWarning: warn,
-    }),
-    collectGitMeta(docsRoot),
+  const [snippets, [renderer, gitMeta]] = await Promise.all([
+    loadSnippets(docsRoot),
+    Promise.all([
+      createRenderer({
+        langs: collectFenceLanguages(files.map((f) => f.raw)),
+        onWarning: warn,
+      }),
+      collectGitMeta(docsRoot),
+    ]),
   ]);
+
+  const reuse = { snippets, variables: config.variables ?? {}, onWarning: warn };
 
   const docs = [];
   for (const file of files) {
@@ -65,7 +71,7 @@ export async function collectDocs(config) {
           `(a section plus seven category levels). The page still renders, but flatten it.`,
       );
     }
-    docs.push(await buildDoc(file, { renderer, docsRoot, warn, gitMeta }));
+    docs.push(await buildDoc(file, { renderer, docsRoot, warn, gitMeta, reuse }));
   }
 
   const bySlug = new Map();
@@ -151,14 +157,18 @@ function buildCategoryIndex(category, pages) {
   };
 }
 
-async function buildDoc(file, { renderer, docsRoot, warn, gitMeta }) {
+async function buildDoc(file, { renderer, docsRoot, warn, gitMeta, reuse }) {
   const { relative, raw, stat } = file;
   const isHtml = /\.html$/i.test(relative);
   const parsed = matter(raw);
   const data = parsed.data ?? {};
 
   const { slug, dirSlug } = computeSlug(relative, data.slug);
-  const stripped = isHtml ? stripHtmlH1(parsed.content) : stripMarkdownH1(parsed.content);
+
+  // Snippets and variables resolve before anything reads the content, so the
+  // rendered HTML, the headings and the search index all see the real text.
+  const content = applyReuse(parsed.content, { ...reuse, where: relative });
+  const stripped = isHtml ? stripHtmlH1(content) : stripMarkdownH1(content);
 
   const title =
     data.title?.toString().trim() ||

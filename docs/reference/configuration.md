@@ -142,6 +142,22 @@ The URL is absolute, built from `siteUrl`, so link previews only work once
 `siteUrl` is set. Platforms cache aggressively: after changing the image, force
 a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
 
+## Reusable content
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `variables` | object | Values usable in any page as `{{ name }}`. Nested objects work: `{{ a.b }}` |
+
+Snippets need no configuration: a file in `docs/_snippets/` is available as
+`{{ snippet:its-name }}` anywhere.
+
+Both resolve at build time, so the shipped HTML and the search index contain the
+real text. Neither is applied inside code fences or backticks — braces are too
+common in code for that to be safe. An undefined variable is left visible and
+reported as a build warning rather than silently deleted.
+
+See [reuse and layout](../examples/reuse.md) for worked examples.
+
 ## Source links
 
 | Option | Type | Effect |

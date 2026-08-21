@@ -16,6 +16,7 @@ const DEFAULTS = {
   socialImage: null,
   sourceRepo: null,
   sourceLabel: null,
+  variables: {},
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },

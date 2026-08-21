@@ -89,6 +89,17 @@ const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: strin
   },
   { label: 'Counter', group: 'Components', text: '\n<fd-counter start="0" step="1"></fd-counter>\n' },
   {
+    label: 'Expandable',
+    group: 'Components',
+    text: '\n<fd-expandable title="More detail">\n\nHidden until opened.\n\n</fd-expandable>\n',
+  },
+  {
+    label: 'Columns',
+    group: 'Components',
+    text: '\n<fd-columns>\n  <div>\n\nLeft.\n\n  </div>\n  <div>\n\nRight.\n\n  </div>\n</fd-columns>\n',
+  },
+  { label: 'Snippet', group: 'Inline', text: '{{ snippet:name }}' },
+  {
     label: 'Changelog',
     group: 'Components',
     text: '\n<fd-changelog limit="20"></fd-changelog>\n',
