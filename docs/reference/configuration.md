@@ -142,6 +142,15 @@ The URL is absolute, built from `siteUrl`, so link previews only work once
 `siteUrl` is set. Platforms cache aggressively: after changing the image, force
 a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
 
+## API reference
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `openapi` | array | OpenAPI documents to generate endpoint pages from |
+
+Each entry is `{ spec, outDir, label }`. See
+[API reference from OpenAPI](../guide/openapi.md).
+
 ## Reusable content
 
 | Option | Type | Effect |

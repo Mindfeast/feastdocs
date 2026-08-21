@@ -287,3 +287,57 @@
   background: var(--fd-mark-bg);
   color: var(--fd-mark-text);
 }
+
+// --- Generated OpenAPI endpoint header ---------------------------------------
+
+.fd-api-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 1.25rem 0;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius);
+  background: var(--fd-surface);
+  overflow-x: auto;
+}
+
+.fd-api-endpoint__method {
+  flex: none;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: var(--fd-surface-strong);
+  color: var(--fd-text-muted);
+  font-family: var(--fd-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.fd-api-endpoint__route {
+  font-family: var(--fd-font-mono);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+// Method colours follow the usual convention, so the verb reads at a glance.
+.fd-api-endpoint[data-method='GET'] .fd-api-endpoint__method {
+  background: color-mix(in srgb, #3b82f6 18%, transparent);
+  color: #60a5fa;
+}
+
+.fd-api-endpoint[data-method='POST'] .fd-api-endpoint__method {
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+  color: #4ade80;
+}
+
+.fd-api-endpoint[data-method='PUT'] .fd-api-endpoint__method,
+.fd-api-endpoint[data-method='PATCH'] .fd-api-endpoint__method {
+  background: color-mix(in srgb, #f59e0b 20%, transparent);
+  color: #fbbf24;
+}
+
+.fd-api-endpoint[data-method='DELETE'] .fd-api-endpoint__method {
+  background: color-mix(in srgb, #ef4444 18%, transparent);
+  color: #f87171;
+}

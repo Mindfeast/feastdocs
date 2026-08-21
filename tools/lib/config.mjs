@@ -17,6 +17,7 @@ const DEFAULTS = {
   sourceRepo: null,
   sourceLabel: null,
   variables: {},
+  openapi: [],
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },

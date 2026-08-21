@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: Bookings API
+  version: '1.4'
+  description: |
+    A small, invented API used to demonstrate generated endpoint pages.
+    Nothing here is real — it exists so the documentation has something to show.
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://sandbox.example.com/v1
+    description: Sandbox
+tags:
+  - name: Reservations
+    description: Creating and reading reservations.
+  - name: Availability
+    description: What can be booked, and when.
+security:
+  - bearerAuth: []
+paths:
+  /reservations:
+    get:
+      operationId: listReservations
+      tags: [Reservations]
+      summary: List reservations
+      description: Returns reservations for the authenticated property, newest first.
+      parameters:
+        - name: status
+          in: query
+          description: Only reservations in this state.
+          schema:
+            type: string
+            enum: [confirmed, cancelled, pending]
+        - name: limit
+          in: query
+          description: How many to return.
+          schema:
+            type: integer
+            default: 25
+      responses:
+        '200':
+          description: A page of reservations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+                  total:
+                    type: integer
+        '401':
+          description: Missing or invalid token.
+    post:
+      operationId: createReservation
+      tags: [Reservations]
+      summary: Create a reservation
+      description: Books a room for a date range. The range is half-open — checkout is not counted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInput'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '409':
+          description: No availability for that range.
+  /reservations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Reservation identifier.
+        schema:
+          type: string
+    get:
+      operationId: getReservation
+      tags: [Reservations]
+      summary: Get a reservation
+      responses:
+        '200':
+          description: The reservation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: No such reservation.
+    delete:
+      operationId: cancelReservation
+      tags: [Reservations]
+      summary: Cancel a reservation
+      description: Cancellation is permanent. A cancelled reservation stays readable.
+      responses:
+        '204':
+          description: Cancelled.
+  /availability:
+    get:
+      operationId: checkAvailability
+      tags: [Availability]
+      summary: Check availability
+      description: Rooms bookable for a date range, with nightly rates.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          description: First night.
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          description: Checkout date.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Available rooms.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+  /rates:
+    get:
+      operationId: listRates
+      tags: [Availability]
+      summary: List rate plans
+      deprecated: true
+      description: Superseded by `/availability`, which returns rates inline.
+      responses:
+        '200':
+          description: Rate plans.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: res_8f21
+        status:
+          type: string
+          enum: [confirmed, cancelled, pending]
+        guestName:
+          type: string
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        total:
+          type: number
+    ReservationInput:
+      type: object
+      required: [guestName, checkIn, checkOut]
+      properties:
+        guestName:
+          type: string
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        roomType:
+          type: string
+    Room:
+      type: object
+      properties:
+        roomType:
+          type: string
+        available:
+          type: integer
+        nightlyRate:
+          type: number

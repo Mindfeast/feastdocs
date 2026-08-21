@@ -116,6 +116,12 @@ export default {
     angular: '21',
   },
 
+  /**
+   * OpenAPI documents to turn into endpoint pages. Each becomes a section
+   * folder under docs/, one page per operation, grouped by tag.
+   */
+  openapi: [{ spec: 'examples/petstore.yaml', outDir: 'api', label: 'Bookings API' }],
+
   editor: {
     /**
      * Label on the navbar's content-manager link, shown until a reader opens
