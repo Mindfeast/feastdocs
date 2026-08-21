@@ -56,8 +56,12 @@ export default {
   },
 
   sidebar: {
-    /** Collapse every category except the one containing the current page. */
-    autoCollapse: false,
+    /**
+     * How a section's categories start when it does not say for itself:
+     * 'active' opens only the branch holding the current page, 'all' opens
+     * everything, 'none' opens nothing.
+     */
+    expand: 'active',
   },
 
   /**

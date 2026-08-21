@@ -87,29 +87,33 @@ levels.
 
 ## Controlling what starts open
 
-By default every category in a section starts **expanded** — a reader clicking
-into a section sees the whole shape of it at once. Two flags change that.
+By default a category starts **collapsed**, and only the branch holding the page
+you are on is open. A sidebar that opens everything is unreadable as soon as a
+section has depth. Two flags let you say otherwise.
 
 ### Per section
 
 `_section.json` decides how that section's categories start:
 
-```json title="docs/changelog/_section.json"
-{ "label": "Changelog", "expand": "active" }
+```json title="docs/components/_section.json"
+{ "label": "Components", "expand": "all" }
 ```
 
 | Value | Effect |
 | --- | --- |
-| `all` | Everything expanded. The default |
-| `active` | Only the branch containing the current page |
-| `none` | Everything collapsed |
+| `active` | Only the branch containing the current page. **The default** |
+| `all` | Everything expanded |
+| `none` | Everything collapsed, including around the current page |
 
-`active` suits a deep, generated tree — the changelog section on this site uses
-it, so landing on it shows the repositories rather than every month of every
-year, and opening a month reveals just that branch.
+`all` suits a short section a reader wants to see whole — the Components section
+here uses it. `active` suits a deep or generated tree: the changelog section
+shows its repositories on arrival and opens a month only when you go there.
 
-Without the flag, a section follows `sidebar.autoCollapse` in
-[the site config](../reference/configuration.md), where `true` means `active`.
+`none` is literal — it will not open the branch you are reading either, which is
+occasionally what an index-style sidebar wants and usually not.
+
+Without the flag, a section follows `sidebar.expand` in
+[the site config](../reference/configuration.md).
 
 ### Per category
 
@@ -125,10 +129,10 @@ Without the flag, a section follows `sidebar.autoCollapse` in
 | `true` | Starts open |
 | `false` | Starts closed. `"collapsed": true` still works and means the same |
 
-`"always"` is for the one branch that should never be hidden — the section a
-reader is always coming back to. The **Advanced** category in this Guide is
-pinned that way: it has no chevron, because a control that cannot change
-anything is worse than none.
+`"always"` is your "favourite" — the one branch that should never be hidden,
+whatever the section default says and whatever the reader clicked last week. The
+**Advanced** category in this Guide is pinned that way: it has no chevron,
+because a control that cannot change anything is worse than none.
 
 Everything else is remembered per reader: collapse a category and it stays
 collapsed on the next visit, on that browser. Opening a page always reveals its

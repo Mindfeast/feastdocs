@@ -204,7 +204,7 @@ export class Sidebar {
    * Which categories start collapsed.
    *
    * Precedence, narrowest first: a category's own `expand`, then its legacy
-   * `collapsed`, then the section's `expand`, then `sidebar.autoCollapse`.
+   * `collapsed`, then the section's `expand`, then `sidebar.expand`.
    * A category pinned with `expand: 'always'` is never in this set and is
    * recorded in `locked` instead, so no stored state can close it.
    */
@@ -212,9 +212,7 @@ export class Sidebar {
     const fromConfig = new Set<string>();
 
     for (const section of this.content.sections) {
-      // 'active' means only the branch holding the current page is open, which
-      // is what autoCollapse has always meant.
-      const mode = section.expand ?? (this.content.site.sidebar.autoCollapse ? 'active' : 'all');
+      const mode = section.expand ?? this.content.site.sidebar.expand;
 
       const walk = (items: readonly SidebarItem[], parentKey: string): void => {
         for (const item of items) {

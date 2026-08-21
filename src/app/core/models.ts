@@ -120,7 +120,10 @@ export interface SiteConfig {
     readonly accent: string;
     readonly accentDark: string;
   };
-  readonly sidebar: { readonly autoCollapse: boolean };
+  readonly sidebar: {
+    /** How a section's categories start when it does not say for itself. */
+    readonly expand: 'all' | 'active' | 'none';
+  };
   readonly editUrl: string | null;
   readonly showLastUpdated: boolean;
   readonly github: {

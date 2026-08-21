@@ -164,11 +164,15 @@ Each entry is `{ spec, outDir, label }`. See
 
 | Option | Type | Effect |
 | --- | --- | --- |
-| `sidebar.autoCollapse` | boolean | `true` means a section's categories start with only the active branch open. Default `false` |
+| `sidebar.expand` | `'active'` \| `'all'` \| `'none'` | How a section's categories start when it does not say for itself. Default `'active'` |
 
-This is the site-wide default. A section overrides it with `expand` in its
-`_section.json`, and a category overrides that with its own `expand` — see
+`'active'` opens only the branch holding the current page, `'all'` opens
+everything, `'none'` opens nothing. A section overrides this with `expand` in
+its `_section.json`, and a category overrides that with its own `expand` — see
 [controlling what starts open](../guide/pages.md#controlling-what-starts-open).
+
+The older `sidebar.autoCollapse` still works: `true` maps to `'active'`, `false`
+to `'all'`. Set `expand` and it wins.
 
 ## Reusable content
 

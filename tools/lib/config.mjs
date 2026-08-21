@@ -12,7 +12,7 @@ const DEFAULTS = {
   navbar: { links: [] },
   footer: { text: '', links: [] },
   theme: { defaultMode: 'system', accent: '#f0812c', accentDark: '#ff9d52' },
-  sidebar: { autoCollapse: false },
+  sidebar: { expand: 'active', autoCollapse: null },
   socialImage: null,
   sourceRepo: null,
   sourceLabel: null,
@@ -51,11 +51,23 @@ export async function loadConfig({ bust = false } = {}) {
     navbar: { ...DEFAULTS.navbar, ...user.navbar },
     footer: { ...DEFAULTS.footer, ...user.footer },
     theme: { ...DEFAULTS.theme, ...user.theme },
-    sidebar: { ...DEFAULTS.sidebar, ...user.sidebar },
+    sidebar: resolveSidebar({ ...DEFAULTS.sidebar, ...user.sidebar }),
     github: { ...DEFAULTS.github, ...user.github },
     editor: { ...DEFAULTS.editor, ...user.editor },
     changelog: { ...DEFAULTS.changelog, ...user.changelog },
   };
+}
+
+/**
+ * `autoCollapse` predates `expand` and said less. It still works: true meant
+ * "only the active branch", false meant "everything open". `expand` wins when
+ * both are set.
+ */
+function resolveSidebar(sidebar) {
+  const { autoCollapse, ...rest } = sidebar;
+  if (autoCollapse === null || autoCollapse === undefined)
+    return { ...rest, expand: sidebar.expand };
+  return { ...rest, expand: sidebar.expand ?? (autoCollapse ? 'active' : 'all') };
 }
 
 export const paths = {
