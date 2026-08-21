@@ -103,6 +103,9 @@ export default {
    */
   sourceRepo: 'Mindfeast/feastdocs-template',
 
+  /** This link leads to the starter, not to this site's own source. */
+  sourceLabel: 'Start with the template',
+
   editor: {
     /**
      * Label on the navbar's content-manager link, shown until a reader opens

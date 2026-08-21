@@ -8,7 +8,26 @@ with nested dropdown menus, one sidebar per section, live Angular components
 inside Markdown, a built-in content manager with two publishing strategies, and
 git-based author attribution. Dark mode by default.
 
+> ### Starting your own documentation site?
+>
+> **Use [feastdocs-template](https://github.com/Mindfeast/feastdocs-template) —
+> not this repository.** It is the same framework with none of this site's
+> content, and GitHub's **Use this template** button gives you your own repo
+> with no history and no fork link.
+>
+> This repository is the framework's development home and the live demo at
+> [feastdocs.feast-labs.com](https://feastdocs.feast-labs.com). Clone it only to
+> work on FeastDocs itself. The template is regenerated from here on every push,
+> so it is never behind.
+
 ```bash
+# Start a site
+git clone https://github.com/Mindfeast/feastdocs-template.git my-docs
+cd my-docs && npm install && npm start     # http://localhost:4200
+```
+
+```bash
+# Or work on FeastDocs itself
 npm install
 npm start          # http://localhost:4200
 ```
@@ -62,14 +81,14 @@ with the size of the docs set.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `npm start` | Content watcher + Angular dev server + the local editor API |
-| `npm run build` | Render content, then build the static site to `dist/feastdocs/browser/` |
-| `npm run docs:build` | Render content once, no server |
+| Command                                         | What it does                                                                |
+| ----------------------------------------------- | --------------------------------------------------------------------------- |
+| `npm start`                                     | Content watcher + Angular dev server + the local editor API                 |
+| `npm run build`                                 | Render content, then build the static site to `dist/feastdocs/browser/`     |
+| `npm run docs:build`                            | Render content once, no server                                              |
 | `npm run docs:new -- <path> ["Title"] [--scss]` | Scaffold a page (front matter filled in; `--scss` adds a scoped stylesheet) |
-| `npm test` | Unit tests |
-| `npm run format` | Prettier over the project |
+| `npm test`                                      | Unit tests                                                                  |
+| `npm run format`                                | Prettier over the project                                                   |
 
 During `npm start`, edits to `docs/`, `feastdocs.config.mjs`, **and the
 pipeline's own code under `tools/`** all trigger a rebuild (builds run in a
@@ -113,17 +132,17 @@ docs/
 
 All fields optional, YAML between `---` lines at the top of a page:
 
-| Field | Type | Default | Effect |
-| --- | --- | --- | --- |
-| `title` | string | first `#` heading, else filename | Page heading, browser title, search label |
-| `description` | string | empty | Subtitle under the heading; meta description |
-| `sidebar_label` | string | `title` | Shorter label for the sidebar |
-| `sidebar_position` | number | `999` | Sort order among siblings |
-| `slug` | string | derived from path | Overrides the route (collisions are a build warning) |
-| `toc` | boolean | `true` | `false` hides the "On this page" panel |
-| `hidden` | boolean | `false` | Keeps the URL and search entry, hides from navigation |
-| `draft` | boolean | `false` | Excluded from the build entirely |
-| `tags` / `keywords` | string[] | `[]` | Stored on the page / extra search terms |
+| Field               | Type     | Default                          | Effect                                                |
+| ------------------- | -------- | -------------------------------- | ----------------------------------------------------- |
+| `title`             | string   | first `#` heading, else filename | Page heading, browser title, search label             |
+| `description`       | string   | empty                            | Subtitle under the heading; meta description          |
+| `sidebar_label`     | string   | `title`                          | Shorter label for the sidebar                         |
+| `sidebar_position`  | number   | `999`                            | Sort order among siblings                             |
+| `slug`              | string   | derived from path                | Overrides the route (collisions are a build warning)  |
+| `toc`               | boolean  | `true`                           | `false` hides the "On this page" panel                |
+| `hidden`            | boolean  | `false`                          | Keeps the URL and search entry, hides from navigation |
+| `draft`             | boolean  | `false`                          | Excluded from the build entirely                      |
+| `tags` / `keywords` | string[] | `[]`                             | Stored on the page / extra search terms               |
 
 `sidebarLabel` / `sidebarPosition` work as camelCase aliases.
 
@@ -211,11 +230,7 @@ Built-ins:
 ```html
 <!-- Tabbed content; panes are divs with a `tab` attribute -->
 <fd-tabs>
-  <div tab="npm">
-
-  (markdown here, surrounded by blank lines)
-
-  </div>
+  <div tab="npm">(markdown here, surrounded by blank lines)</div>
   <div tab="pnpm">…</div>
 </fd-tabs>
 
@@ -304,10 +319,10 @@ boosts). The sidebar has its own filter box scoped to the current section.
 Markdown preview, and a "View page" link. Two backends, matching two publishing
 strategies:
 
-| Backend | When | What Save does |
-| --- | --- | --- |
-| **Local** | `npm start` running (file API on `127.0.0.1:4271`, scoped to `docs/`) | Writes to disk; you commit and push from your own editor — the normal git flow |
-| **GitHub** | `github.repo` set in the config — the mode for the deployed site | **Commits to the configured branch via the GitHub API, authored by the connected user** |
+| Backend    | When                                                                  | What Save does                                                                          |
+| ---------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Local**  | `npm start` running (file API on `127.0.0.1:4271`, scoped to `docs/`) | Writes to disk; you commit and push from your own editor — the normal git flow          |
+| **GitHub** | `github.repo` set in the config — the mode for the deployed site      | **Commits to the configured branch via the GitHub API, authored by the connected user** |
 
 The GitHub mode asks once for a fine-grained personal access token (contents
 read/write on the docs repo); it stays in that browser's localStorage and is
@@ -338,15 +353,18 @@ reading history — and falls back to the GitHub API when it cannot. Setting
 ## Repository changelog
 
 `<fd-changelog>` turns the git history into a page — no hand-maintained
-CHANGELOG file. The build collects the last `changelog.limit` commits (default
-150) into a lazily-imported module: hash, author, date, subject, body, file count
+CHANGELOG file. The build collects the last `changelog.limit` commits (default 150) into a lazily-imported module: hash, author, date, subject, body, file count
 and whether the commit touched `docs/`.
 
 ```html
-<fd-changelog></fd-changelog>                    <!-- everything -->
-<fd-changelog limit="20"></fd-changelog>         <!-- most recent 20 -->
-<fd-changelog docs-only></fd-changelog>          <!-- content changes only -->
-<fd-changelog repo="acme/api"></fd-changelog>    <!-- another repository -->
+<fd-changelog></fd-changelog>
+<!-- everything -->
+<fd-changelog limit="20"></fd-changelog>
+<!-- most recent 20 -->
+<fd-changelog docs-only></fd-changelog>
+<!-- content changes only -->
+<fd-changelog repo="acme/api"></fd-changelog>
+<!-- another repository -->
 ```
 
 **Several products, several repositories.** List them in `changelog.repos` and
@@ -354,11 +372,16 @@ one docs site carries a changelog per product — **GitHub and Azure DevOps**:
 
 ```js
 repos: [
-  'acme/api',                                                    // GitHub
-  { repo: 'acme/app', branch: 'release' },                       // GitHub
-  { provider: 'azure', org: 'contoso', project: 'Pay',           // Azure DevOps
-    repo: 'pay-api', id: 'pay' },
-]
+  'acme/api', // GitHub
+  { repo: 'acme/app', branch: 'release' }, // GitHub
+  {
+    provider: 'azure',
+    org: 'contoso',
+    project: 'Pay', // Azure DevOps
+    repo: 'pay-api',
+    id: 'pay',
+  },
+];
 ```
 
 Commit links follow the source. Private repositories work too — the token goes
@@ -379,7 +402,7 @@ list).
 the build writes the tree itself — a category per repository, a category per
 year, a page per month:
 
-```text
+````text
 Changelog
 ├── Changelog          (your own index.md)
 ├── Acme Docs
@@ -477,7 +500,7 @@ the framework with none of this site's content:
 
 ```bash
 npm install && npm start
-```
+````
 
 The template is generated from this repository, never edited by hand: every
 feature that lands here reaches it on the next push to `main`, via
@@ -507,17 +530,17 @@ a newer Node); upgrade Node before upgrading Angular.
 
 ## Where things live
 
-| Path | Purpose |
-| --- | --- |
-| `docs/` | Your content — each top-level folder is a section. The only folder most people touch |
-| `feastdocs.config.mjs` | All site configuration |
-| `src/styles/_tokens.scss` | Design tokens (colours, sizes, fonts) for both themes |
-| `src/styles/custom.scss` | Your site-wide overrides; loaded last |
-| `src/app/doc-components/` | Angular components usable inside Markdown + their registry |
-| `src/app/` | The application: layout, search, theming, page rendering, editor |
-| `tools/` | The content pipeline (collect → render → emit), dev watcher, editor API, git metadata |
-| `src/app/generated/` | Build output — regenerated, git-ignored, never edited |
-| `public/` | Static assets; also receives `search-index.json` and `docs-assets/` |
+| Path                      | Purpose                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `docs/`                   | Your content — each top-level folder is a section. The only folder most people touch  |
+| `feastdocs.config.mjs`    | All site configuration                                                                |
+| `src/styles/_tokens.scss` | Design tokens (colours, sizes, fonts) for both themes                                 |
+| `src/styles/custom.scss`  | Your site-wide overrides; loaded last                                                 |
+| `src/app/doc-components/` | Angular components usable inside Markdown + their registry                            |
+| `src/app/`                | The application: layout, search, theming, page rendering, editor                      |
+| `tools/`                  | The content pipeline (collect → render → emit), dev watcher, editor API, git metadata |
+| `src/app/generated/`      | Build output — regenerated, git-ignored, never edited                                 |
+| `public/`                 | Static assets; also receives `search-index.json` and `docs-assets/`                   |
 
 ## License
 

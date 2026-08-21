@@ -15,6 +15,7 @@ const DEFAULTS = {
   sidebar: { autoCollapse: false },
   socialImage: null,
   sourceRepo: null,
+  sourceLabel: null,
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },

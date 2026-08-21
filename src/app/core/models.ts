@@ -112,6 +112,12 @@ export interface SiteConfig {
    * somewhere other than the repository this site is edited and built from.
    */
   readonly sourceRepo: string | null;
+  /**
+   * Wording of the footer's source link. Defaults to "Source on GitHub", which
+   * stops being accurate when sourceRepo points somewhere other than this
+   * site's own code.
+   */
+  readonly sourceLabel: string | null;
   readonly editor: {
     /**
      * Label for the navbar's content-manager link, shown until a reader has

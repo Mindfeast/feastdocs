@@ -6,28 +6,35 @@ sidebar_position: 7
 
 # Use it for your own docs
 
-FeastDocs is a template as much as a product: clone it, make the repository
-yours, replace the content. Everything specific to a site lives in two places —
-`feastdocs.config.mjs` and the `docs/` folder.
+Everything specific to a site lives in two places — `feastdocs.config.mjs` and
+the `docs/` folder. Start from the template and both are already empty of this
+site's content.
 
-## 1. Make the repository yours
+## 1. Start from the template
+
+:::tip Use the template, not this repository
+[**feastdocs-template**](https://github.com/Mindfeast/feastdocs-template) is the
+same framework carrying none of this site's documentation. It is generated from
+the main repository on every push, so it is never behind. Cloning the main
+repository instead means deleting all of these pages by hand.
+:::
 
 <fd-steps>
-  <div step="Clone and detach">
+  <div step="Get your own copy">
+
+On [the template](https://github.com/Mindfeast/feastdocs-template), press
+**Use this template → Create a new repository**. You get your own repository —
+no history, and no fork link back to ours.
+
+Or from the command line:
 
 ```bash
-git clone https://github.com/example-org/feastdocs my-docs
+git clone https://github.com/Mindfeast/feastdocs-template.git my-docs
 cd my-docs
-```
-
-Point the clone at your own repository (create an empty one on GitHub first):
-
-```bash
-git remote set-url origin https://github.com/your-org/my-docs.git
+rm -rf .git && git init && git add -A && git commit -m "Initial commit"
+git remote add origin https://github.com/your-org/my-docs.git
 git push -u origin main
 ```
-
-Prefer a clean history? Delete the `.git` folder and `git init` instead.
 
   </div>
   <div step="Install and run">
@@ -37,11 +44,17 @@ npm install
 npm start
 ```
 
-<http://localhost:4200> now serves the template's own documentation — which you
-are reading. It doubles as your feature reference until you replace it.
+<http://localhost:4200> serves your site: a home page and one example section,
+ready to be replaced with your own pages.
 
   </div>
 </fd-steps>
+
+:::note Why the history matters
+Author attribution and `<fd-changelog>` both read `git log`, so start your own
+history rather than carrying ours. A brand-new repository shows one commit until
+you write more — that is correct, not broken.
+:::
 
 ## 2. Configure the site
 
