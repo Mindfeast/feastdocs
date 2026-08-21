@@ -3,6 +3,7 @@
     <button
       type="button"
       class="fd-navbar__burger fd-icon-button"
+      [class.fd-navbar__burger--sectionless]="activeSection() === null"
       [attr.aria-expanded]="ui.sidebarOpen() || !ui.sidebarCollapsed()"
       aria-label="Toggle navigation"
       aria-controls="fd-sidebar"
@@ -124,5 +125,4 @@
       </button>
     </div>
   </div>
-
 </header>

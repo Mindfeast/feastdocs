@@ -19,6 +19,15 @@
   display: inline-flex;
 }
 
+// Outside a section — the home page, say — the sidebar has no tree to show, so
+// the button would open an empty drawer. It stays below 768px, where the
+// section tabs are hidden and this drawer is the only way to reach them.
+@media (min-width: 769px) {
+  .fd-navbar__burger--sectionless {
+    display: none;
+  }
+}
+
 .fd-navbar__brand {
   display: inline-flex;
   align-items: center;

@@ -94,9 +94,39 @@ const INSERT_SNIPPETS: ReadonlyArray<{ label: string; group: string; text: strin
     text: '\n<fd-changelog limit="20"></fd-changelog>\n',
   },
   {
-    label: 'Diagram (Mermaid)',
-    group: 'Components',
-    text: '\n```mermaid\ngraph TD\n  A[Start] --> B{Decision}\n  B -->|yes| C[Done]\n  B -->|no| A\n```\n',
+    label: 'Flowchart',
+    group: 'Diagrams',
+    text: '\n```mermaid\nflowchart TD\n  A[Start] --> B{Decision}\n  B -->|yes| C[Done]\n  B -->|no| A\n```\n',
+  },
+  {
+    label: 'Sequence',
+    group: 'Diagrams',
+    text: '\n```mermaid\nsequenceDiagram\n  participant Client\n  participant API\n  Client->>API: Request\n  API-->>Client: Response\n```\n',
+  },
+  {
+    label: 'State machine',
+    group: 'Diagrams',
+    text: '\n```mermaid\nstateDiagram-v2\n  [*] --> Draft\n  Draft --> Review: submit\n  Review --> Draft: changes requested\n  Review --> Published: approve\n  Published --> [*]\n```\n',
+  },
+  {
+    label: 'Class',
+    group: 'Diagrams',
+    text: '\n```mermaid\nclassDiagram\n  class Page {\n    +string title\n    +string slug\n    +render()\n  }\n  class Section\n  Section "1" --> "*" Page\n```\n',
+  },
+  {
+    label: 'Entity relationship',
+    group: 'Diagrams',
+    text: '\n```mermaid\nerDiagram\n  SECTION ||--o{ PAGE : contains\n  PAGE ||--o{ HEADING : has\n  PAGE {\n    string slug\n    string title\n  }\n```\n',
+  },
+  {
+    label: 'Gantt',
+    group: 'Diagrams',
+    text: '\n```mermaid\ngantt\n  title Release plan\n  dateFormat YYYY-MM-DD\n  section Build\n  Draft docs   :a1, 2026-01-06, 5d\n  Review       :after a1, 3d\n  section Ship\n  Publish      :2026-01-20, 2d\n```\n',
+  },
+  {
+    label: 'Pie',
+    group: 'Diagrams',
+    text: '\n```mermaid\npie title Where time goes\n  "Writing" : 45\n  "Reviewing" : 30\n  "Publishing" : 25\n```\n',
   },
   { label: 'Lead paragraph', group: 'Inline', text: '\nOpening paragraph.{.lead}\n' },
   { label: 'Callout line', group: 'Inline', text: '\nImportant line.{.callout}\n' },

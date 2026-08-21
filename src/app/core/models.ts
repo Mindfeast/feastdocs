@@ -106,6 +106,12 @@ export interface SiteConfig {
      */
     readonly oauthScope: string;
   };
+  /**
+   * Repository the navbar and footer source links point at, as 'owner/name'.
+   * Defaults to github.repo. Set it when the code people should clone lives
+   * somewhere other than the repository this site is edited and built from.
+   */
+  readonly sourceRepo: string | null;
   readonly editor: {
     /**
      * Label for the navbar's content-manager link, shown until a reader has

@@ -34,9 +34,14 @@
               "src/styles.scss"
             ],
             "allowedCommonJsDependencies": [
-              "markdown-it-task-lists",
+              "@braintree/sanitize-url",
+              "cytoscape-cose-bilkent",
+              "cytoscape-fcose",
+              "dagre-d3-es",
+              "dayjs",
+              "fastdom",
               "markdown-it-attrs",
-              "markdown-it-container"
+              "markdown-it-task-lists"
             ]
           },
           "configurations": {

@@ -10,7 +10,8 @@
     "docs:new": "node tools/new-doc.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "npm run docs:build && ng test",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "template:sync": "node tools/sync-template.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.0",

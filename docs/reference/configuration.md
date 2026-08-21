@@ -142,6 +142,17 @@ The URL is absolute, built from `siteUrl`, so link previews only work once
 `siteUrl` is set. Platforms cache aggressively: after changing the image, force
 a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
 
+## Source links
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `sourceRepo` | string \| null | Repository the navbar and footer source links point at. Defaults to `github.repo` |
+
+Most sites need nothing here: the links follow `github.repo`. Set `sourceRepo`
+when the code people should clone is a *different* repository from the one the
+site is built and edited from — this site points at its starter template, while
+web editing and changelog commit links stay on the repository behind the site.
+
 ## Changelog
 
 | Option | Type | Effect |

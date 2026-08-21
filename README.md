@@ -468,6 +468,29 @@ read from `git log` at build time and a shallow clone blanks it out.
 The app self-heals after redeploys: a browser tab from an older build that hits
 a renamed chunk reloads itself once and resyncs.
 
+## Starting your own site
+
+Use the **[starter template](https://github.com/Mindfeast/feastdocs-template)** —
+the framework with none of this site's content:
+
+> **Use this template** → your own repository, no history, no fork link.
+
+```bash
+npm install && npm start
+```
+
+The template is generated from this repository, never edited by hand: every
+feature that lands here reaches it on the next push to `main`, via
+`npm run template:sync`. What it leaves out is this site's `docs/`, branding and
+configuration — everything else, including `CLAUDE.md` and the page templates
+behind `npm run docs:new`, is the current version.
+
+To rebuild it locally:
+
+```bash
+npm run template:sync -- ../feastdocs-template --commit
+```
+
 ## Using this template for your own docs
 
 1. Clone, then point the remote at your own repository (or delete `.git` and

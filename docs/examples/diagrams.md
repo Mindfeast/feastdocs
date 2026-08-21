@@ -13,7 +13,7 @@ as they are.
 ## Flowchart
 
 ```mermaid
-graph TD
+flowchart TD
   A[Markdown in docs/] --> B{Build}
   B --> C[Generated modules]
   B --> D[Prerendered HTML]
@@ -43,6 +43,68 @@ stateDiagram-v2
   Review --> Draft: changes requested
   Review --> Published: merged
   Published --> [*]
+```
+
+## Class
+
+```mermaid
+classDiagram
+  class Page {
+    +string title
+    +string slug
+    +render()
+  }
+  class Section {
+    +string label
+    +number position
+  }
+  Section "1" --> "*" Page : contains
+```
+
+## Entity relationship
+
+```mermaid
+erDiagram
+  SECTION ||--o{ PAGE : contains
+  PAGE ||--o{ HEADING : has
+  PAGE {
+    string slug
+    string title
+    date lastUpdated
+  }
+```
+
+## Gantt
+
+```mermaid
+gantt
+  title Release plan
+  dateFormat YYYY-MM-DD
+  section Build
+  Draft docs   :a1, 2026-01-06, 5d
+  Review       :after a1, 3d
+  section Ship
+  Publish      :2026-01-20, 2d
+```
+
+## Pie
+
+```mermaid
+pie title Where the time goes
+  "Writing" : 45
+  "Reviewing" : 30
+  "Publishing" : 25
+```
+
+## When a diagram will not parse
+
+Mermaid is strict. Rather than breaking the page or vanishing, a diagram it
+cannot read shows your source and its complaint:
+
+```mermaid
+flowchart TD
+  A --> B
+  this line is not valid mermaid
 ```
 
 :::note

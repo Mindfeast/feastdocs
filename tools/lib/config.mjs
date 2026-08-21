@@ -14,6 +14,7 @@ const DEFAULTS = {
   theme: { defaultMode: 'system', accent: '#f0812c', accentDark: '#ff9d52' },
   sidebar: { autoCollapse: false },
   socialImage: null,
+  sourceRepo: null,
   editUrl: null,
   showLastUpdated: true,
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },

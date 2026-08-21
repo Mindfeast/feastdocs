@@ -95,6 +95,14 @@ export default {
     oauthScope: 'public_repo',
   },
 
+  /**
+   * Repository the navbar and footer source links point at. This site is the
+   * showcase; the code people should start from is the template, which the
+   * build syncs from this repo. Editing and changelog links still use
+   * github.repo above.
+   */
+  sourceRepo: 'Mindfeast/feastdocs-template',
+
   editor: {
     /**
      * Label on the navbar's content-manager link, shown until a reader opens

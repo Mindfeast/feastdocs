@@ -22,11 +22,14 @@ export class Navbar {
 
   protected readonly site = this.content.site;
 
-  /** Source repository, derived from github.repo. Null hides the link. */
-  protected readonly repoUrl =
-    this.content.site.github.repo === null
-      ? null
-      : `https://github.com/${this.content.site.github.repo}`;
+  /**
+   * Repository the source link points at: sourceRepo when set, otherwise the
+   * one the site is built from. Null hides the link.
+   */
+  protected readonly repoUrl = (() => {
+    const repo = this.content.site.sourceRepo ?? this.content.site.github.repo;
+    return repo === null ? null : `https://github.com/${repo}`;
+  })();
   protected readonly sections = this.content.sections;
 
   private readonly currentSlug = toSignal(

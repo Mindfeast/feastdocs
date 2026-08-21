@@ -146,6 +146,7 @@ async function writeSiteConfig(config) {
     editUrl: config.editUrl,
     showLastUpdated: config.showLastUpdated,
     github: config.github,
+    sourceRepo: config.sourceRepo,
     editor: config.editor,
     changelog: {
       monthlyPages: config.changelog.monthlyPages,

@@ -158,6 +158,21 @@ to `SiteConfig` in `src/app/core/models.ts`. Document it in
 **A section:** a top-level folder in `docs/`. `_section.json` sets its label and
 order; `_category.json` does the same for nested folders. Max depth 5.
 
+## The starter template
+
+`Mindfeast/feastdocs-template` is generated from this repo by
+`tools/sync-template.mjs`, and CI pushes it on every commit to `main`. Do not
+edit that repository by hand — a change there is overwritten by the next sync.
+
+What it contains: every tracked file except this site's `docs/`, its branding
+(`logo.svg`, `og-image.png`, favicons) and its `README.md` and
+`feastdocs.config.mjs`, which come from `template/` instead. `docs/_templates/`
+is re-included by name, since the page templates are a feature. `CLAUDE.md`
+syncs verbatim — it documents the framework, not this site.
+
+So: a new component, tool or config option needs nothing extra. A new _starter
+page_ or a change to the starter's defaults goes in `template/`.
+
 ## Conventions
 
 - **Conventional commits** (`feat:`, `fix:`, `docs:`, `chore:` …). The changelog

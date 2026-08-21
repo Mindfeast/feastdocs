@@ -115,3 +115,31 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy site --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'feastdocs' }} --branch=main
+
+  # Keeps the starter template in step with this repository. The template is a
+  # derived artifact — every feature that lands here is in it on the next push,
+  # so nobody has to remember to port anything.
+  #
+  # Needs a repository secret TEMPLATE_SYNC_TOKEN: a fine-grained PAT with
+  # Contents: Read and write on the template repository. The automatic
+  # GITHUB_TOKEN cannot push to another repository. Skipped when absent.
+  template:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync the starter template
+        env:
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
+          TARGET: ${{ vars.TEMPLATE_REPO || 'Mindfeast/feastdocs-template' }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "TEMPLATE_SYNC_TOKEN not set — skipping template sync."
+            exit 0
+          fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --quiet "https://x-access-token:$TOKEN@github.com/$TARGET.git" /tmp/template
+          node tools/sync-template.mjs /tmp/template --push
