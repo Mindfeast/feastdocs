@@ -62,10 +62,8 @@
   gap: 0.25rem;
   // Takes the room left between the brand and the actions, and reports it
   // through its own box — that width is what decides how many tabs fit.
-  // `hidden` is the safety net for the frame before the first measurement.
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
 
   @media (max-width: 768px) {
     display: none;
@@ -232,6 +230,13 @@
     outline: 2px solid var(--fd-accent);
     outline-offset: 1px;
   }
+}
+
+// Only while measuring, when every tab is on screen so it can be sized. It
+// cannot stay: the dropdowns are absolutely positioned inside this box and hang
+// below the row, so a clipped strip clips them out of existence.
+.fd-navbar__sections--measuring {
+  overflow: hidden;
 }
 
 .fd-navbar__more {

@@ -115,6 +115,13 @@ export class Navbar {
     return n;
   });
 
+  /**
+   * True until the tabs have been measured. The strip clips while it is, so a
+   * full set cannot spill over the search box; afterwards it must not clip, or
+   * it would cut off the menu that hangs below it.
+   */
+  protected readonly measuring = computed(() => this.tabWidths().length === 0);
+
   protected readonly visibleSections = computed(() =>
     this.sections().slice(0, this.visibleCount()),
   );

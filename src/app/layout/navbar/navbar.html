@@ -39,7 +39,12 @@
       </div>
     }
 
-    <nav class="fd-navbar__sections" aria-label="Sections" #sectionsNav>
+    <nav
+      class="fd-navbar__sections"
+      [class.fd-navbar__sections--measuring]="measuring()"
+      aria-label="Sections"
+      #sectionsNav
+    >
       @for (section of visibleSections(); track section.id) {
         <div
           class="fd-navbar__tab"
