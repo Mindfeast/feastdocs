@@ -187,17 +187,25 @@
 // --- Tables ----------------------------------------------------------------
 
 .fd-table-wrap {
+  // Only as wide as the table needs, up to the column width. A table forced to
+  // fill would hand the surplus to every column in proportion, so three short
+  // columns come out at 216, 139 and 143px holding a date, a code and a name —
+  // even-looking widths that read as arbitrary. The card hugs the table so a
+  // small table does not sit in a large empty box.
+  width: fit-content;
+  max-width: 100%;
   margin: 1.25rem 0;
   border: 1px solid var(--fd-border);
   border-radius: var(--fd-radius);
   overflow-x: auto;
 
   table {
-    width: 100%;
-    // Auto layout on purpose: a column should be as wide as what it holds, so a
-    // row number or a duration stays narrow and the one long column takes the
-    // rest. The cost is that two tables size independently and the same column
-    // can land in different places on the same page.
+    // Sized by its content, not stretched: a row number or a duration stays
+    // narrow and the one long column takes what is left. The cost is that two
+    // tables size independently and the same column can land in different
+    // places on the same page.
+    width: auto;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 0.9375rem;
   }
