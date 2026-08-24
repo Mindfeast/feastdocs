@@ -711,6 +711,25 @@ export class Editor {
   });
 
   /** Neither backend reachable/configured — explain instead of a dead UI. */
+    /**
+     * Every backend that could serve this session.
+     *
+     * Rendered as tabs whenever there is more than one, and not only when a dev
+     * server is up: a deployed site with both Azure DevOps and GitHub configured
+     * used to pick one and leave the other unreachable.
+     */
+    protected readonly availableModes = computed<Mode[]>(() => {
+      const modes: Mode[] = [];
+      if (this.localAvailable()) modes.push('local');
+      if (this.ado.isConfigured && this.entra.isConfigured) modes.push('ado');
+      if (this.github.isConfigured) modes.push('github');
+      return modes;
+    });
+
+    protected modeLabel(mode: Mode): string {
+      return mode === 'local' ? 'Local' : mode === 'ado' ? 'Azure DevOps' : 'GitHub';
+    }
+
     protected readonly unavailable = computed(
     () =>
       this.localAvailable() === false &&

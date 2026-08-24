@@ -92,26 +92,21 @@
     </div>
   } @else {
     <aside class="fd-editor__files">
-      @if (localAvailable() && github.isConfigured) {
+      <!-- Every configured backend, so none is left unreachable just because
+           another one happened to win the automatic pick. -->
+      @if (availableModes().length > 1) {
         <div class="fd-editor__mode" role="tablist" aria-label="Editing backend">
-          <button
-            type="button"
-            role="tab"
-            [attr.aria-selected]="mode() === 'local'"
-            [class.is-active]="mode() === 'local'"
-            (click)="setMode('local')"
-          >
-            Local
-          </button>
-          <button
-            type="button"
-            role="tab"
-            [attr.aria-selected]="mode() === 'github'"
-            [class.is-active]="mode() === 'github'"
-            (click)="setMode('github')"
-          >
-            GitHub
-          </button>
+          @for (option of availableModes(); track option) {
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="mode() === option"
+              [class.is-active]="mode() === option"
+              (click)="setMode(option)"
+            >
+              {{ modeLabel(option) }}
+            </button>
+          }
         </div>
       }
 
