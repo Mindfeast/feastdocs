@@ -60,6 +60,12 @@
   align-self: stretch;
   align-items: stretch;
   gap: 0.25rem;
+  // Takes the room left between the brand and the actions, and reports it
+  // through its own box — that width is what decides how many tabs fit.
+  // `hidden` is the safety net for the frame before the first measurement.
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     display: none;
@@ -69,6 +75,9 @@
 .fd-navbar__tab {
   position: relative;
   display: flex;
+  // Never shrink: a squeezed tab would measure narrower than it really is and
+  // the count of what fits would be wrong.
+  flex: none;
   align-items: stretch;
 
   // Open on hover or while anything inside holds keyboard focus.
@@ -223,4 +232,52 @@
     outline: 2px solid var(--fd-accent);
     outline-offset: 1px;
   }
+}
+
+.fd-navbar__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.fd-navbar__morelist {
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  min-width: 12rem;
+}
+
+.fd-navbar__morelink {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--fd-radius-sm);
+  color: var(--fd-text-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--fd-surface-hover);
+    color: var(--fd-text-strong);
+  }
+}
+
+.fd-navbar__morelink--active {
+  background: var(--fd-accent-soft);
+  color: var(--fd-accent-strong);
+  font-weight: 600;
 }

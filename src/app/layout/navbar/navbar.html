@@ -39,8 +39,8 @@
       </div>
     }
 
-    <nav class="fd-navbar__sections" aria-label="Sections">
-      @for (section of sections(); track section.id) {
+    <nav class="fd-navbar__sections" aria-label="Sections" #sectionsNav>
+      @for (section of visibleSections(); track section.id) {
         <div
           class="fd-navbar__tab"
           [class.fd-navbar__tab--suppressed]="suppressedTab() === section.id"
@@ -58,6 +58,41 @@
               <app-nav-menu [items]="section.items" />
             </div>
           }
+        </div>
+      }
+
+      <!-- Whatever did not fit. The tab is only here when there is something in
+           it, and it opens the same way every other tab does. -->
+      @if (overflowSections().length > 0) {
+        <div
+          class="fd-navbar__tab fd-navbar__tab--more"
+          [class.fd-navbar__tab--suppressed]="suppressedTab() === '__more'"
+          (click)="onTabClick($event, '__more')"
+          (mouseleave)="suppressedTab.set(null)"
+        >
+          <button
+            type="button"
+            class="fd-navbar__section fd-navbar__more"
+            [class.fd-navbar__section--active]="activeInOverflow()"
+            [attr.aria-label]="'More sections (' + overflowSections().length + ')'"
+          >
+            More
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+          <div class="fd-navbar__dropdown">
+            <ul class="fd-navbar__morelist">
+              @for (section of overflowSections(); track section.id) {
+                <li>
+                  <a
+                    [class.fd-navbar__morelink--active]="section.id === activeSection()"
+                    class="fd-navbar__morelink"
+                    [routerLink]="'/' + section.slug"
+                    >{{ section.label }}</a
+                  >
+                </li>
+              }
+            </ul>
+          </div>
         </div>
       }
     </nav>

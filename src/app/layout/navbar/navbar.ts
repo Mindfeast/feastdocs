@@ -1,4 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -59,6 +68,63 @@ export class Navbar {
     { initialValue: '' },
   );
 
+  // --- Overflowing section tabs ----------------------------------------------
+
+  /**
+   * How many tabs fit, and the rest behind a "More" menu. A site with a dozen
+   * sections needs more width than a laptop has, and the strip has nowhere to
+   * go: it would either push the search box off the row or clip the last tabs
+   * where nothing can reach them.
+   */
+  private readonly sectionsNav = viewChild<ElementRef<HTMLElement>>('sectionsNav');
+
+  /** Room the strip actually has, tracked by a ResizeObserver. */
+  private readonly available = signal(Number.POSITIVE_INFINITY);
+
+  /**
+   * Each tab's own width, measured once while they are all on screen — once
+   * some are in the menu they are no longer in the DOM to measure. Keyed by the
+   * section list so switching version re-measures.
+   */
+  private readonly tabWidths = signal<readonly number[]>([]);
+  private measuredFor: string | null = null;
+
+  /** Width of the More tab, measured when it is up; the default is close. */
+  private readonly moreWidth = signal(76);
+
+  /** The gap between tabs, from the stylesheet. */
+  private static readonly GAP = 4;
+
+  protected readonly visibleCount = computed(() => {
+    const widths = this.tabWidths();
+    const room = this.available();
+    const total = this.sections().length;
+    // Before the first measurement every tab is rendered — that is what makes
+    // the measurement possible.
+    if (widths.length !== total || room === Number.POSITIVE_INFINITY) return total;
+
+    const span = (n: number) =>
+      widths.slice(0, n).reduce((sum, width) => sum + width + Navbar.GAP, 0);
+
+    if (span(total) <= room) return total;
+
+    // One of them has to become the More tab's room, so count down until both
+    // the tabs and the button fit.
+    let n = total - 1;
+    while (n > 0 && span(n) + this.moreWidth() + Navbar.GAP > room) n--;
+    return n;
+  });
+
+  protected readonly visibleSections = computed(() =>
+    this.sections().slice(0, this.visibleCount()),
+  );
+  protected readonly overflowSections = computed(() => this.sections().slice(this.visibleCount()));
+
+  /** The More tab carries the active mark when the active section is inside it. */
+  protected readonly activeInOverflow = computed(() =>
+    this.overflowSections().some((section) => section.id === this.activeSection()),
+  );
+
   /** Which section tab is active, resolved from the current page. */
   protected readonly activeSection = computed(
     () => this.content.sectionOf(this.currentSlug())?.id ?? null,
@@ -72,6 +138,63 @@ export class Navbar {
    * dropdown until the pointer leaves it.
    */
   protected readonly suppressedTab = signal<string | null>(null);
+
+  constructor() {
+    // Watch the strip, not the window: it is the leftover space between the
+    // brand and the actions that decides how many tabs fit, and that changes
+    // when the search box or the version select does, not only on resize.
+    effect((onCleanup) => {
+      const nav = this.sectionsNav()?.nativeElement;
+      // Absent under the test renderer, which has no layout to observe anyway.
+      // The width read during rendering still gives the strip a real number.
+      if (!nav || typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(([entry]) => {
+        this.available.set(entry.contentRect.width);
+      });
+      observer.observe(nav);
+      onCleanup(() => observer.disconnect());
+    });
+
+    afterRenderEffect(() => {
+      const sections = this.sections();
+      const nav = this.sectionsNav()?.nativeElement;
+      // Sections arrive with the first navigation; measuring an empty strip
+      // would cache an empty answer.
+      if (!nav || sections.length === 0) return;
+
+      // Seed the width here rather than waiting on the observer. Its first
+      // delivery is asynchronous, and until it lands the strip believes it has
+      // unlimited room and draws every tab — which is the state the reader sees
+      // on load, when it matters most.
+      this.available.set(nav.clientWidth);
+
+      const more = nav.querySelector<HTMLElement>('.fd-navbar__tab--more');
+      if (more) this.moreWidth.set(more.getBoundingClientRect().width);
+
+      // Read before any early return: this is what makes the effect depend on
+      // the widths, and so run again on the pass that clears them. Returning
+      // first would drop the dependency and nothing would ever measure.
+      const widths = this.tabWidths();
+
+      const key = sections.map((section) => section.id).join('|');
+      if (key !== this.measuredFor) {
+        this.measuredFor = key;
+        // Clearing puts every tab back on screen; the render that causes is the
+        // one with a full set to measure.
+        if (widths.length > 0) {
+          this.tabWidths.set([]);
+          return;
+        }
+      }
+      if (widths.length === sections.length) return;
+
+      const tabs = nav.querySelectorAll<HTMLElement>('.fd-navbar__tab:not(.fd-navbar__tab--more)');
+      // Only trustworthy while every tab is up; any other moment is a partial
+      // render that would measure the wrong set.
+      if (tabs.length !== sections.length) return;
+      this.tabWidths.set([...tabs].map((tab) => tab.getBoundingClientRect().width));
+    });
+  }
 
   protected onTabClick(event: MouseEvent, sectionId: string): void {
     const link = (event.target as HTMLElement | null)?.closest('a');
