@@ -9,20 +9,20 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32" />
     <script>
-      // Applies the theme before Angular boots so there is never a flash of
-      // the wrong mode. The site default is dark (feastdocs.config.mjs);
-      // a reader's stored choice wins over it.
+      // Applies the theme before Angular boots so there is never a flash of the
+      // wrong mode. With nothing stored we follow the operating system, which is
+      // what theme.defaultMode says in feastdocs.config.mjs — this script
+      // defaulted to dark regardless, so a first-time reader on a light OS got a
+      // dark flash and then a repaint.
       (function () {
         try {
           var stored = localStorage.getItem('feastdocs:theme');
-          var dark =
-            stored === 'dark' ||
-            (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-            !stored;
+          var system = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var dark = stored === 'dark' || ((stored === 'system' || !stored) && system);
           document.documentElement.dataset.theme = dark ? 'dark' : 'light';
           document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
         } catch (error) {
-          document.documentElement.dataset.theme = 'dark';
+          document.documentElement.dataset.theme = 'light';
         }
       })();
     </script>

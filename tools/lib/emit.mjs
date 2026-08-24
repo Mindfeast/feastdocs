@@ -77,17 +77,28 @@ async function writeRegistry(modules, sections, versions = []) {
     `/** Top-level sections, each with its own sidebar tree. */\n` +
     `export const SECTIONS: readonly DocSection[] = ${JSON.stringify(sections, null, 2)};\n\n` +
     `/**\n` +
-    ` * Source paths in sidebar order. The content manager sorts its file tree\n` +
-    ` * by this, so what an author drags matches what a reader sees.\n` +
-    ` */\n` +
-    `export const PAGE_ORDER: readonly string[] = ${JSON.stringify(pageOrder(modules, sections), null, 2)};\n\n` +
-    `/**\n` +
     ` * Documented versions, newest first. A single entry with an empty id means\n` +
     ` * the site is not versioned, which is the common case.\n` +
     ` */\n` +
     `export const VERSIONS: readonly DocVersion[] = ${JSON.stringify(versions, null, 2)};\n`;
 
   await writeIfChanged(path.join(paths.generated, 'registry.ts'), contents);
+
+  // Its own module because only the content manager reads it. Exported from
+  // registry.ts it would sit in the initial bundle — the editor is lazy, but
+  // registry.ts is not, and a lazy chunk importing an eager module does not move
+  // the data. On a site with a few dozen pages that is noise; at 3140 pages the
+  // page order alone is ~180 kB of JavaScript every reader downloads to render a
+  // page that never uses it.
+  await writeIfChanged(
+    path.join(paths.generated, 'page-order.ts'),
+    `${BANNER}\n` +
+      `/**\n` +
+      ` * Source paths in sidebar order. The content manager sorts its file tree\n` +
+      ` * by this, so what an author drags matches what a reader sees.\n` +
+      ` */\n` +
+      `export const PAGE_ORDER: readonly string[] = ${JSON.stringify(pageOrder(modules, sections), null, 2)};\n`,
+  );
 }
 
 /** Flattens the section trees into source paths, in the order readers see. */

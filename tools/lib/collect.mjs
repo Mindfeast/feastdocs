@@ -35,10 +35,18 @@ export async function collectDocs(config) {
 
   // Links are checked once, after every version is in: a link from one version
   // to another is legitimate, and checking per version would call it broken.
+  // Running last also means the synthesised category landing pages are already
+  // registered — validating before they exist reported every link to an
+  // index-less category as missing a document.
   const allDocs = collected.flatMap((one) => one.docs);
   const allWarnings = collected.flatMap((one) => one.warnings);
-  validateLinks(allDocs, new Map(allDocs.map((doc) => [doc.slug, doc])), (message) =>
-    allWarnings.push(message),
+  validateLinks(
+    allDocs,
+    new Map(allDocs.map((doc) => [doc.slug, doc])),
+    // A link may point at a real file in public/ — a PDF, an image opened full
+    // size — rather than at a document.
+    await listStaticFiles(),
+    (message) => allWarnings.push(message),
   );
 
   return {
@@ -569,13 +577,17 @@ function linkNeighbours(docs, sections) {
   }
 }
 
-function validateLinks(docs, bySlug, warn) {
+function validateLinks(docs, bySlug, staticFiles, warn) {
   for (const doc of docs) {
     for (const match of doc.html.matchAll(/href="\/([^"#?]*)/g)) {
       const target = match[1].replace(/\/$/, '');
       if (target.startsWith('docs-assets/')) continue;
       // App-owned routes (the content manager, future tools) start with `_`.
       if (target.startsWith('_')) continue;
+      // A link — not just an <img> — may point at something in public/: a PDF to
+      // download, or an image opened at full size. Those are real files, so
+      // reporting them as missing documents is noise that buries real breakage.
+      if (staticFiles.has(decodeURI(target))) continue;
       if (!bySlug.has(target)) {
         warn(`${doc.sourcePath}: link to "/${target}" does not match any document.`);
       }
@@ -583,9 +595,22 @@ function validateLinks(docs, bySlug, warn) {
   }
 }
 
+/** Everything served from `public/`, so link validation can recognise it. */
+async function listStaticFiles() {
+  try {
+    const found = await fg('**/*', { cwd: paths.public, onlyFiles: true, dot: false });
+    return new Set(found);
+  } catch {
+    return new Set();
+  }
+}
+
 function humanize(value) {
-  return value
-    .replace(/^\d+[-_. ]*/, '')
+  // The `01-` prefix is an ordering hint, so it comes off the label — but only
+  // when there is a label left underneath. A folder named `2025` is all digits,
+  // and stripping them leaves an empty category in the sidebar.
+  const withoutPrefix = value.replace(/^\d+[-_. ]*/, '');
+  return (withoutPrefix.trim() === '' ? value : withoutPrefix)
     .replace(/[-_]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

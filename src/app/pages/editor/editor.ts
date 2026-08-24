@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
 import { GithubService } from '../../core/github.service';
 import { UiStateService } from '../../core/ui-state.service';
-import { PAGE_ORDER } from '../../generated/registry';
+import { PAGE_ORDER } from '../../generated/page-order';
 import { createPreviewRenderer } from './markdown-preview';
 import { diffLines, type DiffHunk } from './line-diff';
 
