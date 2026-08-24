@@ -14,6 +14,7 @@ import { filter, map, startWith } from 'rxjs';
 import { ContentService } from '../../core/content.service';
 import { ThemeService } from '../../core/theme.service';
 import { UiStateService } from '../../core/ui-state.service';
+import type { SidebarItem } from '../../core/models';
 import { NavMenu } from '../nav-menu/nav-menu';
 import { SearchBox } from '../search-box/search-box';
 
@@ -126,6 +127,32 @@ export class Navbar {
     this.sections().slice(0, this.visibleCount()),
   );
   protected readonly overflowSections = computed(() => this.sections().slice(this.visibleCount()));
+
+  /**
+   * The overflow, shaped as menu items so it can use the same component every
+   * other tab uses. A section becomes a branch when it has a tree to fly out
+   * and a plain link when it does not — a branch with nothing behind it would
+   * show a chevron pointing at an empty panel.
+   */
+  protected readonly overflowMenu = computed<readonly SidebarItem[]>(() =>
+    this.overflowSections().map((section) =>
+      section.items.length > 0
+        ? {
+            type: 'category' as const,
+            label: section.label,
+            position: section.position,
+            collapsed: false,
+            slug: section.slug,
+            items: section.items,
+          }
+        : {
+            type: 'doc' as const,
+            label: section.label,
+            position: section.position,
+            slug: section.slug,
+          },
+    ),
+  );
 
   /** The More tab carries the active mark when the active section is inside it. */
   protected readonly activeInOverflow = computed(() =>

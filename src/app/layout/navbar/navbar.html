@@ -85,18 +85,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
           </button>
           <div class="fd-navbar__dropdown">
-            <ul class="fd-navbar__morelist">
-              @for (section of overflowSections(); track section.id) {
-                <li>
-                  <a
-                    [class.fd-navbar__morelink--active]="section.id === activeSection()"
-                    class="fd-navbar__morelink"
-                    [routerLink]="'/' + section.slug"
-                    >{{ section.label }}</a
-                  >
-                </li>
-              }
-            </ul>
+            <app-nav-menu [items]="overflowMenu()" />
           </div>
         </div>
       }

@@ -258,31 +258,3 @@
     stroke-linejoin: round;
   }
 }
-
-.fd-navbar__morelist {
-  margin: 0;
-  padding: 0.3rem;
-  list-style: none;
-  min-width: 12rem;
-}
-
-.fd-navbar__morelink {
-  display: block;
-  padding: 0.4rem 0.6rem;
-  border-radius: var(--fd-radius-sm);
-  color: var(--fd-text-muted);
-  font-size: 0.875rem;
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--fd-surface-hover);
-    color: var(--fd-text-strong);
-  }
-}
-
-.fd-navbar__morelink--active {
-  background: var(--fd-accent-soft);
-  color: var(--fd-accent-strong);
-  font-weight: 600;
-}
