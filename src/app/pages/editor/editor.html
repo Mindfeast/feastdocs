@@ -177,13 +177,13 @@
       <input
         class="fd-editor__filter"
         type="search"
-        placeholder="Filter files"
-        aria-label="Filter files"
+        placeholder="Filter files and folders"
+        aria-label="Filter files and folders"
         [value]="filter()"
         (input)="filter.set($any($event.target).value)"
       />
 
-      <ul class="fd-editor__list">
+      <ul class="fd-editor__list" #fileList>
         @for (row of tree(); track row.kind + row.path) {
           @if (row.kind === 'folder') {
             <li class="fd-editor__treerow" [style.padding-inline-start.px]="row.depth * 12">
