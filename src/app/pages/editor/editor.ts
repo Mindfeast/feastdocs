@@ -52,7 +52,12 @@ interface TreeRow {
   readonly draggable: boolean;
 }
 
-const FOLDERS_KEY = 'feastdocs:editor-folders';
+// Holds the folders the reader has opened, not the ones they closed: a fresh
+// tree should start shut, and an empty set is the only honest way to say that
+// before the tree has been walked and the folder paths are even known. The key
+// is distinct from the old one so a stored list of *closed* folders from a
+// previous version is not read back as a list of open ones.
+const FOLDERS_KEY = 'feastdocs:editor-folders-open';
 /** Positions are rewritten in tens, leaving room to insert by hand later. */
 const POSITION_STEP = 10;
 
@@ -333,8 +338,8 @@ export class Editor {
 
   // --- File tree -------------------------------------------------------------
 
-  /** Collapsed folders, persisted per reader. */
-  private readonly collapsedFolders = signal<ReadonlySet<string>>(this.readCollapsedFolders());
+  /** Folders the reader has opened, persisted. Everything else stays shut. */
+  private readonly expandedFolders = signal<ReadonlySet<string>>(this.readExpandedFolders());
   /** Base order: how the sidebar sorted pages at the last build. */
   private readonly baseOrder = new Map(PAGE_ORDER.map((path, index) => [path, index]));
   /**
@@ -383,14 +388,14 @@ export class Editor {
       node.files.push(path);
     }
 
-    const collapsed = this.collapsedFolders();
+    const expanded = this.expandedFolders();
     const rows: TreeRow[] = [];
     const walk = (node: Node, prefix: string, depth: number): void => {
       for (const name of [...node.folders.keys()].sort()) {
         const path = prefix ? `${prefix}/${name}` : name;
-        const isCollapsed = collapsed.has(path);
-        rows.push({ kind: 'folder', name, path, depth, expanded: !isCollapsed, draggable: false });
-        if (!isCollapsed) walk(node.folders.get(name)!, path, depth + 1);
+        const isExpanded = expanded.has(path);
+        rows.push({ kind: 'folder', name, path, depth, expanded: isExpanded, draggable: false });
+        if (isExpanded) walk(node.folders.get(name)!, path, depth + 1);
       }
       for (const path of this.sortSiblings(node.files)) {
         rows.push({
@@ -408,7 +413,7 @@ export class Editor {
   });
 
   protected toggleFolder(path: string): void {
-    this.collapsedFolders.update((current) => {
+    this.expandedFolders.update((current) => {
       const next = new Set(current);
       if (next.has(path)) next.delete(path);
       else next.add(path);
@@ -437,12 +442,12 @@ export class Editor {
     return !/(^|\/)index\.[^.]+$/i.test(path);
   }
 
-  private readCollapsedFolders(): ReadonlySet<string> {
+  private readExpandedFolders(): ReadonlySet<string> {
     try {
       const stored = localStorage.getItem(FOLDERS_KEY);
       if (stored) return new Set<string>(JSON.parse(stored) as string[]);
     } catch {
-      // Unreadable — start fully expanded.
+      // Unreadable — start fully collapsed, same as a first visit.
     }
     return new Set();
   }
