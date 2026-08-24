@@ -1,5 +1,5 @@
 ---
-title: "FeastDocs"
+title: 'FeastDocs'
 sidebar_label: 'Overview'
 description: '94 changes recorded for FeastDocs.'
 ---

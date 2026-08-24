@@ -1,8 +1,8 @@
 ---
-title: "List rate plans"
-description: "GET /rates"
-sidebar_label: "List rate plans"
-sidebar_badge: "GET"
+title: 'List rate plans'
+description: 'GET /rates'
+sidebar_label: 'List rate plans'
+sidebar_badge: 'GET'
 sidebar_position: 1
 ---
 
@@ -19,8 +19,8 @@ sidebar_position: 1
 ## Responses
 
 | Status | Description |
-| --- | --- |
-| `200` | Rate plans. |
+| ------ | ----------- |
+| `200`  | Rate plans. |
 
 ### Example response
 

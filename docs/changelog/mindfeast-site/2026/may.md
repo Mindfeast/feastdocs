@@ -1,5 +1,5 @@
 ---
-title: "Mindfeast Site — May 2026"
+title: 'Mindfeast Site — May 2026'
 sidebar_label: 'May'
 description: '11 changes in Mindfeast Site, May 2026.'
 sidebar_position: -5

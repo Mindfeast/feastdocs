@@ -1,8 +1,8 @@
 ---
-title: "Cancel a reservation"
-description: "Cancellation is permanent. A cancelled reservation stays readable."
-sidebar_label: "Cancel a reservation"
-sidebar_badge: "DELETE"
+title: 'Cancel a reservation'
+description: 'Cancellation is permanent. A cancelled reservation stays readable.'
+sidebar_label: 'Cancel a reservation'
+sidebar_badge: 'DELETE'
 sidebar_position: 4
 ---
 
@@ -21,8 +21,8 @@ Cancellation is permanent. A cancelled reservation stays readable.
 ## Responses
 
 | Status | Description |
-| --- | --- |
-| `204` | Cancelled. |
+| ------ | ----------- |
+| `204`  | Cancelled.  |
 
 ## Try it
 

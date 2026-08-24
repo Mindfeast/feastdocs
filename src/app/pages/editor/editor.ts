@@ -1115,7 +1115,12 @@ export class Editor {
       return;
     }
     try {
-      this.git.set(await firstValueFrom(this.http.get<GitStatus>(`${LOCAL_API}/git/status`)));
+      const info = await firstValueFrom(this.http.get<GitStatus>(`${LOCAL_API}/git/status`));
+      // `{ git: false }` is the answer when the folder is not a repository, or when
+      // git could not be run at all. It is a *truthy object*, so storing it lit up
+      // every control that checks for a status and then threw on the fields it does
+      // not carry. There is nothing to show in that state, so store nothing.
+      this.git.set(info?.git === true ? info : null);
     } catch {
       // Older dev server without the git endpoints: hide the feature rather
       // than show a control that cannot work.

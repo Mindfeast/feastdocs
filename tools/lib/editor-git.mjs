@@ -215,7 +215,10 @@ function docsRelative(docsPrefix, file) {
 export async function status({ docsRoot }) {
   const docsPrefix = path.relative(ROOT, docsRoot).split(path.sep).join('/') || '.';
   const inside = await gitQuiet(['rev-parse', '--is-inside-work-tree']);
-  if (!inside.ok) return { git: false };
+  // Two very different things answer false here: a folder that is not a
+  // repository, and a git that could not be run at all. The caller only needs to
+  // know there is nothing to show, but whoever is debugging needs the reason.
+  if (!inside.ok) return { git: false, reason: inside.error || 'git could not be run' };
 
   const [branch, remote, target] = await Promise.all([
     gitQuiet(['rev-parse', '--abbrev-ref', 'HEAD']).then((r) => (r.ok ? r.out : null)),
