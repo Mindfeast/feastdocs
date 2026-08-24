@@ -68,9 +68,14 @@ async function main() {
   );
 
   // Replace the working tree but keep .git, so an existing clone stays a clone.
+  // Local, regenerable directories are left alone: they are gitignored, so
+  // deleting them accomplishes nothing except a reinstall — and on Windows it
+  // fails outright when a binary inside node_modules is held open by a running
+  // process, which aborts the whole sync.
+  const PRESERVE = new Set(['.git', 'node_modules', '.angular', 'dist']);
   await fs.mkdir(out, { recursive: true });
   for (const entry of await fs.readdir(out)) {
-    if (entry === '.git') continue;
+    if (PRESERVE.has(entry)) continue;
     await fs.rm(path.join(out, entry), { recursive: true, force: true });
   }
 
