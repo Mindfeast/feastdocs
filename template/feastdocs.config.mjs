@@ -72,6 +72,46 @@ export default {
   /** Show "Last updated {date} by {author}" in page footers, read from git. */
   showLastUpdated: true,
 
+  /**
+   * Editing the deployed site, for documentation hosted in Azure DevOps.
+   *
+   * With both blocks set, readers sign in with Microsoft Entra ID and edit in the
+   * browser: the changes become a branch, a commit and a pull request, made with
+   * their own token — so the commit carries their name and this site stores no
+   * shared credential. Writes go straight to the Azure DevOps API; there is no
+   * backend to run.
+   *
+   * `baseUrl` is `https://dev.azure.com/<org>` for Azure DevOps Services, or
+   * `https://<host>/tfs/<Collection>` for an on-premises server.
+   */
+  azureDevOps: {
+    baseUrl: null,
+    project: null,
+    repository: null,
+    /** Pull requests target this branch; it is never committed to directly. */
+    branch: 'main',
+  },
+
+  /**
+   * The app registration used for that sign-in. Both values are public — they
+   * ship in the JavaScript bundle, and a browser app has no client secret.
+   *
+   * Register a **single-page application** and list every origin the site is
+   * served from as a redirect URI, including `http://localhost:4200` if you want
+   * to try it against a dev server. While `clientId` is null, no sign-in is
+   * offered and none of this runs.
+   */
+  entra: {
+    tenantId: null,
+    clientId: null,
+    /**
+     * Scope requested when publishing. The default is the well-known Azure
+     * DevOps resource; an on-premises server federated with Entra may expose its
+     * own application id instead.
+     */
+    devOpsScope: '499b84ac-1321-427f-aa17-267ca6975798/.default',
+  },
+
   github: {
     /** 'owner/name' — enables source links, commit links and web editing. */
     repo: null,

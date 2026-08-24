@@ -319,6 +319,32 @@
             {{ mode() === 'github' ? 'Stage' : 'Save' }}
             <kbd>Ctrl S</kbd>
           </button>
+          @if (mode() === 'ado' && branches().length > 0) {
+            <label class="fd-editor__branch">
+              <span class="fd-editor__branchlabel">Branch</span>
+              <select
+                aria-label="Branch to edit"
+                [value]="workingBranch()"
+                (change)="switchBranch($any($event.target).value)"
+              >
+                @for (branch of branches(); track branch) {
+                  <option [value]="branch">
+                    {{ branch }}{{ branch === ado.defaultBranch ? ' (protected)' : '' }}
+                  </option>
+                }
+              </select>
+            </label>
+            @if (openPullRequest(); as pr) {
+              <a class="fd-editor__view" [href]="pr.url" target="_blank" rel="noopener">
+                PR !{{ pr.id }} ↗
+              </a>
+            }
+          }
+          @if (dirty()) {
+            <button type="button" class="fd-button fd-button--ghost" (click)="revertBuffer()">
+              Revert
+            </button>
+          }
           @if (mode() === 'ado' && pendingCount() > 0) {
             <button
               type="button"
@@ -376,8 +402,47 @@
           @for (change of pendingList(); track change.path) {
             <li>
               <span class="fd-editor__pendingkind">{{ change.kind }}</span>
-              <code>{{ change.path }}</code>
+              <button
+                type="button"
+                class="fd-editor__pendingpath"
+                [attr.aria-expanded]="review()?.path === change.path"
+                (click)="reviewChange(change.path)"
+              >
+                <code>{{ change.path }}</code>
+              </button>
+              <button
+                type="button"
+                class="fd-editor__pendingdiscard"
+                title="Discard this change"
+                aria-label="Discard this change"
+                (click)="discardStaged(change.path, $event)"
+              >
+                ✕
+              </button>
             </li>
+
+            @if (review(); as diff) {
+              @if (diff.path === change.path) {
+                <li class="fd-editor__diff">
+                  @if (diff.hunks.length === 0) {
+                    <p class="fd-editor__diffempty">No line changes.</p>
+                  } @else {
+                    @for (hunk of diff.hunks; track $index) {
+                      @if (hunk.kind === 'same') {
+                        <pre class="fd-editor__diffsame"><code>{{ hunk.same }}</code></pre>
+                      } @else {
+                        @if (hunk.theirs) {
+                          <pre class="fd-editor__diffremoved"><code>{{ hunk.theirs }}</code></pre>
+                        }
+                        @if (hunk.mine) {
+                          <pre class="fd-editor__diffadded"><code>{{ hunk.mine }}</code></pre>
+                        }
+                      }
+                    }
+                  }
+                </li>
+              }
+            }
           }
         </ul>
       }
@@ -386,8 +451,16 @@
       }
       @if (published(); as result) {
         <p class="fd-editor__publishnote">
-          Pushed <code>{{ result.branch }}</code> ({{ result.commit }}).
-          <a [href]="result.url" target="_blank" rel="noopener">Open the pull request ↗</a>
+          @if (result.createdBranch) {
+            Pushed <code>{{ result.branch }}</code> ({{ result.commit }}).
+          } @else {
+            Added {{ result.commit }} to <code>{{ result.branch }}</code>.
+          }
+          @if (result.url) {
+            <a [href]="result.url" target="_blank" rel="noopener">Open the pull request ↗</a>
+          } @else {
+            No pull request is open for this branch yet.
+          }
         </p>
       }
 

@@ -583,6 +583,7 @@ export class Editor {
 
       if (this.mode() === 'local') {
         await this.entra.ready();
+    await this.refreshBranches();
         await this.refreshFiles();
         this.status.set({
           kind: 'saved',
@@ -806,11 +807,122 @@ export class Editor {
   protected readonly canSignIn = computed(() => this.entra.isConfigured);
   protected readonly signingIn = signal(false);
   protected readonly publishingOnline = signal(false);
+
+  /* ---- which branch am I editing ----------------------------------------- */
+
+  /**
+   * The branch being read and written.
+   *
+   * Editing the default branch means a publish cuts a new branch and opens a pull
+   * request. Selecting an existing branch adds a commit to it instead — which is
+   * how a review comment gets addressed without opening a second pull request for
+   * the same work.
+   */
+  protected readonly branches = signal<readonly string[]>([]);
+  protected readonly workingBranch = signal<string>(this.ado.defaultBranch);
+  protected readonly openPullRequest = signal<{ id: number; url: string } | null>(null);
+
+  private async refreshBranches(): Promise<void> {
+    if (this.mode() !== 'ado' || !this.entra.signedIn()) return;
+    try {
+      this.branches.set(await this.ado.listBranches());
+    } catch {
+      // Losing the picker is survivable; losing the editor is not.
+      this.branches.set([]);
+    }
+  }
+
+  protected async switchBranch(branch: string): Promise<void> {
+    if (branch === this.workingBranch()) return;
+    if (
+      this.pendingCount() > 0 &&
+      !confirm(`Discard ${this.pendingCount()} staged change(s) and switch to ${branch}?`)
+    ) {
+      return;
+    }
+    this.pending.set(new Map());
+    this.workingBranch.set(branch);
+    this.published.set(null);
+    this.publishError.set(null);
+    this.review.set(null);
+    this.openPullRequest.set(
+      branch === this.ado.defaultBranch
+        ? null
+        : await this.ado.activePullRequest(branch).catch(() => null),
+    );
+    const path = this.selected();
+    await this.refreshFiles();
+    if (path && this.files().includes(path)) await this.open(path);
+  }
+
+  /* ---- undo -------------------------------------------------------------- */
+
+  /** Throws away unsaved edits in the open file, back to what was last saved. */
+  protected revertBuffer(): void {
+    if (!this.dirty()) return;
+    if (!confirm('Discard your unsaved changes to this file?')) return;
+    this.contentText.set(this.savedContent());
+    this.status.set({ kind: 'saved', detail: 'Reverted to the last saved version' });
+  }
+
+  /** Removes a staged change, so it is not part of the next publish. */
+  protected async discardStaged(path: string, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!confirm(`Discard the staged change to ${path}?`)) return;
+    this.unstage(path);
+    if (this.review()?.path === path) this.review.set(null);
+    if (this.selected() === path && this.mode() === 'ado') {
+      try {
+        this.applyOpened(
+          path,
+          await this.ado.readFile(this.content.site.docsDir, path, this.workingBranch()),
+        );
+      } catch {
+        this.status.set({ kind: 'error', message: `Discarded, but could not reload ${path}.` });
+      }
+    }
+  }
+
+  /* ---- see the actual changes -------------------------------------------- */
+
+  protected readonly review = signal<{ path: string; hunks: readonly DiffHunk[] } | null>(null);
+  protected readonly reviewing = signal(false);
+
+  /**
+   * Diffs a staged change against the branch, so what is about to be published
+   * can be read before it is sent rather than after.
+   */
+  protected async reviewChange(path: string): Promise<void> {
+    if (this.review()?.path === path) {
+      this.review.set(null);
+      return;
+    }
+    this.reviewing.set(true);
+    try {
+      const staged = this.pending().get(path);
+      const theirs =
+        staged?.kind === 'create'
+          ? ''
+          : await this.ado.readFile(this.content.site.docsDir, path, this.workingBranch());
+      const mine = staged?.kind === 'delete' ? '' : (staged?.content ?? '');
+      this.review.set({ path, hunks: diffLines(theirs, mine) });
+    } catch (error) {
+      this.publishError.set(describe(error, `Could not diff ${path}`));
+    } finally {
+      this.reviewing.set(false);
+    }
+  }
+
   protected readonly publishBranch = signal('');
   protected readonly publishMessage = signal('');
   protected readonly publishOpen = signal(false);
   protected readonly publishError = signal<string | null>(null);
-  protected readonly published = signal<{ branch: string; commit: string; url: string } | null>(null);
+  protected readonly published = signal<{
+    branch: string;
+    commit: string;
+    url: string | null;
+    createdBranch: boolean;
+  } | null>(null);
 
   /** Staged changes as a list, so the template needs no KeyValuePipe. */
   protected readonly pendingList = computed(() =>
@@ -858,6 +970,7 @@ export class Editor {
       const result = await this.ado.publish({
         docsDir: this.content.site.docsDir,
         branch,
+        onto: this.workingBranch(),
         message,
         changes: this.pendingList().map(({ path, kind }) => ({
           path,
@@ -869,7 +982,12 @@ export class Editor {
         branch: result.branch,
         commit: result.commitId.slice(0, 7),
         url: result.pullRequestUrl,
+        createdBranch: result.createdBranch,
       });
+      if (result.createdBranch) {
+        this.workingBranch.set(result.branch);
+        await this.refreshBranches();
+      }
       // Upstream now; keeping them staged would offer to send them again onto a
       // branch that already exists.
       this.pending.set(new Map());
@@ -992,7 +1110,7 @@ export class Editor {
         this.baseShas = tree;
         this.files.set([...tree.keys()].sort());
       } else if (this.mode() === 'ado' && this.entra.signedIn()) {
-        this.files.set(await this.ado.listFiles(this.content.site.docsDir));
+        this.files.set(await this.ado.listFiles(this.content.site.docsDir, this.workingBranch()));
       } else {
         return;
       }
@@ -1022,7 +1140,10 @@ export class Editor {
         );
         this.applyOpened(path, result.content);
       } else if (this.mode() === 'ado') {
-        this.applyOpened(path, await this.ado.readFile(this.content.site.docsDir, path));
+        this.applyOpened(
+          path,
+          await this.ado.readFile(this.content.site.docsDir, path, this.workingBranch()),
+        );
       } else {
         const file = await this.github.readFile(this.content.site.docsDir, path);
         // Opening refreshes the conflict baseline: whatever we just read IS

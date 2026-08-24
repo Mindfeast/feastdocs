@@ -1101,3 +1101,97 @@
   letter-spacing: 0.03em;
   text-align: center;
 }
+
+// Branch picker in the toolbar. A protected branch is still selectable — reading
+// it is normal; it is publishing that forks a new one.
+.fd-editor__branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--fd-text-muted);
+
+  select {
+    max-width: 16rem;
+    padding: 0.25rem 0.375rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm, 4px);
+    background: var(--fd-surface);
+    color: var(--fd-text);
+    font: inherit;
+  }
+}
+
+.fd-editor__branchlabel {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+}
+
+// A staged row: name opens the diff, ✕ discards it.
+.fd-editor__pendingpath {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover code {
+    text-decoration: underline;
+  }
+}
+
+.fd-editor__pendingdiscard {
+  flex: 0 0 auto;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--fd-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fd-danger, #c0392b);
+  }
+}
+
+// The diff itself: added and removed blocks, tinted rather than prefixed, so a
+// line's own leading characters are never mistaken for diff markers.
+.fd-editor__diff {
+  display: block;
+  margin: 0.25rem 0 0.5rem;
+  border-inline-start: 2px solid var(--fd-border);
+  padding-inline-start: 0.5rem;
+
+  pre {
+    margin: 0;
+    padding: 0.125rem 0.375rem;
+    overflow-x: auto;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+}
+
+.fd-editor__diffsame {
+  color: var(--fd-text-muted);
+}
+
+.fd-editor__diffadded {
+  background: color-mix(in srgb, var(--fd-accent-light, #2f6feb) 12%, transparent);
+}
+
+.fd-editor__diffremoved {
+  background: color-mix(in srgb, #c0392b 12%, transparent);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, #c0392b 40%, transparent);
+}
+
+.fd-editor__diffempty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--fd-text-muted);
+}
