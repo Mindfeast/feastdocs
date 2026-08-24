@@ -1050,8 +1050,8 @@
   }
 }
 
-// Publish strip and staged-file list for the Azure DevOps backend. Same shape as
-// the staged-changes bar so the two backends read as one idea.
+// Publish strip. Same shape as the staged-changes bar so the two read as one
+// idea: a thing you are about to do, with the fields it needs beside it.
 .fd-editor__publishbar {
   flex-wrap: wrap;
 
@@ -1067,11 +1067,17 @@
   font-size: 0.875rem;
   color: var(--fd-text-muted);
 
+  code {
+    font-family: var(--fd-font-mono);
+  }
+
   a {
     margin-inline-start: 0.5rem;
   }
 }
 
+// Pending changes, listed by name. A count is not reviewable; this is the last
+// place to notice a file that should not be going out.
 .fd-editor__pending {
   margin: 0;
   padding: 0 1rem 0.75rem;
@@ -1086,6 +1092,11 @@
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
+  }
+
+  code {
+    font-family: var(--fd-font-mono);
+    color: var(--fd-text);
   }
 }
 
@@ -1194,4 +1205,80 @@
   margin: 0;
   font-size: 0.75rem;
   color: var(--fd-text-muted);
+}
+
+// Sign-in gate. A centred card rather than a button in a toolbar: when there is
+// no session there is nothing else to do on this screen, and a card says that.
+// `.fd-editor` is a 280px + 1fr grid with its own full height, so a child that
+// does not opt out lands in the sidebar column. Span both tracks and centre in
+// them, exactly as .fd-editor__offline does.
+.fd-editor__login {
+  grid-column: 1 / -1;
+  place-self: center;
+  width: 100%;
+  padding: 2rem 1rem;
+  display: grid;
+  justify-items: center;
+}
+
+.fd-editor__logincard {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem;
+  border: 1px solid var(--fd-border);
+  border-radius: calc(var(--fd-radius, 8px) * 1.5);
+  background: var(--fd-surface);
+  text-align: center;
+
+  h1 {
+    margin: 0.75rem 0 0.25rem;
+    font-size: 1.375rem;
+  }
+}
+
+.fd-editor__loginlogo {
+  height: 34px;
+  width: auto;
+}
+
+.fd-editor__loginlead {
+  margin: 0 0 1.5rem;
+  color: var(--fd-text-muted);
+  font-size: 0.9375rem;
+}
+
+.fd-editor__login .fd-editor__signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.fd-editor__loginfoot {
+  margin: 1.25rem 0 0;
+  color: var(--fd-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+// Unified-diff rows for the local backend. Tinted, and the +/- stay visible
+// because they are part of the patch git produced.
+.fd-editor__diffrow {
+  display: block;
+  padding-inline: 0.25rem;
+  white-space: pre-wrap;
+
+  &.is-add {
+    background: color-mix(in srgb, var(--fd-accent-light, #2f6feb) 14%, transparent);
+  }
+
+  &.is-remove {
+    background: color-mix(in srgb, #c0392b 14%, transparent);
+  }
+
+  &.is-meta {
+    color: var(--fd-text-muted);
+    font-style: italic;
+  }
 }

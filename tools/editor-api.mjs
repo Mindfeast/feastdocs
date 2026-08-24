@@ -3,6 +3,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
 import { cyan, dim, yellow } from './lib/log.mjs';
+import {
+  status as gitStatus,
+  publish as gitPublish,
+  discard as gitDiscard,
+  diff as gitDiff,
+  switchBranch as gitSwitchBranch,
+  listBranches as gitListBranches,
+} from './lib/editor-git.mjs';
 
 export const EDITOR_API_PORT = 4271;
 
@@ -19,7 +27,7 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
   const server = http.createServer(async (req, res) => {
     // The app runs on a different port (4200), so answer CORS preflights.
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') {
       res.writeHead(204).end();
@@ -68,9 +76,49 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
         await fs.writeFile(file, String(body.content ?? ''), 'utf8');
         return json(res, 200, { saved: relative });
       }
+      if (url.pathname === '/api/git/status' && req.method === 'GET') {
+        return json(res, 200, await gitStatus({ docsRoot }));
+      }
+      /**
+       * One call, because the sequence is the point: branch off an up-to-date
+       * default branch, commit, push. `main` is pull-request protected, so a
+       * commit that lands anywhere else is a commit that has to be redone.
+       */
+      if (url.pathname === '/api/git/publish' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitPublish({
+          docsRoot,
+          branch: body.branch,
+          message: body.message,
+          push: body.push !== false,
+        });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/branches' && req.method === 'GET') {
+        return json(res, 200, { branches: await gitListBranches() });
+      }
+      if (url.pathname === '/api/git/diff' && req.method === 'GET') {
+        return json(res, 200, await gitDiff({ docsRoot, file: url.searchParams.get('file') }));
+      }
+      // Discarding a new file means deleting it, so the caller has to ask for
+      // that specifically rather than have it happen behind the word "discard".
+      if (url.pathname === '/api/git/discard' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitDiscard({
+          docsRoot,
+          file: body.file,
+          allowDelete: body.allowDelete === true,
+        });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/switch' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitSwitchBranch({ docsRoot, branch: body.branch });
+        return json(res, result.ok ? 200 : 400, result);
+      }
       json(res, 404, { error: 'Not found' });
     } catch (error) {
-      const status = error?.code === 'ENOENT' ? 404 : error?.status ?? 500;
+      const status = error?.code === 'ENOENT' ? 404 : (error?.status ?? 500);
       json(res, status, { error: error?.message ?? 'Internal error' });
     }
   });
@@ -91,9 +139,7 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
   });
 
   server.listen(port, '127.0.0.1', () => {
-    console.log(
-      `${cyan('editor')} content manager API on ${dim(`http://127.0.0.1:${port}`)}`,
-    );
+    console.log(`${cyan('editor')} content manager API on ${dim(`http://127.0.0.1:${port}`)}`);
   });
   return server;
 }
@@ -123,7 +169,8 @@ function readBody(req) {
     let data = '';
     req.on('data', (chunk) => {
       data += chunk;
-      if (data.length > 5_000_000) reject(Object.assign(new Error('Body too large'), { status: 413 }));
+      if (data.length > 5_000_000)
+        reject(Object.assign(new Error('Body too large'), { status: 413 }));
     });
     req.on('end', () => resolve(data));
     req.on('error', reject);

@@ -48,7 +48,13 @@ export class EntraService {
       auth: {
         clientId: this.config.clientId!,
         authority: `https://login.microsoftonline.com/${this.config.tenantId}`,
-        redirectUri: window.location.origin,
+        // The editor route, not the bare origin, and for a structural reason:
+        // MSAL only processes a redirect where it is initialised, and it is
+        // initialised by the editor — which is lazy, so that MSAL stays out of
+        // every reader's initial bundle. Returning to `/` would land on a page
+        // that never calls handleRedirectPromise, leaving the sign-in half-done
+        // with a code stranded in the URL. Register this exact path in Entra.
+        redirectUri: `${window.location.origin}/_editor`,
       },
       cache: {
         cacheLocation: 'sessionStorage',

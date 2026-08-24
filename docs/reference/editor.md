@@ -18,22 +18,23 @@ and a live Markdown preview on the right.
   tree mirrors what readers see. Typing in the filter flattens it to matches.
 - **Reorder pages by dragging** them within their folder. The drop indicator
   shows where the page will land; releasing renumbers that folder's
-  `sidebar_position` values in tens and writes them into front matter. In
-  GitHub mode the rewrites are *staged*, so a whole reshuffle commits once.
+  `sidebar_position` values in tens and writes them into front matter. Online
+  the rewrites are _staged_, so a whole reshuffle commits once.
   A folder's own `index.md` stays pinned first and templates are not
   draggable.
 - **Edit** any `.md`, `.html` or `.scss` file under `docs/`, with
-  <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (GitHub)
+  <kbd>Ctrl</kbd>+<kbd>S</kbd> to save (local) or stage (online)
 - **Create** pages — type a path like `guide/deploying.md` and it is scaffolded
   with front matter, in the right section
 - **New from template** — a dedicated button with a submenu of everything in
   `docs/_templates/`; `{{title}}` and `{{date}}` tokens are filled in from the
   new file's name and today's date. Plain **+ New** stays a one-click blank page
 - **Delete** files — the ✕ on each file row (deletes immediately in local mode,
-  stages the deletion in GitHub mode)
-- **Batch commits** — in GitHub mode every save, creation and deletion is
-  *staged* (`M`/`A`/`D` badges in the file list, ↺ to undo one); the commit bar
-  publishes **all staged changes as a single commit**, with an optional message
+  stages the deletion online)
+- **Batch commits** — online, every save, creation and deletion is _staged_
+  (`M`/`A`/`D` badges in the file list, ↺ to undo one, click to diff it against
+  the branch); the commit bar publishes **all staged changes as a single
+  commit**, with an optional message
 - **Insert helper** — two ways in: the “+ Insert” menu on the toolbar, and an
   inline **+** that appears beside the caret whenever it rests on an empty
   line (and stays out of the way while you type). Both drop admonitions, code
@@ -42,22 +43,94 @@ and a live Markdown preview on the right.
 - **Preview while typing** — the right pane re-renders on every keystroke
 - **Jump to the real page** — the “View page” link opens the route the file
   publishes to
+- **Choose a branch, undo a change** — pick the branch you are editing, read
+  each pending change as a diff, and discard the ones you do not want, in every
+  mode. See [publishing from local mode](#publishing-from-local-mode) and
+  [branches and pull requests](#branches-and-pull-requests-online)
 
 Saving writes the file to disk, which means the normal pipeline takes over: the
 watcher re-renders the content, the dev server hot-reloads, and the change shows
 up in the real site seconds later.
 
-## Two backends, two strategies
+## Three backends, three strategies
 
-The editor picks its backend by where it is running:
+The editor offers every backend that is reachable, and it picks the first one:
 
-| Backend | When | What Save does |
-| --- | --- | --- |
-| **Local** | `npm start` is running (the file API on `127.0.0.1:4271`) | Writes the file to disk; you commit and push from your own editor or terminal, already authenticated with git |
-| **GitHub** | `github.repo` is set in `feastdocs.config.mjs` — the mode for the deployed site | Stages the change; **Commit** publishes everything staged as one commit, **authored by the connected GitHub user** |
+| Backend          | When                                                      | What Save does                                                                                                     |
+| ---------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Local**        | `npm start` is running (the file API on `127.0.0.1:4271`) | Writes the file to disk. Commit and push from the site itself, or from your own terminal — whichever you prefer    |
+| **Azure DevOps** | `azureDevOps` and `entra` are both configured             | Stages the change; **Publish** pushes it and opens a pull request, **authored by the signed-in Entra user**        |
+| **GitHub**       | `github.repo` is set in `feastdocs.config.mjs`            | Stages the change; **Commit** publishes everything staged as one commit, **authored by the connected GitHub user** |
 
-In development with both available, a Local/GitHub switch appears above the file
-list. Without either, the page explains what to set up instead of failing.
+Whenever more than one is available a switch appears above the file list — not
+only when a dev server is up, so a deployed site with both hosts configured
+reaches either. Without any of them, the page explains what to set up instead of
+failing.
+
+### Publishing from local mode
+
+A local save is a file on disk, so git sees it immediately — and the editor
+shows what git sees. Below the file list, **Pending changes** lists every
+modified, new and deleted file under `docs/`, each labelled the way an author
+would say it (_edited_, _new_, _deleted_, _renamed_):
+
+- **Click a file** to read its `git diff`, coloured by line. This is the patch
+  itself, so `+`/`-` are part of what you are reading.
+- **✕ discards the change** — a tracked file is restored from `HEAD`. A file git
+  has never seen has no version to go back to, so discarding it means deleting
+  it, and that asks a second time before it happens.
+- **The branch picker** checks out an existing branch, tracking `origin/<name>`
+  when it is not local yet. It refuses while `docs/` is modified, because git
+  would either carry your changes across or stop half-way.
+- **Publish** cuts a branch from an up-to-date default branch, commits the
+  changed files, pushes, and hands back a link that opens a pre-filled pull
+  request (GitHub and Azure DevOps remotes are both recognised).
+
+None of this replaces your terminal — it is the same repository, and `git
+status` agrees with the panel at all times. It exists so that a typo fixed in
+the browser does not have to become a context switch.
+
+### Signing in with Microsoft Entra ID
+
+Set [`entra`](/reference/configuration#entra) and
+[`azureDevOps`](/reference/configuration#azuredevops) and the editor offers
+Microsoft sign-in. The person at the keyboard gets a card, signs in, and lands
+back in the editor.
+
+What makes this worth the setup is attribution: the browser calls the Azure
+DevOps REST API with **that person's own token**, so the commit carries their
+name and the site holds no shared credential. Two scopes are requested at
+different times — signing in asks only for identity, and repository access is
+requested when something is about to be published, so a reader who never edits
+is never asked to consent to it.
+
+There is no backend to deploy. Azure DevOps answers a CORS preflight with
+`Access-Control-Allow-Origin: *` and permits the `authorization` header, so the
+page talks to it directly. Nothing here is secret: a public client has no secret
+to keep, which is why both configuration values are safe to commit.
+
+:::caution Register the editor route, not the origin
+The redirect URI must be `<origin>/_editor`. MSAL only completes a sign-in on a
+page that initialises it, and the editor is lazy-loaded so that MSAL stays out of
+every reader's first download — returning to `/` would leave the sign-in
+half-done.
+:::
+
+### Branches and pull requests, online
+
+Online modes stage changes rather than writing them, and the branch you are
+editing decides what publishing does:
+
+- On the **default branch**, publishing cuts a new branch and opens a pull
+  request. Protected default branches are the norm, so this is the only route
+  that works everywhere.
+- On **any other branch**, the commit is added to that branch — which is how a
+  review comment gets addressed without opening a second pull request for the
+  same work. If a pull request is already open for it, the editor links it.
+
+Each staged change can be read before it is sent: clicking it diffs the staged
+version against the branch, hunk by hunk. ↺ discards one and puts the branch's
+version back.
 
 ### Connecting GitHub
 
@@ -68,7 +141,7 @@ Two ways in, on the same connect screen:
   Cloudflare Pages Function shipped with the project (`functions/api/oauth/token.js`),
   so the OAuth client secret never touches the static bundle.
 - **Personal access token** — always available as a fallback: a fine-grained
-  token with *contents read and write* on the docs repository. Either way the
+  token with _contents read and write_ on the docs repository. Either way the
   token stays in the browser's localStorage and is sent only to `api.github.com`.
 
 To enable the sign-in button:
@@ -107,8 +180,8 @@ repository needs `repo`.
 
 ### Production never touches local files
 
-The local file API is probed only in development builds. On a deployed site the
-editor is GitHub-only — a visitor's own `npm start` on their machine is
+The local file API is probed only in development builds. On a deployed site only
+the online backends exist — a visitor's own `npm start` on their machine is
 invisible to it, so "saving" can never silently land on someone's local disk.
 
 ### Concurrent editing and conflicts
@@ -119,11 +192,11 @@ Several people can edit at the same time; what happens depends on the path:
   and the author merges locally. Nothing new to learn.
 - **Web commits are checked before they publish.** The editor remembers each
   file's blob SHA from when you read it. At commit time it compares every
-  staged file against the branch as it is *now* — if someone changed (or
+  staged file against the branch as it is _now_ — if someone changed (or
   created, or deleted) one of your files in the meantime, the commit is
   blocked and a panel lists each conflicted file with three choices:
   **Merge…** opens a hunk-by-hunk resolver — both versions diffed line by
-  line, each conflicting hunk resolved as *theirs*, *mine* or *both*, with
+  line, each conflicting hunk resolved as _theirs_, _mine_ or _both_, with
   shared lines shown as context; **Use theirs** drops your staged change and
   loads their version; **Keep mine** explicitly overwrites theirs. Nothing is
   ever overwritten silently.
@@ -208,10 +281,10 @@ editor, without ever appearing on the site.
 
 Two tokens are substituted at creation time:
 
-| Token | Becomes |
-| --- | --- |
+| Token       | Becomes                                                           |
+| ----------- | ----------------------------------------------------------------- |
 | `{{title}}` | The new file's name, humanised (`release-2-1.md` → "Release 2 1") |
-| `{{date}}` | Today's date, `YYYY-MM-DD` |
+| `{{date}}`  | Today's date, `YYYY-MM-DD`                                        |
 
 Every created page — blank or templated — is guaranteed to start with the
 `title` / `description` / `sidebar_position` front matter, so nothing shippable
