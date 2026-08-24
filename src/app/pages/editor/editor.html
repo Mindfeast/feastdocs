@@ -161,11 +161,22 @@
               </button>
             </span>
           }
+          <select
+            class="fd-editor__createfolder"
+            aria-label="Folder for the new file"
+            [value]="newFolder()"
+            (change)="newFolder.set($any($event.target).value)"
+          >
+            <option value="">docs/</option>
+            @for (folder of folderOptions(); track folder) {
+              <option [value]="folder" [selected]="folder === newFolder()">{{ folder }}/</option>
+            }
+          </select>
           <div class="fd-editor__create-row">
             <input
               type="text"
-              placeholder="guide/deploying.md"
-              aria-label="Path of the new file, relative to docs/"
+              placeholder="deploying.md"
+              aria-label="Name of the new file"
               [value]="newPath()"
               (input)="newPath.set($any($event.target).value)"
             />

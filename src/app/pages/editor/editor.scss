@@ -1027,3 +1027,25 @@
   color: var(--fd-text-subtle);
   font-size: 0.875rem;
 }
+
+// The folder picker sits beside the name box. It may hold hundreds of paths, so
+// it is allowed to shrink and truncate rather than push the name box out.
+.fd-editor__createfolder {
+  // Its own line. Three controls will not fit the sidebar's width, and the one
+  // that loses is the name box — the only one being typed into.
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius-sm);
+  background: var(--fd-surface-sunken);
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+
+  &:focus-visible {
+    border-color: var(--fd-accent);
+    outline: none;
+  }
+}

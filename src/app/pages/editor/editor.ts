@@ -190,6 +190,8 @@ export class Editor {
   protected readonly status = signal<Status>({ kind: 'idle' });
   protected readonly creating = signal(false);
   protected readonly newPath = signal('');
+  /** Folder the new file goes in; empty means docs/ itself. */
+  protected readonly newFolder = signal('');
   /** Path of the chosen template inside _templates/, or '' for a blank page. */
   protected readonly newTemplate = signal('');
   /** The "From template ▾" submenu. */
@@ -323,15 +325,38 @@ export class Editor {
   protected readonly dirty = computed(() => this.contentText() !== this.savedContent());
 
   /** Backend files plus staged creations; staged deletions stay listed, struck through. */
-  protected readonly visibleFiles = computed(() => {
+  private readonly allFiles = computed(() => {
     const staged = this.pending();
     const all = new Set(this.files());
     for (const [path, change] of staged) {
       if (change.kind === 'create') all.add(path);
     }
-    const list = [...all].sort();
+    return [...all].sort();
+  });
+
+  protected readonly visibleFiles = computed(() => {
+    const list = this.allFiles();
     const needle = this.filter().trim().toLowerCase();
     return needle ? list.filter((file) => file.toLowerCase().includes(needle)) : list;
+  });
+
+  /**
+   * Every folder that holds something, in sidebar order — the list behind the
+   * new-file picker. Built from the unfiltered set on purpose: the filter above
+   * narrows the tree you are reading, not the places you may write to.
+   */
+  protected readonly folderOptions = computed(() => {
+    const rank = new Map<string, number>();
+    for (const path of this.allFiles()) {
+      const order = this.orderOf(path);
+      let prefix = '';
+      for (const part of path.split('/').slice(0, -1)) {
+        prefix = prefix ? `${prefix}/${part}` : part;
+        const best = rank.get(prefix);
+        if (best === undefined || order < best) rank.set(prefix, order);
+      }
+    }
+    return [...rank.keys()].sort((a, b) => rank.get(a)! - rank.get(b)! || a.localeCompare(b));
   });
 
   protected pendingKind(path: string): Pending['kind'] | null {
@@ -607,11 +632,24 @@ export class Editor {
       return;
     }
     this.newTemplate.set('');
+    this.armFolder();
     this.creating.set(true);
+  }
+
+  /**
+   * Opens the picker on the folder of the file being edited. Somebody adding a
+   * page is almost always adding it beside the one they are looking at, and a
+   * site with hundreds of folders is a long list to hunt through otherwise.
+   */
+  private armFolder(): void {
+    const selected = this.selected();
+    const folder = selected === null ? '' : parentFolder(selected);
+    this.newFolder.set(this.folderOptions().includes(folder) ? folder : '');
   }
 
   /** A pick in the "From template" submenu opens the create form pre-armed. */
   protected startFromTemplate(template: string): void {
+    this.armFolder();
     this.newTemplate.set(template);
     this.templateMenuOpen.set(false);
     this.creating.set(true);
@@ -1200,8 +1238,12 @@ export class Editor {
       });
       return;
     }
-    const raw = this.newPath().trim().replace(/^\/+/, '');
-    if (!raw) return;
+    // The picker carries the folder, so the box only has to hold a name. A
+    // name typed with slashes in it still works and is taken as written.
+    const typed = this.newPath().trim().replace(/^\/+/, '');
+    if (!typed) return;
+    const folder = this.newFolder();
+    const raw = folder && !typed.includes('/') ? `${folder}/${typed}` : typed;
     const path = /\.(md|markdown|html|scss)$/i.test(raw) ? raw : `${raw}.md`;
 
     // Deepest allowed nesting: a section plus four category levels. The local
