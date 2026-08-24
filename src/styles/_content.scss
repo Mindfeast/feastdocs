@@ -194,10 +194,10 @@
 
   table {
     width: 100%;
-    // Auto layout sizes each table from its own content, so two tables on the
-    // same page put the same column in two different places. Fixed splits the
-    // width evenly and ignores content: every table lines up with every other.
-    table-layout: fixed;
+    // Auto layout on purpose: a column should be as wide as what it holds, so a
+    // row number or a duration stays narrow and the one long column takes the
+    // rest. The cost is that two tables size independently and the same column
+    // can land in different places on the same page.
     border-collapse: collapse;
     font-size: 0.9375rem;
   }
@@ -208,9 +208,8 @@
     border-bottom: 1px solid var(--fd-border);
     text-align: start;
     vertical-align: middle;
-    // A fixed column cannot grow for its content, so anything unbreakable —
-    // a long identifier, a URL — has to be allowed to break or it spills into
-    // the next cell.
+    // Without this one long unbreakable run — a path, a URL — sets the column's
+    // minimum width and squeezes every other column to nothing.
     overflow-wrap: anywhere;
   }
 
@@ -218,6 +217,9 @@
     background: var(--fd-surface-sunken);
     color: var(--fd-text-strong);
     font-weight: 650;
+    // Auto layout reserves width for a header it cannot wrap, which is what
+    // keeps a short column like "Rows" or "Time" on one line.
+    white-space: nowrap;
   }
 
   tr:last-child td {
@@ -377,4 +379,3 @@
     max-width: var(--fd-prose-max);
   }
 }
-
