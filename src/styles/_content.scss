@@ -194,6 +194,10 @@
 
   table {
     width: 100%;
+    // Auto layout sizes each table from its own content, so two tables on the
+    // same page put the same column in two different places. Fixed splits the
+    // width evenly and ignores content: every table lines up with every other.
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 0.9375rem;
   }
@@ -203,14 +207,17 @@
     padding: 0.55rem 0.85rem;
     border-bottom: 1px solid var(--fd-border);
     text-align: start;
-    vertical-align: top;
+    vertical-align: middle;
+    // A fixed column cannot grow for its content, so anything unbreakable —
+    // a long identifier, a URL — has to be allowed to break or it spills into
+    // the next cell.
+    overflow-wrap: anywhere;
   }
 
   th {
     background: var(--fd-surface-sunken);
     color: var(--fd-text-strong);
     font-weight: 650;
-    white-space: nowrap;
   }
 
   tr:last-child td {
