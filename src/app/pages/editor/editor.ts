@@ -369,10 +369,20 @@ export class Editor {
       files: string[];
     }
     const root: Node = { folders: new Map(), files: [] };
+    // A folder ranks with the first page a reader would meet inside it, so the
+    // tree follows the sidebar rather than the alphabet. It matters most where
+    // the folder names are dates: sorted by name, a releases folder reads
+    // 2022 before 2026 and its months run apr, aug, dec.
+    const folderRank = new Map<string, number>();
     for (const path of files) {
       const parts = path.split('/');
+      const rank = this.orderOf(path);
       let node = root;
+      let prefix = '';
       for (const folder of parts.slice(0, -1)) {
+        prefix = prefix ? `${prefix}/${folder}` : folder;
+        const best = folderRank.get(prefix);
+        if (best === undefined || rank < best) folderRank.set(prefix, rank);
         let child = node.folders.get(folder);
         if (!child) {
           child = { folders: new Map(), files: [] };
@@ -386,7 +396,13 @@ export class Editor {
     const expanded = this.expandedFolders();
     const rows: TreeRow[] = [];
     const walk = (node: Node, prefix: string, depth: number): void => {
-      for (const name of [...node.folders.keys()].sort()) {
+      const names = [...node.folders.keys()].sort((a, b) => {
+        const key = (name: string) => (prefix ? `${prefix}/${name}` : name);
+        const ra = folderRank.get(key(a)) ?? Number.MAX_SAFE_INTEGER;
+        const rb = folderRank.get(key(b)) ?? Number.MAX_SAFE_INTEGER;
+        return ra - rb || a.localeCompare(b);
+      });
+      for (const name of names) {
         const path = prefix ? `${prefix}/${name}` : name;
         const isExpanded = filtering || expanded.has(path);
         rows.push({ kind: 'folder', name, path, depth, expanded: isExpanded, draggable: false });
@@ -420,10 +436,13 @@ export class Editor {
   }
 
   /** Sidebar order, with any reorder from this session applied on top. */
+  /** A page's place in the sidebar: a drag this session wins over the build. */
+  private orderOf(path: string): number {
+    return this.orderOverride().get(path) ?? this.baseOrder.get(path) ?? Number.MAX_SAFE_INTEGER;
+  }
+
   private sortSiblings(paths: readonly string[]): readonly string[] {
-    const override = this.orderOverride();
-    const rank = (path: string) => override.get(path) ?? this.baseOrder.get(path) ?? Number.MAX_SAFE_INTEGER;
-    return [...paths].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+    return [...paths].sort((a, b) => this.orderOf(a) - this.orderOf(b) || a.localeCompare(b));
   }
 
   /**
