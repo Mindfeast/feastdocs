@@ -42,8 +42,10 @@ interface GitStatus {
   readonly remote: string | null;
   readonly hasRemote: boolean;
   readonly changed: readonly GitChange[];
-  readonly stagedCount: number;
-  readonly unstagedCount: number;
+  // Optional on purpose: a dev server older than this page omits them, and that
+  // is a state the panel has to be able to recognise rather than mis-render.
+  readonly stagedCount?: number;
+  readonly unstagedCount?: number;
   /** null until the branch has been pushed once. */
   readonly upstream: string | null;
   readonly ahead: number;
@@ -1258,6 +1260,21 @@ export class Editor {
    * is what the pressed button shows while it waits.
    */
   protected readonly busy = signal<string | null>(null);
+
+  /**
+   * True when the dev server is older than this page.
+   *
+   * `ng serve` reloads the browser on a source change; the API is part of the
+   * `npm start` process and is not reloaded, so a session started before these
+   * endpoints existed serves the old status shape — no `staged` flags, no
+   * upstream. Both lists then come out empty, which looks exactly like a clean
+   * working copy and is the most misleading thing the panel could show. So say
+   * it instead.
+   */
+  protected readonly scmStale = computed(() => {
+    const info = this.git();
+    return info !== null && info.stagedCount === undefined;
+  });
 
   protected readonly stagedChanges = computed(() =>
     (this.git()?.changed ?? []).filter((change) => change.staged),
