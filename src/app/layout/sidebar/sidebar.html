@@ -41,7 +41,7 @@
       />
     </div>
 
-    <nav class="fd-sidebar__nav">
+    <nav class="fd-sidebar__nav" #tree>
       @if (hasResults()) {
         <ul class="fd-sidebar__list">
           @for (row of rows(); track row.key) {

@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -39,6 +48,9 @@ export class Sidebar {
   private readonly router = inject(Router);
 
   protected readonly filterText = signal('');
+  private readonly tree = viewChild<ElementRef<HTMLElement>>('tree');
+  /** Slug the tree was last scrolled to, so a re-render does not fight scrolling. */
+  private revealed: string | null = null;
   /** Categories pinned open by `expand: 'always'`; filled by readCollapsed. */
   private readonly locked = new Set<string>();
   private readonly collapsed = signal<ReadonlySet<string>>(this.readCollapsed());
@@ -79,6 +91,27 @@ export class Sidebar {
     for (const section of this.content.sections) {
       this.indexAncestors(section.items, '', []);
     }
+
+    // A filter is a way of finding one page, so it has served its purpose the
+    // moment one is opened. Leaving it on strands the reader in a flat list of
+    // matches, with no way to see what sits around the page they just chose.
+    effect(() => {
+      this.currentSlug();
+      this.filterText.set('');
+    });
+
+    // Bring the open page's row into view. It has just been revealed from a
+    // filter or a closed branch, so it is often outside the scrolled area.
+    afterRenderEffect(() => {
+      const slug = this.currentSlug();
+      // Read the rows so this runs again once the row for `slug` exists.
+      this.rows();
+      if (slug === this.revealed) return;
+      const row = this.tree()?.nativeElement.querySelector('.fd-sidebar__link--active');
+      if (!row) return;
+      this.revealed = slug;
+      row.scrollIntoView({ block: 'nearest' });
+    });
 
     // Reveal the active page's branch, without fighting a manual collapse of a
     // branch the reader isn't currently in.
