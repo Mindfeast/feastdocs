@@ -439,11 +439,26 @@
               Publish {{ pendingCount() }} change{{ pendingCount() === 1 ? '' : 's' }}…
             </button>
           }
+          @if (mode() === 'local' && git()) {
+            <button
+              type="button"
+              class="fd-button fd-button--ghost"
+              [class.is-active]="scmOpen()"
+              [attr.aria-expanded]="scmOpen()"
+              (click)="toggleScm()"
+            >
+              Source control
+              @if (changedCount() > 0) {
+                <span>{{ changedCount() }}</span>
+              }
+            </button>
+          }
           @if (mode() === 'local' && changedCount() > 0) {
             <button
               type="button"
               class="fd-button fd-button--commit"
               [class.fd-button--ghost]="publishOpen()"
+              title="Branch, commit, push and open a pull request in one step"
               (click)="togglePublish()"
             >
               Publish {{ changedCount() }} change{{ changedCount() === 1 ? '' : 's' }}…
@@ -538,90 +553,335 @@
         </ul>
       }
 
-      @if (mode() === 'local' && publishOpen()) {
-        <div class="fd-editor__stagebar fd-editor__publishbar">
-          @if (git(); as info) {
-            <span class="fd-editor__stagecount">
-              {{ changedCount() }} file{{ changedCount() === 1 ? '' : 's' }} changed on
-              <strong>{{ info.branch }}</strong>
-            </span>
-            <input
-              type="text"
-              placeholder="Branch name"
-              aria-label="Branch name"
-              [value]="publishBranch()"
-              (input)="publishBranch.set($any($event.target).value)"
-            />
-            <input
-              type="text"
-              placeholder="Commit message"
-              aria-label="Commit message"
-              [value]="publishMessage()"
-              (input)="publishMessage.set($any($event.target).value)"
-            />
-            <button
-              type="button"
-              class="fd-button fd-button--commit"
-              [disabled]="
-                publishing() || publishBranch().trim() === '' || publishMessage().trim() === ''
-              "
-              (click)="publish()"
-            >
-              {{ publishing() ? 'Publishing…' : 'Branch, commit and push' }}
-            </button>
-          }
-        </div>
-
-        <!-- Pending changes: what is about to be committed, by name, each one
-             readable and reversible. A count alone is not reviewable, and a save
-             you cannot undo is worse than no save button. -->
-        @if (git(); as info) {
-          <ul class="fd-editor__pending">
-            @for (change of info.changed; track change.file) {
-              <li>
-                <span class="fd-editor__pendingkind" [attr.data-status]="change.status">
-                  {{ changeLabel(change.status) }}
-                </span>
-                <button
-                  type="button"
-                  class="fd-editor__pendingpath"
-                  [attr.aria-expanded]="localDiff()?.file === change.file"
-                  (click)="diffLocal(change.file)"
-                >
-                  <code>{{ change.file }}</code>
-                </button>
-                <button
-                  type="button"
-                  class="fd-editor__pendingdiscard"
-                  title="Discard changes to this file"
-                  aria-label="Discard changes to this file"
-                  (click)="discardLocal(change.file, $event)"
-                >
-                  ✕
-                </button>
-              </li>
-
-              @if (localDiff(); as diff) {
-                @if (diff.file === change.file) {
-                  <li class="fd-editor__diff">
-                    @if (diff.lines.length === 0) {
-                      <p class="fd-editor__diffempty">No line changes.</p>
-                    } @else {
-                      <pre><code>@for (line of diff.lines; track $index) {<span
-                        class="fd-editor__diffrow"
-                        [class.is-add]="line.kind === 'add'"
-                        [class.is-remove]="line.kind === 'remove'"
-                        [class.is-meta]="line.kind === 'meta'"
-                      >{{ line.text }}
-</span>}</code></pre>
-                    }
-                  </li>
-                }
-              }
+      @if (mode() === 'local' && (publishOpen() || scmOpen())) {
+        @if (publishOpen()) {
+          <div class="fd-editor__stagebar fd-editor__publishbar">
+            @if (git(); as info) {
+              <span class="fd-editor__stagecount">
+                {{ changedCount() }} file{{ changedCount() === 1 ? '' : 's' }} changed on
+                <strong>{{ info.branch }}</strong>
+              </span>
+              <input
+                type="text"
+                placeholder="Branch name"
+                aria-label="Branch name"
+                [value]="publishBranch()"
+                (input)="publishBranch.set($any($event.target).value)"
+              />
+              <input
+                type="text"
+                placeholder="Commit message"
+                aria-label="Commit message"
+                [value]="publishMessage()"
+                (input)="publishMessage.set($any($event.target).value)"
+              />
+              <button
+                type="button"
+                class="fd-button fd-button--commit"
+                [disabled]="
+                  publishing() || publishBranch().trim() === '' || publishMessage().trim() === ''
+                "
+                (click)="publish()"
+              >
+                {{ publishing() ? 'Publishing…' : 'Branch, commit and push' }}
+              </button>
             }
-          </ul>
+          </div>
         }
 
+        <!--
+          Source control. The working copy as git reports it, split the way git
+          splits it: what is staged, what is not, and what has been committed but
+          not pushed. A count alone is not reviewable, and a save you cannot undo
+          is worse than no save button.
+        -->
+        @if (scmOpen() && git(); as info) {
+          <div class="fd-editor__scm">
+            <div class="fd-editor__scmbar">
+              <span class="fd-editor__scmbranch">
+                <span aria-hidden="true">⎇</span>
+                <strong>{{ info.branch }}</strong>
+                @if (info.branch === info.defaultBranch) {
+                  <em class="fd-editor__scmwarn">protected</em>
+                }
+                @if (info.upstream) {
+                  <span class="fd-editor__scmcount" [title]="'Ahead of / behind ' + info.upstream">
+                    ↑{{ info.ahead }} ↓{{ info.behind }}
+                  </span>
+                } @else {
+                  <span class="fd-editor__scmcount" title="This branch has never been pushed">
+                    not pushed
+                  </span>
+                }
+              </span>
+
+              @if (localBranches().length > 0) {
+                <select
+                  aria-label="Switch branch"
+                  [disabled]="switchingBranch() || busy() !== null"
+                  [value]="info.branch"
+                  (change)="switchLocalBranch($any($event.target).value)"
+                >
+                  @for (branch of localBranches(); track branch) {
+                    <option [value]="branch">{{ branch }}</option>
+                  }
+                </select>
+              }
+
+              <input
+                type="text"
+                placeholder="New branch…"
+                aria-label="New branch name"
+                [value]="newBranch()"
+                (input)="newBranch.set($any($event.target).value)"
+                (keydown.enter)="createLocalBranch()"
+              />
+              <button
+                type="button"
+                class="fd-button fd-button--ghost"
+                [disabled]="newBranch().trim() === '' || busy() !== null"
+                (click)="createLocalBranch()"
+              >
+                {{ busy() === 'New branch' ? 'Creating…' : 'Create' }}
+              </button>
+
+              <button
+                type="button"
+                class="fd-button fd-button--ghost"
+                [disabled]="busy() !== null || !info.hasRemote"
+                [attr.title]="
+                  info.hasRemote ? 'Fetch, and fast-forward if possible' : 'No origin is configured'
+                "
+                (click)="syncLocal()"
+              >
+                {{ busy() === 'Sync' ? 'Syncing…' : 'Sync ↻' }}
+              </button>
+            </div>
+
+            <!-- The message first: it is what the two commit buttons act on. -->
+            <div class="fd-editor__scmcommit">
+              <textarea
+                rows="2"
+                placeholder="Commit message"
+                aria-label="Commit message"
+                [value]="commitText()"
+                (input)="commitText.set($any($event.target).value)"
+              ></textarea>
+              <span class="fd-editor__scmactions">
+                <button
+                  type="button"
+                  class="fd-button fd-button--commit"
+                  [disabled]="
+                    commitText().trim() === '' || info.stagedCount === 0 || busy() !== null
+                  "
+                  [attr.title]="info.stagedCount === 0 ? 'Nothing is staged' : null"
+                  (click)="commitLocal(false)"
+                >
+                  {{ busy() === 'Commit' ? 'Committing…' : 'Commit staged' }}
+                </button>
+                <button
+                  type="button"
+                  class="fd-button"
+                  [disabled]="
+                    commitText().trim() === '' || info.changed.length === 0 || busy() !== null
+                  "
+                  title="Stage everything under docs, then commit"
+                  (click)="commitLocal(true)"
+                >
+                  {{ busy() === 'Commit all' ? 'Committing…' : 'Commit all' }}
+                </button>
+                <button
+                  type="button"
+                  class="fd-button fd-button--ghost"
+                  [disabled]="busy() !== null || !info.hasRemote"
+                  (click)="pushLocal()"
+                >
+                  {{ busy() === 'Push' ? 'Pushing…' : 'Push' }}
+                  @if (info.ahead > 0) {
+                    <span>↑{{ info.ahead }}</span>
+                  }
+                </button>
+              </span>
+            </div>
+
+            @if (stagedChanges().length > 0) {
+              <div class="fd-editor__scmgroup">
+                <h3 class="fd-editor__scmhead">
+                  Staged changes <span>{{ stagedChanges().length }}</span>
+                  <button
+                    type="button"
+                    class="fd-editor__scmbulk"
+                    [disabled]="busy() !== null"
+                    (click)="unstageFiles(stagedChanges().map((change) => change.file))"
+                  >
+                    Unstage all
+                  </button>
+                </h3>
+                <ul class="fd-editor__pending">
+                  @for (change of stagedChanges(); track change.file) {
+                    <li>
+                      <span class="fd-editor__pendingkind" [attr.data-status]="change.status">
+                        {{ changeLabel(change.status) }}
+                      </span>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingpath"
+                        [attr.aria-expanded]="localDiff()?.file === change.file"
+                        (click)="diffLocal(change.file)"
+                      >
+                        <code>{{ change.file }}</code>
+                      </button>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingdiscard"
+                        title="Unstage"
+                        aria-label="Unstage this file"
+                        [disabled]="busy() !== null"
+                        (click)="unstageFiles([change.file])"
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingdiscard"
+                        title="Discard changes to this file"
+                        aria-label="Discard changes to this file"
+                        (click)="discardLocal(change.file, $event)"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (unstagedChanges().length > 0) {
+              <div class="fd-editor__scmgroup">
+                <h3 class="fd-editor__scmhead">
+                  Changes <span>{{ unstagedChanges().length }}</span>
+                  <button
+                    type="button"
+                    class="fd-editor__scmbulk"
+                    [disabled]="busy() !== null"
+                    (click)="stageFiles(unstagedChanges().map((change) => change.file))"
+                  >
+                    Stage all
+                  </button>
+                  <button
+                    type="button"
+                    class="fd-editor__scmbulk"
+                    [disabled]="busy() !== null"
+                    (click)="discardAllLocal()"
+                  >
+                    Discard all
+                  </button>
+                </h3>
+                <ul class="fd-editor__pending">
+                  @for (change of unstagedChanges(); track change.file) {
+                    <li>
+                      <span class="fd-editor__pendingkind" [attr.data-status]="change.status">
+                        {{ changeLabel(change.status) }}
+                      </span>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingpath"
+                        [attr.aria-expanded]="localDiff()?.file === change.file"
+                        (click)="diffLocal(change.file)"
+                      >
+                        <code>{{ change.file }}</code>
+                      </button>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingdiscard"
+                        title="Stage"
+                        aria-label="Stage this file"
+                        [disabled]="busy() !== null"
+                        (click)="stageFiles([change.file])"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        class="fd-editor__pendingdiscard"
+                        title="Discard changes to this file"
+                        aria-label="Discard changes to this file"
+                        (click)="discardLocal(change.file, $event)"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (info.changed.length === 0) {
+              <p class="fd-editor__scmempty">No changes under <code>docs/</code>.</p>
+            }
+
+            <!-- One diff area rather than one per row: the pane is full width, so
+                 a patch is actually readable here. -->
+            @if (localDiff(); as diff) {
+              <div class="fd-editor__scmdiff">
+                <h3 class="fd-editor__scmhead">
+                  <code>{{ diff.file }}</code>
+                  <button type="button" class="fd-editor__scmbulk" (click)="localDiff.set(null)">
+                    Close
+                  </button>
+                </h3>
+                @if (diff.lines.length === 0) {
+                  <p class="fd-editor__diffempty">No line changes.</p>
+                } @else {
+                  <pre><code>@for (line of diff.lines; track $index) {<span
+                    class="fd-editor__diffrow"
+                    [class.is-add]="line.kind === 'add'"
+                    [class.is-remove]="line.kind === 'remove'"
+                    [class.is-meta]="line.kind === 'meta'"
+                  >{{ line.text }}
+</span>}</code></pre>
+                }
+              </div>
+            }
+
+            @if (commits().length > 0) {
+              <div class="fd-editor__scmgroup">
+                <h3 class="fd-editor__scmhead">
+                  Recent commits
+                  <button
+                    type="button"
+                    class="fd-editor__scmbulk"
+                    [disabled]="busy() !== null"
+                    title="Put the last commit back into staging"
+                    (click)="undoLastCommit()"
+                  >
+                    {{ busy() === 'Undo' ? 'Undoing…' : 'Undo last commit' }}
+                  </button>
+                </h3>
+                <ul class="fd-editor__scmlog">
+                  @for (entry of commits(); track entry.sha) {
+                    <li>
+                      <code>{{ entry.sha }}</code>
+                      <span class="fd-editor__scmsubject">{{ entry.subject }}</span>
+                      @if (!entry.pushed) {
+                        <em class="fd-editor__scmwarn">not pushed</em>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (scmNote(); as note) {
+              <p class="fd-editor__publishnote">
+                {{ note }}
+                @if (scmLink(); as url) {
+                  <a [href]="url" target="_blank" rel="noopener">Open the pull request ↗</a>
+                }
+              </p>
+            }
+          </div>
+        }
         @if (publishError(); as message) {
           <p class="fd-editor__publishnote fd-editor__error">{{ message }}</p>
         }

@@ -7,9 +7,18 @@ import {
   status as gitStatus,
   publish as gitPublish,
   discard as gitDiscard,
+  discardAll as gitDiscardAll,
   diff as gitDiff,
   switchBranch as gitSwitchBranch,
   listBranches as gitListBranches,
+  createBranch as gitCreateBranch,
+  stage as gitStage,
+  unstage as gitUnstage,
+  commit as gitCommit,
+  push as gitPush,
+  sync as gitSync,
+  log as gitLog,
+  undoLastCommit as gitUndoLastCommit,
 } from './lib/editor-git.mjs';
 
 export const EDITOR_API_PORT = 4271;
@@ -114,6 +123,61 @@ export function startEditorApi({ docsRoot, port = EDITOR_API_PORT }) {
       if (url.pathname === '/api/git/switch' && req.method === 'POST') {
         const body = JSON.parse(await readBody(req));
         const result = await gitSwitchBranch({ docsRoot, branch: body.branch });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      /*
+       * The rest of a version-control panel, one step per endpoint. `publish`
+       * above stays as it is — it is the shortcut, and most edits want it — but
+       * staging half of what changed, or adding a commit to a branch that already
+       * has a pull request open, needs the steps taken separately.
+       */
+      if (url.pathname === '/api/git/stage' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitStage({ docsRoot, files: body.files });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/unstage' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitUnstage({ docsRoot, files: body.files });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/discard-all' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitDiscardAll({ docsRoot, allowDelete: body.allowDelete === true });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/commit' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitCommit({
+          docsRoot,
+          message: body.message,
+          stageAll: body.stageAll === true,
+        });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/push' && req.method === 'POST') {
+        const result = await gitPush();
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/sync' && req.method === 'POST') {
+        const result = await gitSync();
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/create-branch' && req.method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const result = await gitCreateBranch({
+          branch: body.branch,
+          fromDefault: body.fromDefault !== false,
+        });
+        return json(res, result.ok ? 200 : 400, result);
+      }
+      if (url.pathname === '/api/git/log' && req.method === 'GET') {
+        return json(res, 200, await gitLog({ limit: url.searchParams.get('limit') ?? 12 }));
+      }
+      // Undoing a commit the remote already has would rewrite shared history, so
+      // the module refuses that case rather than leaving it to the caller.
+      if (url.pathname === '/api/git/undo' && req.method === 'POST') {
+        const result = await gitUndoLastCommit();
         return json(res, result.ok ? 200 : 400, result);
       }
       json(res, 404, { error: 'Not found' });

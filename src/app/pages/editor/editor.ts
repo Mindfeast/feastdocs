@@ -23,6 +23,16 @@ import { diffLines, type DiffHunk } from './line-diff';
 
 const LOCAL_API = 'http://127.0.0.1:4271/api';
 
+/** One changed file, as git reports it: the index column and the worktree one. */
+interface GitChange {
+  readonly status: string;
+  readonly file: string;
+  readonly index: string;
+  readonly worktree: string;
+  readonly staged: boolean;
+  readonly unstaged: boolean;
+}
+
 /** Shape returned by the dev server's /api/git/status. */
 interface GitStatus {
   readonly git: boolean;
@@ -31,8 +41,23 @@ interface GitStatus {
   readonly onDefaultBranch: boolean;
   readonly remote: string | null;
   readonly hasRemote: boolean;
-  readonly changed: readonly { readonly status: string; readonly file: string }[];
+  readonly changed: readonly GitChange[];
+  readonly stagedCount: number;
+  readonly unstagedCount: number;
+  /** null until the branch has been pushed once. */
+  readonly upstream: string | null;
+  readonly ahead: number;
+  readonly behind: number;
   readonly suggestedBranch: string;
+}
+
+/** One entry in the recent-commits list. */
+interface GitCommit {
+  readonly sha: string;
+  readonly subject: string;
+  readonly author: string;
+  readonly date: string;
+  readonly pushed: boolean;
 }
 
 /** Shape returned by the dev server's /api/git/publish. */
@@ -1207,6 +1232,234 @@ export class Editor {
     }
   }
 
+  /* ---- local: the source-control panel --------------------------------- */
+
+  /**
+   * The steps of a commit, taken one at a time.
+   *
+   * `publish()` below is still the shortcut — branch, commit, push, pull request
+   * in one press — and most edits want exactly that. This is for the edits that
+   * do not fit the shortcut: staging half of what changed, adding a commit to a
+   * branch whose pull request is already open, pushing later, undoing a commit
+   * that went out with the wrong message.
+   */
+  protected readonly scmOpen = signal(false);
+  protected readonly commits = signal<readonly GitCommit[]>([]);
+  protected readonly commitText = signal('');
+  protected readonly newBranch = signal('');
+  protected readonly scmNote = signal<string | null>(null);
+  protected readonly scmLink = signal<string | null>(null);
+
+  /**
+   * Which action is in flight, by name.
+   *
+   * One signal rather than one per button: these all touch the same repository,
+   * so letting two run at once would mean a push racing a branch switch. The name
+   * is what the pressed button shows while it waits.
+   */
+  protected readonly busy = signal<string | null>(null);
+
+  protected readonly stagedChanges = computed(() =>
+    (this.git()?.changed ?? []).filter((change) => change.staged),
+  );
+  protected readonly unstagedChanges = computed(() =>
+    (this.git()?.changed ?? []).filter((change) => change.unstaged),
+  );
+
+  protected async toggleScm(): Promise<void> {
+    const open = !this.scmOpen();
+    this.scmOpen.set(open);
+    if (!open) return;
+    this.scmNote.set(null);
+    this.publishError.set(null);
+    await this.refreshGit();
+    await this.refreshLocalBranches();
+    await this.refreshCommits();
+  }
+
+  /** One place for "which button is waiting" and for turning a 400 into a sentence. */
+  private async run<T>(label: string, call: () => Promise<T>): Promise<T | null> {
+    if (this.busy() !== null) return null;
+    this.busy.set(label);
+    this.publishError.set(null);
+    this.scmNote.set(null);
+    this.scmLink.set(null);
+    try {
+      return await call();
+    } catch (error) {
+      this.publishError.set(describe(error, `${label} failed`));
+      return null;
+    } finally {
+      this.busy.set(null);
+    }
+  }
+
+  private async refreshCommits(): Promise<void> {
+    if (this.mode() !== 'local' || !this.localAvailable()) return;
+    try {
+      const result = await firstValueFrom(
+        this.http.get<{ commits: GitCommit[] }>(`${LOCAL_API}/git/log`, { params: { limit: 8 } }),
+      );
+      this.commits.set(result.commits);
+    } catch {
+      this.commits.set([]);
+    }
+  }
+
+  protected async stageFiles(files: readonly string[]): Promise<void> {
+    if (files.length === 0) return;
+    const done = await this.run('Stage', () =>
+      firstValueFrom(this.http.post(`${LOCAL_API}/git/stage`, { files })),
+    );
+    if (done !== null) await this.refreshGit();
+  }
+
+  protected async unstageFiles(files: readonly string[]): Promise<void> {
+    if (files.length === 0) return;
+    const done = await this.run('Unstage', () =>
+      firstValueFrom(this.http.post(`${LOCAL_API}/git/unstage`, { files })),
+    );
+    if (done !== null) await this.refreshGit();
+  }
+
+  /**
+   * Discards everything under the docs folder.
+   *
+   * The same two-step as discarding one file, for the same reason: new files can
+   * only be deleted, and the count of them is what makes the difference worth
+   * asking about.
+   */
+  protected async discardAllLocal(): Promise<void> {
+    if (!confirm('Discard every change under docs?')) return;
+    const send = (allowDelete: boolean) =>
+      firstValueFrom(
+        this.http.post<{ restored?: number; deleted?: number }>(`${LOCAL_API}/git/discard-all`, {
+          allowDelete,
+        }),
+      );
+    let result = await this.run('Discard all', () => send(false));
+    if (result === null) {
+      const message = this.publishError() ?? '';
+      if (!/new file/.test(message)) return;
+      if (!confirm(`${message} Continue?`)) return;
+      result = await this.run('Discard all', () => send(true));
+      if (result === null) return;
+    }
+    this.localDiff.set(null);
+    this.scmNote.set(
+      `Discarded ${result.restored ?? 0} change(s)` +
+        (result.deleted ? `, deleted ${result.deleted} new file(s)` : ''),
+    );
+    await this.refreshGit();
+    await this.refreshFiles();
+    const path = this.selected();
+    if (path && !this.files().includes(path)) this.selected.set(null);
+    else if (path) await this.open(path);
+  }
+
+  /** Commits what is staged — or everything, which is what most edits want. */
+  protected async commitLocal(stageAll: boolean): Promise<void> {
+    const message = this.commitText().trim();
+    if (message === '') return;
+    const result = await this.run(stageAll ? 'Commit all' : 'Commit', () =>
+      firstValueFrom(
+        this.http.post<{ commit: string; files: number; warning: string | null }>(
+          `${LOCAL_API}/git/commit`,
+          { message, stageAll },
+        ),
+      ),
+    );
+    if (result === null) return;
+    this.commitText.set('');
+    this.localDiff.set(null);
+    this.scmNote.set(
+      `Committed ${result.files} file(s) as ${result.commit}. ` +
+        (result.warning ?? 'Push it when you are ready.'),
+    );
+    await this.refreshGit();
+    await this.refreshCommits();
+  }
+
+  protected async pushLocal(): Promise<void> {
+    const result = await this.run('Push', () =>
+      firstValueFrom(
+        this.http.post<{ branch: string; pullRequestUrl: string | null }>(
+          `${LOCAL_API}/git/push`,
+          {},
+        ),
+      ),
+    );
+    if (result === null) return;
+    this.scmNote.set(`Pushed ${result.branch}.`);
+    this.scmLink.set(result.pullRequestUrl);
+    await this.refreshGit();
+    await this.refreshCommits();
+  }
+
+  /**
+   * Fetches, and fast-forwards when nothing local is in the way.
+   *
+   * A branch that moved on both sides needs a merge or a rebase, and the dev
+   * server deliberately refuses to pick one — so the note says so rather than
+   * pretending the sync worked.
+   */
+  protected async syncLocal(): Promise<void> {
+    const result = await this.run('Sync', () =>
+      firstValueFrom(
+        this.http.post<{ pulled: boolean; ahead: number; behind: number; note?: string }>(
+          `${LOCAL_API}/git/sync`,
+          {},
+        ),
+      ),
+    );
+    if (result === null) return;
+    this.scmNote.set(
+      result.note ??
+        (result.pulled ? 'Fast-forwarded to the latest.' : 'Fetched — already up to date.'),
+    );
+    await this.refreshGit();
+    await this.refreshCommits();
+    if (result.pulled) await this.refreshFiles();
+  }
+
+  /** Creates a branch from the default branch and moves the current work onto it. */
+  protected async createLocalBranch(): Promise<void> {
+    const branch = this.newBranch().trim();
+    if (branch === '') return;
+    const result = await this.run('New branch', () =>
+      firstValueFrom(
+        this.http.post<{ branch: string; base: string }>(`${LOCAL_API}/git/create-branch`, {
+          branch,
+        }),
+      ),
+    );
+    if (result === null) return;
+    this.newBranch.set('');
+    this.scmNote.set(`On ${result.branch}, taken from ${result.base}.`);
+    await this.refreshGit();
+    await this.refreshLocalBranches();
+    await this.refreshCommits();
+  }
+
+  /**
+   * Puts the last commit back into staging, message and all.
+   *
+   * Refused for a commit the remote already has: undoing that would rewrite
+   * history other people have pulled. The dev server decides that, not this.
+   */
+  protected async undoLastCommit(): Promise<void> {
+    if (!confirm('Undo the last commit? The changes stay staged.')) return;
+    const result = await this.run('Undo', () =>
+      firstValueFrom(this.http.post<{ message: string }>(`${LOCAL_API}/git/undo`, {})),
+    );
+    if (result === null) return;
+    // The message comes back so it can be corrected and used again, which is
+    // usually the whole reason for undoing.
+    if (this.commitText().trim() === '') this.commitText.set((result.message ?? '').trim());
+    this.scmNote.set('Undone — the changes are staged again.');
+    await this.refreshGit();
+    await this.refreshCommits();
+  }
   protected togglePublish(): void {
     const open = !this.publishOpen();
     this.publishOpen.set(open);

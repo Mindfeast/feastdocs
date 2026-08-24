@@ -45,7 +45,7 @@ and a live Markdown preview on the right.
   publishes to
 - **Choose a branch, undo a change** — pick the branch you are editing, read
   each pending change as a diff, and discard the ones you do not want, in every
-  mode. See [publishing from local mode](#publishing-from-local-mode) and
+  mode. See [source control](#source-control-in-local-mode) and
   [branches and pull requests](#branches-and-pull-requests-online)
 
 Saving writes the file to disk, which means the normal pipeline takes over: the
@@ -67,28 +67,59 @@ only when a dev server is up, so a deployed site with both hosts configured
 reaches either. Without any of them, the page explains what to set up instead of
 failing.
 
-### Publishing from local mode
+### Source control, in local mode
 
-A local save is a file on disk, so git sees it immediately — and the editor
-shows what git sees. Below the file list, **Pending changes** lists every
-modified, new and deleted file under `docs/`, each labelled the way an author
-would say it (_edited_, _new_, _deleted_, _renamed_):
+A local save is a file on disk, so git sees it immediately — and **Source
+control** in the toolbar shows what git sees, split the way git splits it. It is
+the same repository your terminal is looking at; `git status` and this panel never
+disagree.
 
-- **Click a file** to read its `git diff`, coloured by line. This is the patch
+**Staged changes** and **Changes** list the files under `docs/`, each labelled the
+way an author would say it (_edited_, _new_, _deleted_, _renamed_):
+
+- **+ stages a file**, **− unstages it**, and **Stage all** / **Unstage all** do
+  the group. Unstaging a newly added file leaves the file alone — it goes back to
+  being untracked rather than disappearing.
+- **Click a file** to read its `git diff`, coloured by line. It is the patch
   itself, so `+`/`-` are part of what you are reading.
 - **✕ discards the change** — a tracked file is restored from `HEAD`. A file git
-  has never seen has no version to go back to, so discarding it means deleting
-  it, and that asks a second time before it happens.
-- **The branch picker** checks out an existing branch, tracking `origin/<name>`
-  when it is not local yet. It refuses while `docs/` is modified, because git
-  would either carry your changes across or stop half-way.
-- **Publish** cuts a branch from an up-to-date default branch, commits the
-  changed files, pushes, and hands back a link that opens a pre-filled pull
-  request (GitHub and Azure DevOps remotes are both recognised).
+  has never seen has no version to go back to, so discarding it means deleting it,
+  and that asks a second time before it happens. **Discard all** works the same
+  way, and says how many new files it would delete.
 
-None of this replaces your terminal — it is the same repository, and `git
-status` agrees with the panel at all times. It exists so that a typo fixed in
-the browser does not have to become a context switch.
+Above the lists sits the branch: its name, whether it is the default branch, and
+how far it has drifted from its upstream (`↑` yours, `↓` theirs) — or _not pushed_
+when it has no upstream yet.
+
+- **The picker** checks out an existing branch, tracking `origin/<name>` when it is
+  not local yet. It refuses while `docs/` is modified, because git would either
+  carry your changes across or stop half-way.
+- **Create** cuts a new branch from the _remote_ default branch — so an author who
+  has not pulled in a week still starts from what everyone else has — and carries
+  the uncommitted work onto it.
+- **Sync** fetches, and fast-forwards when that is all it takes. A branch that has
+  moved on both sides needs a merge or a rebase, and the panel deliberately will
+  not choose one for you: it fetches, says so, and stops.
+- **Commit staged** / **Commit all** commit without pushing; **Push** sets the
+  upstream the first time and links a pre-filled pull request afterwards (GitHub
+  and Azure DevOps remotes are both recognised).
+- **Undo last commit** puts it back into staging with its message, so the message
+  can be fixed and reused. It refuses once the commit is on the remote — undoing
+  that would rewrite history other people already have.
+
+**Publish** is still there next to it, and it is still the shortcut most edits
+want: branch from an up-to-date default branch, commit, push, open the pull
+request, in one press. The panel is for the edits that do not fit the shortcut.
+
+:::note Only ever the docs folder
+Every operation is confined to `docs/` and rejects paths that try to leave it. The
+working tree may hold unrelated work, and a source-control panel inside a
+documentation site has no business staging, committing or discarding it.
+
+`npm run verify:git` checks all of it — the confinement, the staged/unstaged
+split, push, sync, and the refusal to undo a pushed commit — against a throwaway
+repository with a real remote.
+:::
 
 ### Signing in with Microsoft Entra ID
 

@@ -30,6 +30,7 @@ Runs the content build, then `ng build`. Output lands in `dist/feastdocs/browser
 | `npm run serve`                        | Angular dev server alone, against whatever content was last generated |
 | `npm run docs:new -- <path> ["Title"]` | Creates a page from a template                                        |
 | `npm test`                             | Renders content, then runs the unit tests                             |
+| `npm run verify:git`                   | Checks the content manager's git layer against a throwaway repository |
 | `npm run format`                       | Prettier over the whole project                                       |
 
 ## Creating a page

@@ -1282,3 +1282,207 @@
     font-style: italic;
   }
 }
+
+// Source control. Lives in the work pane rather than the 280px sidebar, because
+// a unified diff in a narrow column wraps into something nobody can read.
+.fd-editor__scm {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
+  border-block-end: 1px solid var(--fd-border);
+  background: var(--fd-surface-2, rgb(0 0 0 / 2%));
+}
+
+.fd-editor__scmbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+
+  select,
+  input {
+    padding: 0.25rem 0.375rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm, 4px);
+    background: var(--fd-surface);
+    color: var(--fd-text);
+    font: inherit;
+  }
+
+  select {
+    max-width: 14rem;
+  }
+
+  input {
+    inline-size: 11rem;
+  }
+}
+
+.fd-editor__scmbranch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-inline-end: auto;
+  color: var(--fd-text-muted);
+
+  strong {
+    font-family: var(--fd-font-mono);
+    color: var(--fd-text);
+  }
+}
+
+.fd-editor__scmcount {
+  font-family: var(--fd-font-mono);
+  font-size: 0.75rem;
+  color: var(--fd-text-muted);
+}
+
+// Said quietly. It is a fact about the branch, not a problem with the edit.
+.fd-editor__scmwarn {
+  font-style: normal;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fd-warning, #b45309);
+}
+
+.fd-editor__scmcommit {
+  display: grid;
+  gap: 0.5rem;
+
+  textarea {
+    inline-size: 100%;
+    padding: 0.4375rem 0.5rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm, 4px);
+    background: var(--fd-surface);
+    color: var(--fd-text);
+    font: inherit;
+    resize: vertical;
+  }
+}
+
+.fd-editor__scmactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fd-editor__scmgroup {
+  display: grid;
+  gap: 0.25rem;
+
+  // The list already carries the page padding; inside the panel it would double.
+  .fd-editor__pending {
+    padding-inline: 0;
+    padding-block-end: 0;
+    max-height: 16rem;
+  }
+}
+
+.fd-editor__scmhead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fd-text-muted);
+
+  > span {
+    padding: 0.0625rem 0.375rem;
+    border-radius: 999px;
+    background: var(--fd-surface-3, rgb(0 0 0 / 8%));
+    font-size: 0.6875rem;
+  }
+
+  code {
+    font-family: var(--fd-font-mono);
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--fd-text);
+  }
+
+  // Bulk actions sit at the far end, away from the per-row buttons: a mis-click
+  // on "Discard all" costs considerably more than one on a single row.
+  button:last-child {
+    margin-inline-start: auto;
+  }
+}
+
+.fd-editor__scmbulk {
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius-sm, 4px);
+  padding: 0.125rem 0.4375rem;
+  background: var(--fd-surface);
+  color: var(--fd-text-muted);
+  font: inherit;
+  font-size: 0.6875rem;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--fd-text);
+    border-color: var(--fd-text-muted);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.fd-editor__scmdiff {
+  display: grid;
+  gap: 0.25rem;
+
+  pre {
+    margin: 0;
+    max-height: 22rem;
+    overflow: auto;
+    padding: 0.5rem;
+    border: 1px solid var(--fd-border);
+    border-radius: var(--fd-radius-sm, 4px);
+    background: var(--fd-surface);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+}
+
+.fd-editor__scmlog {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.125rem;
+  font-size: 0.8125rem;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  code {
+    flex: 0 0 auto;
+    font-family: var(--fd-font-mono);
+    font-size: 0.75rem;
+    color: var(--fd-text-muted);
+  }
+}
+
+.fd-editor__scmsubject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fd-editor__scmempty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--fd-text-muted);
+}

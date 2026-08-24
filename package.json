@@ -10,6 +10,7 @@
     "docs:new": "node tools/new-doc.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "npm run docs:build && ng test",
+    "verify:git": "node tools/verify-editor-git.mjs",
     "format": "prettier --write .",
     "template:sync": "node tools/sync-template.mjs",
     "upgrade": "node tools/upgrade.mjs"

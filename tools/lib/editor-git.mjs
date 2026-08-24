@@ -34,13 +34,19 @@ const GIT_ENV = {
   GIT_OPTIONAL_LOCKS: '0',
 };
 
-async function git(args, { timeout = GIT_TIMEOUT } = {}) {
+/**
+ * `raw` keeps leading whitespace. Porcelain status is column-positional and its
+ * first column is often a space, so trimming the output moves a working-tree flag
+ * into the index column — which reads as "already staged" for the first file in
+ * the list and nowhere else. Everything that parses columns asks for raw.
+ */
+async function git(args, { timeout = GIT_TIMEOUT, raw = false } = {}) {
   const { stdout } = await execFileAsync('git', ['-C', ROOT, ...args], {
     timeout,
     env: GIT_ENV,
     maxBuffer: 10_000_000,
   });
-  return stdout.trim();
+  return raw ? stdout.replace(/\s+$/, '') : stdout.trim();
 }
 
 async function gitQuiet(args, options) {
@@ -143,20 +149,67 @@ async function authorInitials() {
   return /^[a-z0-9]+$/.test(initials) && initials.length > 0 ? initials : 'me';
 }
 
-/** Files changed under the docs folder, staged or not, including new ones. */
+/**
+ * Files changed under the docs folder, staged or not, including new ones.
+ *
+ * Porcelain v1 is column-positional: X is the index, Y the working tree. This
+ * used to trim the pair together, which reads fine and quietly loses which side
+ * a change is on — and that difference *is* the staged/unstaged distinction a
+ * source-control panel is built on.
+ */
 async function changedDocs(docsPrefix) {
-  const out = await gitQuiet(['status', '--porcelain', '--untracked-files=all', '--', docsPrefix]);
+  const out = await gitQuiet(['status', '--porcelain', '--untracked-files=all', '--', docsPrefix], {
+    raw: true,
+  });
   if (!out.ok) return [];
   return out.out
     .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
+    .filter((line) => line.trim() !== '')
     .map((line) => {
-      const status = line.slice(0, 2).trim();
-      // Renames read as `old -> new`; the new path is the one to stage.
+      const index = line[0] ?? ' ';
+      const worktree = line[1] ?? ' ';
+      // Renames read as `old -> new`; the new path is the one to act on.
       const file = line.slice(2).trim().split(' -> ').pop().replace(/^"|"$/g, '');
-      return { status, file };
+      const untracked = index === '?';
+      return {
+        index,
+        worktree,
+        status: (index + worktree).trim(),
+        file,
+        staged: !untracked && index !== ' ',
+        unstaged: untracked || worktree !== ' ',
+      };
     });
+}
+
+/**
+ * How far the branch has drifted from its upstream — the ↑/↓ counters.
+ *
+ * `--left-right --count upstream...HEAD` prints the two exclusive counts in that
+ * order, so the left number is what the remote has and this branch does not.
+ */
+async function aheadBehind() {
+  const upstream = await gitQuiet([
+    'rev-parse',
+    '--abbrev-ref',
+    '--symbolic-full-name',
+    '@{upstream}',
+  ]);
+  if (!upstream.ok || !upstream.out) return { upstream: null, ahead: 0, behind: 0 };
+  const counts = await gitQuiet(['rev-list', '--left-right', '--count', `${upstream.out}...HEAD`]);
+  if (!counts.ok) return { upstream: upstream.out, ahead: 0, behind: 0 };
+  const [behind, ahead] = counts.out.split(/\s+/).map((value) => Number(value) || 0);
+  return { upstream: upstream.out, ahead, behind };
+}
+
+/** Confines a file operation to the docs folder, the way the file API does. */
+function docsRelative(docsPrefix, file) {
+  const relative = String(file ?? '').replace(/\\/g, '/');
+  if (relative === '' || relative.includes('..')) return { ok: false, error: 'Invalid path.' };
+  if (!relative.startsWith(`${docsPrefix}/`)) {
+    return { ok: false, error: `Only files under ${docsPrefix} can be changed.` };
+  }
+  return { ok: true, value: relative };
 }
 
 export async function status({ docsRoot }) {
@@ -171,6 +224,7 @@ export async function status({ docsRoot }) {
   ]);
   const changed = await changedDocs(docsPrefix);
   const initials = await authorInitials();
+  const distance = await aheadBehind();
 
   return {
     git: true,
@@ -181,6 +235,9 @@ export async function status({ docsRoot }) {
     remote,
     hasRemote: remote !== null,
     changed,
+    stagedCount: changed.filter((entry) => entry.staged).length,
+    unstagedCount: changed.filter((entry) => entry.unstaged).length,
+    ...distance,
     suggestedBranch: `docs/${initials}/`,
   };
 }
@@ -253,6 +310,10 @@ export async function publish({ docsRoot, branch, message, push = true }) {
       steps,
     };
   }
+  // Branching from origin/<default> would otherwise leave that as the upstream;
+  // the push below sets the right one, and if the push fails the branch is left
+  // with none rather than pointed at the default branch.
+  await gitQuiet(['branch', '--unset-upstream']);
   steps.push({
     step: 'branch',
     ok: true,
@@ -424,4 +485,303 @@ export async function listBranches() {
     if (name && name !== 'HEAD') names.add(name);
   }
   return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+/* ---- source control: the operations a version-control panel offers -------
+ *
+ * `publish()` above is the one-step route: branch, commit, push, pull request.
+ * These are the same steps taken one at a time, for when the shape of the work
+ * does not match the shortcut — staging half of what changed, adding a commit to
+ * a branch that already has a pull request open, pushing later. Everything is
+ * confined to the docs folder: the working tree may hold unrelated work, and a
+ * source-control panel inside a documentation site has no business touching it.
+ */
+
+/** Resolves a list of file arguments, refusing anything outside the docs folder. */
+function docsPaths(docsPrefix, files) {
+  const list = (Array.isArray(files) ? files : [files]).filter(
+    (entry) => entry !== undefined && entry !== null,
+  );
+  if (list.length === 0) return { ok: false, error: 'No files given.' };
+  const paths = [];
+  for (const file of list) {
+    const resolved = docsRelative(docsPrefix, file);
+    if (!resolved.ok) return resolved;
+    paths.push(resolved.value);
+  }
+  return { ok: true, value: paths };
+}
+
+/** Stages files — the + on a row. */
+export async function stage({ docsRoot, files }) {
+  const docsPrefix = path.relative(ROOT, docsRoot).split(path.sep).join('/') || '.';
+  const resolved = docsPaths(docsPrefix, files);
+  if (!resolved.ok) return resolved;
+  const added = await gitQuiet(['add', '--', ...resolved.value]);
+  return added.ok ? { ok: true, files: resolved.value } : { ok: false, error: added.error };
+}
+
+/**
+ * Unstages files — the − on a row.
+ *
+ * `restore --staged` leaves the file itself alone, so a newly added file goes back
+ * to being untracked rather than disappearing.
+ */
+export async function unstage({ docsRoot, files }) {
+  const docsPrefix = path.relative(ROOT, docsRoot).split(path.sep).join('/') || '.';
+  const resolved = docsPaths(docsPrefix, files);
+  if (!resolved.ok) return resolved;
+  const restored = await gitQuiet(['restore', '--staged', '--', ...resolved.value]);
+  return restored.ok ? { ok: true, files: resolved.value } : { ok: false, error: restored.error };
+}
+
+/**
+ * Throws away every change under the docs folder.
+ *
+ * New files have no version to go back to, so they can only be deleted. Rather
+ * than half-do the job, this reports what deleting would cost and waits to be
+ * told — the same contract as discarding a single file.
+ */
+export async function discardAll({ docsRoot, allowDelete = false }) {
+  const docsPrefix = path.relative(ROOT, docsRoot).split(path.sep).join('/') || '.';
+  const changed = await changedDocs(docsPrefix);
+  if (changed.length === 0) return { ok: true, restored: 0, deleted: 0 };
+
+  const untracked = changed.filter((entry) => entry.index === '?');
+  if (untracked.length > 0 && !allowDelete) {
+    return {
+      ok: false,
+      needsDelete: true,
+      error: `${untracked.length} of these are new files — discarding them deletes them.`,
+      files: untracked.map((entry) => entry.file),
+    };
+  }
+
+  // Unstage first: `checkout HEAD` restores the working tree but leaves a staged
+  // deletion staged, which would show as a change that refuses to go away.
+  await gitQuiet(['restore', '--staged', '--', docsPrefix]);
+  const tracked = changed.filter((entry) => entry.index !== '?');
+  if (tracked.length > 0) {
+    const restored = await gitQuiet(['checkout', 'HEAD', '--', docsPrefix]);
+    if (!restored.ok) return { ok: false, error: restored.error };
+  }
+  if (untracked.length > 0) {
+    const cleaned = await gitQuiet(['clean', '--force', '--', docsPrefix]);
+    if (!cleaned.ok) return { ok: false, error: cleaned.error };
+  }
+  return { ok: true, restored: tracked.length, deleted: untracked.length };
+}
+
+/**
+ * Commits what is staged, without pushing.
+ *
+ * Committing onto a protected branch is legal locally and only fails at the push,
+ * which is a confusing place to find out — so this says so up front and commits
+ * anyway. Whether the branch really is protected is the host's business, not a
+ * guess worth blocking on.
+ */
+export async function commit({ docsRoot, message, stageAll = false }) {
+  const docsPrefix = path.relative(ROOT, docsRoot).split(path.sep).join('/') || '.';
+  const text = String(message ?? '').trim();
+  if (text === '') return { ok: false, error: 'A commit message is required.' };
+
+  if (stageAll) {
+    const added = await gitQuiet(['add', '--', docsPrefix]);
+    if (!added.ok) return { ok: false, error: `Could not stage the changes: ${added.error}` };
+  }
+
+  const staged = await gitQuiet(['diff', '--cached', '--name-only', '--', docsPrefix]);
+  if (!staged.ok || staged.out === '') {
+    return { ok: false, error: 'Nothing is staged. Stage a change first, or use Stage all.' };
+  }
+
+  const committed = await gitQuiet(['commit', '--message', text, '--', docsPrefix]);
+  if (!committed.ok) return { ok: false, error: `Commit failed: ${committed.error}` };
+
+  const [sha, branch, target] = await Promise.all([
+    gitQuiet(['rev-parse', '--short', 'HEAD']).then((r) => (r.ok ? r.out : null)),
+    gitQuiet(['rev-parse', '--abbrev-ref', 'HEAD']).then((r) => (r.ok ? r.out : null)),
+    defaultBranch(),
+  ]);
+  return {
+    ok: true,
+    commit: sha,
+    branch,
+    files: staged.out.split('\n').filter(Boolean).length,
+    warning:
+      branch === target
+        ? `This commit is on ${target}. If that branch is pull-request protected, the push will be rejected — branch first.`
+        : null,
+  };
+}
+
+/** Pushes the current branch, setting the upstream the first time. */
+export async function push() {
+  const branch = await gitQuiet(['rev-parse', '--abbrev-ref', 'HEAD']);
+  if (!branch.ok || branch.out === 'HEAD') {
+    return { ok: false, error: 'Not on a branch — nothing to push.' };
+  }
+  const remote = await gitQuiet(['remote', 'get-url', 'origin']).then((r) => (r.ok ? r.out : null));
+  if (!remote) {
+    return { ok: false, error: 'No origin is configured, so there is nowhere to push.' };
+  }
+
+  const upstream = await gitQuiet([
+    'rev-parse',
+    '--abbrev-ref',
+    '--symbolic-full-name',
+    '@{upstream}',
+  ]);
+  const args =
+    upstream.ok && upstream.out
+      ? ['push', 'origin', branch.out]
+      : ['push', '--set-upstream', 'origin', branch.out];
+  const pushed = await gitQuiet(args, { timeout: 120_000 });
+  if (!pushed.ok) return { ok: false, error: pushed.error };
+
+  const target = await defaultBranch();
+  return {
+    ok: true,
+    branch: branch.out,
+    pullRequestUrl: branch.out === target ? null : pullRequestUrl(remote, branch.out, target),
+  };
+}
+
+/**
+ * Fetches, and fast-forwards when that is all it takes.
+ *
+ * A branch that has moved both locally and on the remote needs a merge or a
+ * rebase, and choosing between them from a documentation site would be a decision
+ * made in the wrong place. Diverged means: fetched, reported, stopped.
+ */
+export async function sync() {
+  const remote = await gitQuiet(['remote', 'get-url', 'origin']).then((r) => (r.ok ? r.out : null));
+  if (!remote) {
+    return { ok: false, error: 'No origin is configured, so there is nothing to sync.' };
+  }
+
+  const fetched = await gitQuiet(['fetch', 'origin', '--prune', '--quiet'], { timeout: 120_000 });
+  if (!fetched.ok) return { ok: false, error: fetched.error };
+
+  const before = await aheadBehind();
+  if (before.upstream === null) {
+    return {
+      ok: true,
+      fetched: true,
+      pulled: false,
+      ...before,
+      note: 'This branch has no upstream yet — push it to create one.',
+    };
+  }
+  if (before.behind === 0) return { ok: true, fetched: true, pulled: false, ...before };
+  if (before.ahead > 0) {
+    return {
+      ok: true,
+      fetched: true,
+      pulled: false,
+      ...before,
+      note: `This branch and ${before.upstream} have both moved. Merge or rebase from your terminal — that choice should not be made for you.`,
+    };
+  }
+
+  const pulled = await gitQuiet(['merge', '--ff-only', before.upstream], { timeout: 120_000 });
+  if (!pulled.ok) return { ok: false, error: pulled.error, fetched: true, ...before };
+  return { ok: true, fetched: true, pulled: true, ...(await aheadBehind()) };
+}
+
+/**
+ * Creates a branch and moves onto it, carrying the uncommitted work along.
+ *
+ * Taken from the *remote* default branch, so an author who has not pulled in a
+ * week still starts from what everyone else has.
+ */
+export async function createBranch({ branch, fromDefault = true }) {
+  const valid = validateBranchName(branch);
+  if (!valid.ok) return { ok: false, error: valid.error };
+  const name = valid.value;
+
+  const exists = await gitQuiet(['rev-parse', '--verify', '--quiet', `refs/heads/${name}`]);
+  if (exists.ok && exists.out) {
+    return { ok: false, error: `Branch "${name}" already exists. Switch to it instead.` };
+  }
+
+  let base = 'HEAD';
+  if (fromDefault) {
+    const target = await defaultBranch();
+    await gitQuiet(['fetch', 'origin', target, '--quiet'], { timeout: 60_000 });
+    const remoteRef = `refs/remotes/origin/${target}`;
+    const found = await gitQuiet(['rev-parse', '--verify', '--quiet', remoteRef]);
+    if (found.ok && found.out) base = remoteRef;
+  }
+
+  const created = await gitQuiet(['switch', '--create', name, base]);
+  if (!created.ok) return { ok: false, error: created.error };
+  // Branching from a remote-tracking ref makes git adopt it as the upstream, so a
+  // fresh feature branch would read as one commit ahead of origin/main and stay
+  // that way after being pushed — and a fast-forward sync would pull main into
+  // it. A new branch has no upstream until it is pushed, which is the truth.
+  // (`switch -c --no-track` is not valid syntax; this is the way to say it.)
+  await gitQuiet(['branch', '--unset-upstream']);
+  return { ok: true, branch: name, base: base.replace('refs/remotes/', '') };
+}
+
+/**
+ * Recent commits, newest first, each marked as pushed or not.
+ *
+ * `ahead` counts the commits the upstream has not seen and they are the newest
+ * ones, so the first `ahead` entries are the unpushed ones — no need to ask git
+ * about each commit separately.
+ *
+ * A branch that has never been pushed has no upstream, and `ahead` is 0 there,
+ * which would mark every commit as pushed — the opposite of the truth. So the
+ * comparison falls back to the remote default branch: what this branch has and
+ * the default branch does not is precisely what nobody else can see yet.
+ */
+export async function log({ limit = 12 } = {}) {
+  // Git writes the separator itself, so no field can contain the delimiter.
+  const UNIT = String.fromCharCode(31);
+  const result = await gitQuiet([
+    'log',
+    `--max-count=${Math.min(Math.max(Number(limit) || 12, 1), 50)}`,
+    '--format=%h%x1f%s%x1f%an%x1f%cI',
+  ]);
+  if (!result.ok || result.out === '') return { ok: true, commits: [] };
+  const lines = result.out.split('\n');
+  const { upstream, ahead } = await aheadBehind();
+  let unpushed = ahead;
+  if (upstream === null) {
+    const target = await defaultBranch();
+    const counted = await gitQuiet(['rev-list', '--count', `refs/remotes/origin/${target}..HEAD`]);
+    unpushed = counted.ok && counted.out !== '' ? Number(counted.out) || 0 : lines.length;
+  }
+  const commits = lines.map((line, position) => {
+    const [sha, subject, author, date] = line.split(UNIT);
+    return { sha, subject, author, date, pushed: position >= unpushed };
+  });
+  return { ok: true, commits };
+}
+
+/**
+ * Puts the last commit back into the staging area, message and all.
+ *
+ * Only ever a local commit: rewriting one the remote already has would ask
+ * everyone else to rewrite too, and a documentation editor is not the place to
+ * start that.
+ */
+export async function undoLastCommit() {
+  const parent = await gitQuiet(['rev-parse', '--verify', '--quiet', 'HEAD~1']);
+  if (!parent.ok || !parent.out) {
+    return { ok: false, error: 'There is only one commit — nothing to undo.' };
+  }
+  const { upstream, ahead } = await aheadBehind();
+  if (upstream !== null && ahead === 0) {
+    return {
+      ok: false,
+      error: `The last commit is already on ${upstream}. Undoing it would rewrite history that everyone else has.`,
+    };
+  }
+  const message = await gitQuiet(['log', '--max-count=1', '--format=%B']);
+  const reset = await gitQuiet(['reset', '--soft', 'HEAD~1']);
+  if (!reset.ok) return { ok: false, error: reset.error };
+  return { ok: true, message: message.ok ? message.out : '' };
 }
