@@ -28,6 +28,10 @@ const OWNED = [
   'feastdocs.config.mjs',
   'public/',
   'README.md',
+  // The override slot. The framework ships it empty and its own header calls it
+  // "your styles", so replacing it with upstream's empty copy silently deletes
+  // every override the site has — the one file here most likely to be edited.
+  'src/styles/custom.scss',
   '.git/',
   'node_modules/',
   'dist/',
