@@ -4,11 +4,27 @@
       <h1>Content manager</h1>
       <p>
         No editing backend is available. Locally, start the dev server; for editing on
-        the deployed site, set <code>github.repo</code> in
-        <code>feastdocs.config.mjs</code>.
+        the deployed site, configure either <code>azureDevOps</code> + <code>entra</code>
+        or <code>github.repo</code> in <code>feastdocs.config.mjs</code>.
       </p>
       <pre><code>npm start</code></pre>
       <button type="button" class="fd-button" (click)="refreshFiles()">Retry</button>
+    </div>
+  } @else if (mode() === 'ado' && !entra.signedIn()) {
+    <div class="fd-editor__offline">
+      <h1>Content manager</h1>
+      <p>
+        Sign in to edit this documentation. Your own account is used for the commit, so
+        the pull request carries your name and the site stores no shared credential.
+      </p>
+      <button
+        type="button"
+        class="fd-button fd-editor__signin"
+        [disabled]="signingIn()"
+        (click)="signInWithEntra()"
+      >
+        {{ signingIn() ? 'Redirecting…' : 'Sign in with Microsoft' }}
+      </button>
     </div>
   } @else if (needsConnect()) {
     <div class="fd-editor__offline">
@@ -303,6 +319,16 @@
             {{ mode() === 'github' ? 'Stage' : 'Save' }}
             <kbd>Ctrl S</kbd>
           </button>
+          @if (mode() === 'ado' && pendingCount() > 0) {
+            <button
+              type="button"
+              class="fd-button fd-button--commit"
+              [class.fd-button--ghost]="publishOpen()"
+              (click)="togglePublish()"
+            >
+              Publish {{ pendingCount() }} change{{ pendingCount() === 1 ? '' : 's' }}…
+            </button>
+          }
           @if (mode() === 'github' && pendingCount() > 0) {
             <button
               type="button"
@@ -315,6 +341,55 @@
           }
         </span>
       </header>
+
+      @if (mode() === 'ado' && publishOpen()) {
+        <div class="fd-editor__stagebar fd-editor__publishbar">
+          <span class="fd-editor__stagecount">
+            {{ pendingCount() }} staged change{{ pendingCount() === 1 ? '' : 's' }} →
+            pull request into <strong>{{ ado.defaultBranch }}</strong>
+          </span>
+          <input
+            type="text"
+            placeholder="Branch name"
+            aria-label="Branch name"
+            [value]="publishBranch()"
+            (input)="publishBranch.set($any($event.target).value)"
+          />
+          <input
+            type="text"
+            placeholder="Commit message"
+            aria-label="Commit message"
+            [value]="publishMessage()"
+            (input)="publishMessage.set($any($event.target).value)"
+          />
+          <button
+            type="button"
+            class="fd-button fd-button--commit"
+            [disabled]="publishingOnline() || publishBranch().trim() === '' || publishMessage().trim() === ''"
+            (click)="publishOnline()"
+          >
+            {{ publishingOnline() ? 'Publishing…' : 'Branch, commit and open a PR' }}
+          </button>
+        </div>
+
+        <ul class="fd-editor__pending">
+          @for (change of pendingList(); track change.path) {
+            <li>
+              <span class="fd-editor__pendingkind">{{ change.kind }}</span>
+              <code>{{ change.path }}</code>
+            </li>
+          }
+        </ul>
+      }
+      @if (publishError(); as message) {
+        <p class="fd-editor__publishnote fd-editor__error">{{ message }}</p>
+      }
+      @if (published(); as result) {
+        <p class="fd-editor__publishnote">
+          Pushed <code>{{ result.branch }}</code> ({{ result.commit }}).
+          <a [href]="result.url" target="_blank" rel="noopener">Open the pull request ↗</a>
+        </p>
+      }
 
       <!-- Staged-changes strip: impossible to miss, carries the commit message. -->
       @if (mode() === 'github' && pendingCount() > 0) {

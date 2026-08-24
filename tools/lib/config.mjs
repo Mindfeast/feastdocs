@@ -21,6 +21,14 @@ const DEFAULTS = {
   versions: [],
   editUrl: null,
   showLastUpdated: true,
+  azureDevOps: { baseUrl: null, project: null, repository: null, branch: 'main' },
+  entra: {
+    tenantId: null,
+    clientId: null,
+    // The Azure DevOps resource. Azure DevOps Services uses this well-known id;
+    // an on-premises server federated with Entra may expose its own instead.
+    devOpsScope: '499b84ac-1321-427f-aa17-267ca6975798/.default',
+  },
   github: { repo: null, branch: 'main', oauthClientId: null, oauthScope: 'repo' },
   editor: { invite: null },
   changelog: {
@@ -52,6 +60,8 @@ export async function loadConfig({ bust = false } = {}) {
     footer: { ...DEFAULTS.footer, ...user.footer },
     theme: { ...DEFAULTS.theme, ...user.theme },
     sidebar: resolveSidebar({ ...DEFAULTS.sidebar, ...user.sidebar }),
+    azureDevOps: { ...DEFAULTS.azureDevOps, ...user.azureDevOps },
+    entra: { ...DEFAULTS.entra, ...user.entra },
     github: { ...DEFAULTS.github, ...user.github },
     editor: { ...DEFAULTS.editor, ...user.editor },
     changelog: { ...DEFAULTS.changelog, ...user.changelog },

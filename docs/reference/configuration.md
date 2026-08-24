@@ -36,6 +36,61 @@ export default {
 };
 ```
 
+## azureDevOps
+
+The repository this documentation lives in, for editing the deployed site in the
+browser. Set `entra` as well — without a sign-in there is no token to call the
+API with.
+
+<fd-api-field name="azureDevOps.baseUrl" type="string | null" default="null">
+Collection or organisation URL: `https://dev.azure.com/<org>` for Azure DevOps
+Services, `https://<host>/tfs/<Collection>` for an on-premises server.
+</fd-api-field>
+
+<fd-api-field name="azureDevOps.project" type="string | null" default="null">
+Project name.
+</fd-api-field>
+
+<fd-api-field name="azureDevOps.repository" type="string | null" default="null">
+Repository name.
+</fd-api-field>
+
+<fd-api-field name="azureDevOps.branch" type="string" default="main">
+The branch pull requests target. It is never committed to directly — a publish
+creates a branch and opens a pull request, which is the only route a protected
+branch allows.
+</fd-api-field>
+
+## entra
+
+Microsoft Entra ID sign-in. Both values are public — they ship in the JavaScript
+bundle either way, and a browser app has no client secret to protect.
+
+The app registration needs to be a **single-page application**, with every origin
+the site is served from listed as a redirect URI (including
+`http://localhost:4200` if you want to try it against a dev server).
+
+<fd-api-field name="entra.tenantId" type="string | null" default="null">
+Directory (tenant) id.
+</fd-api-field>
+
+<fd-api-field name="entra.clientId" type="string | null" default="null">
+Application (client) id of the registration. While it is null no sign-in is
+offered and none of the Entra code runs.
+</fd-api-field>
+
+<fd-api-field name="entra.devOpsScope" type="string | null" default="499b84ac-1321-427f-aa17-267ca6975798/.default">
+Scope requested when publishing. The default is the well-known Azure DevOps
+resource; an on-premises server federated with Entra may expose its own
+application id instead, in which case use that.
+</fd-api-field>
+
+Signing in asks only for identity. The scope above is requested when something is
+about to be published, so a reader who never edits is never asked to consent to
+repository access. The token belongs to the reader, so the commit carries their
+name and the site holds no shared credential.
+
+
 ## Site
 
 | Option | Type | Effect |

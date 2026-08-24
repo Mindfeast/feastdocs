@@ -13,6 +13,8 @@ import {
 import { DomSanitizer, Title, type SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ContentService } from '../../core/content.service';
+import { AzureDevOpsService } from '../../core/azure-devops.service';
+import { EntraService } from '../../core/entra.service';
 import { GithubService } from '../../core/github.service';
 import { UiStateService } from '../../core/ui-state.service';
 import { PAGE_ORDER } from '../../generated/page-order';
@@ -21,7 +23,7 @@ import { diffLines, type DiffHunk } from './line-diff';
 
 const LOCAL_API = 'http://127.0.0.1:4271/api';
 
-type Mode = 'local' | 'github';
+type Mode = 'local' | 'github' | 'ado';
 
 type Status =
   | { kind: 'idle' }
@@ -179,6 +181,8 @@ export class Editor {
   private readonly render = createPreviewRenderer();
   private readonly content = inject(ContentService);
   protected readonly github = inject(GithubService);
+  protected readonly entra = inject(EntraService);
+  protected readonly ado = inject(AzureDevOpsService);
 
   protected readonly localAvailable = signal<boolean | null>(null);
   protected readonly mode = signal<Mode>('local');
@@ -578,6 +582,7 @@ export class Editor {
       }
 
       if (this.mode() === 'local') {
+        await this.entra.ready();
         await this.refreshFiles();
         this.status.set({
           kind: 'saved',
@@ -705,10 +710,12 @@ export class Editor {
   });
 
   /** Neither backend reachable/configured — explain instead of a dead UI. */
-  protected readonly unavailable = computed(
-    () => this.localAvailable() === false && !this.github.isConfigured,
+    protected readonly unavailable = computed(
+    () =>
+      this.localAvailable() === false &&
+      !this.github.isConfigured &&
+      !(this.ado.isConfigured && this.entra.isConfigured),
   );
-
   protected readonly needsConnect = computed(
     () => this.mode() === 'github' && !this.github.isConnected(),
   );
@@ -783,8 +790,95 @@ export class Editor {
     } else {
       this.localAvailable.set(false);
     }
-    if (!this.localAvailable() && this.github.isConfigured) this.mode.set('github');
+    // Azure DevOps first when configured: it edits with the reader's own Entra
+    // token, so a commit carries their name rather than a shared account's.
+    if (!this.localAvailable() && this.ado.isConfigured && this.entra.isConfigured) {
+      this.mode.set('ado');
+    } else if (!this.localAvailable() && this.github.isConfigured) {
+      this.mode.set('github');
+    }
     await this.refreshFiles();
+  }
+
+  /* ---- Entra sign-in and online publishing ------------------------------- */
+
+  /** Offered wherever an app registration exists, including on a dev server. */
+  protected readonly canSignIn = computed(() => this.entra.isConfigured);
+  protected readonly signingIn = signal(false);
+  protected readonly publishingOnline = signal(false);
+  protected readonly publishBranch = signal('');
+  protected readonly publishMessage = signal('');
+  protected readonly publishOpen = signal(false);
+  protected readonly publishError = signal<string | null>(null);
+  protected readonly published = signal<{ branch: string; commit: string; url: string } | null>(null);
+
+  /** Staged changes as a list, so the template needs no KeyValuePipe. */
+  protected readonly pendingList = computed(() =>
+    [...this.pending()]
+      .map(([path, change]) => ({ path, kind: change.kind }))
+      .sort((a, b) => a.path.localeCompare(b.path)),
+  );
+
+  protected async signInWithEntra(): Promise<void> {
+    if (this.signingIn()) return;
+    this.signingIn.set(true);
+    try {
+      await this.entra.signIn();
+    } finally {
+      this.signingIn.set(false);
+    }
+  }
+
+  protected togglePublish(): void {
+    const open = !this.publishOpen();
+    this.publishOpen.set(open);
+    if (!open) return;
+    this.published.set(null);
+    this.publishError.set(null);
+    if (this.publishMessage() === '') this.publishMessage.set('docs: ');
+  }
+
+  /**
+   * Staged changes become a branch, a commit and a pull request.
+   *
+   * Deliberately not folded into `commitAll()`: that path is built around
+   * GitHub's tree API and SHA-based conflict detection, and Azure DevOps models a
+   * push as a ref update plus commits, so there is no sequence worth sharing.
+   */
+  protected async publishOnline(): Promise<void> {
+    if (this.publishingOnline() || this.pendingCount() === 0) return;
+    const branch = this.publishBranch().trim();
+    const message = this.publishMessage().trim();
+    if (branch === '' || message === '') return;
+
+    this.publishingOnline.set(true);
+    this.publishError.set(null);
+    this.published.set(null);
+    try {
+      const result = await this.ado.publish({
+        docsDir: this.content.site.docsDir,
+        branch,
+        message,
+        changes: this.pendingList().map(({ path, kind }) => ({
+          path,
+          kind,
+          content: this.pending().get(path)?.content ?? null,
+        })),
+      });
+      this.published.set({
+        branch: result.branch,
+        commit: result.commitId.slice(0, 7),
+        url: result.pullRequestUrl,
+      });
+      // Upstream now; keeping them staged would offer to send them again onto a
+      // branch that already exists.
+      this.pending.set(new Map());
+      this.publishOpen.set(false);
+    } catch (error) {
+      this.publishError.set(describe(error, 'Publish failed'));
+    } finally {
+      this.publishingOnline.set(false);
+    }
   }
 
   /** Kicks off the OAuth authorization redirect. */
@@ -897,6 +991,8 @@ export class Editor {
         const tree = await this.github.listTree(this.content.site.docsDir);
         this.baseShas = tree;
         this.files.set([...tree.keys()].sort());
+      } else if (this.mode() === 'ado' && this.entra.signedIn()) {
+        this.files.set(await this.ado.listFiles(this.content.site.docsDir));
       } else {
         return;
       }
@@ -925,6 +1021,8 @@ export class Editor {
           this.http.get<{ content: string }>(`${LOCAL_API}/file`, { params: { path } }),
         );
         this.applyOpened(path, result.content);
+      } else if (this.mode() === 'ado') {
+        this.applyOpened(path, await this.ado.readFile(this.content.site.docsDir, path));
       } else {
         const file = await this.github.readFile(this.content.site.docsDir, path);
         // Opening refreshes the conflict baseline: whatever we just read IS

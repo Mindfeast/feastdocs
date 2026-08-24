@@ -126,6 +126,19 @@ export interface SiteConfig {
   };
   readonly editUrl: string | null;
   readonly showLastUpdated: boolean;
+  /** Azure DevOps repository, for editing the deployed site in the browser. */
+  readonly azureDevOps: {
+    readonly baseUrl: string | null;
+    readonly project: string | null;
+    readonly repository: string | null;
+    readonly branch: string;
+  };
+  /** Microsoft Entra ID sign-in. A null clientId means no sign-in is offered. */
+  readonly entra: {
+    readonly tenantId: string | null;
+    readonly clientId: string | null;
+    readonly devOpsScope: string | null;
+  };
   readonly github: {
     /** 'owner/name', or null when GitHub-backed editing is not configured. */
     readonly repo: string | null;

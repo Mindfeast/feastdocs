@@ -161,6 +161,8 @@ async function writeSiteConfig(config) {
     sidebar: config.sidebar,
     editUrl: config.editUrl,
     showLastUpdated: config.showLastUpdated,
+    azureDevOps: config.azureDevOps,
+    entra: config.entra,
     github: config.github,
     sourceRepo: config.sourceRepo,
     sourceLabel: config.sourceLabel,

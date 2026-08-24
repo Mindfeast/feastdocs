@@ -1049,3 +1049,55 @@
     outline: none;
   }
 }
+
+// Publish strip and staged-file list for the Azure DevOps backend. Same shape as
+// the staged-changes bar so the two backends read as one idea.
+.fd-editor__publishbar {
+  flex-wrap: wrap;
+
+  input {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+}
+
+.fd-editor__publishnote {
+  margin: 0;
+  padding: 0.5rem 1rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--fd-text-muted);
+
+  a {
+    margin-inline-start: 0.5rem;
+  }
+}
+
+.fd-editor__pending {
+  margin: 0;
+  padding: 0 1rem 0.75rem;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+  max-height: 12rem;
+  overflow-y: auto;
+  font-size: 0.8125rem;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+}
+
+.fd-editor__pendingkind {
+  flex: 0 0 auto;
+  min-width: 4.25rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: var(--fd-radius-sm, 4px);
+  background: var(--fd-surface-2, rgb(0 0 0 / 6%));
+  color: var(--fd-text-muted);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
