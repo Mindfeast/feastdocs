@@ -14,13 +14,13 @@ cursor.
 This section shows **every item in that menu**: the exact text the menu
 inserts, next to how it renders. Five groups, matching the menu:
 
-| Group | Items |
-| --- | --- |
-| [Admonitions](./admonitions.md) | Note, Tip, Warning, Danger |
-| [Blocks](./blocks.md) | Code block, Table |
-| [Components](./components.md) | Tabs, Steps, API field, Counter, Changelog |
-| [Diagrams](./diagrams.md) | Flowchart, Sequence, State machine, Class, Entity relationship, Gantt, Pie |
-| [Inline](./inline.md) | Lead paragraph, Callout line, Link, Image |
+| Group                           | Items                                                                      |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| [Admonitions](./admonitions.md) | Note, Tip, Warning, Danger                                                 |
+| [Blocks](./blocks.md)           | Code block, Table                                                          |
+| [Components](./components.md)   | Tabs, Steps, API field, Counter, Changelog                                 |
+| [Diagrams](./diagrams.md)       | Flowchart, Sequence, State machine, Class, Entity relationship, Gantt, Pie |
+| [Inline](./inline.md)           | Lead paragraph, Callout line, Link, Image                                  |
 
 :::tip Try it on this section
 Open the [content manager](/_editor), create a scratch page, put the caret on

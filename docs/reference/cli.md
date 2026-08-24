@@ -24,13 +24,13 @@ Runs the content build, then `ng build`. Output lands in `dist/feastdocs/browser
 
 ## Individual steps
 
-| Command | What it does |
-| --- | --- |
-| `npm run docs:build` | Renders content once, without starting a server |
-| `npm run serve` | Angular dev server alone, against whatever content was last generated |
-| `npm run docs:new -- <path> ["Title"]` | Creates a page from a template |
-| `npm test` | Renders content, then runs the unit tests |
-| `npm run format` | Prettier over the whole project |
+| Command                                | What it does                                                          |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| `npm run docs:build`                   | Renders content once, without starting a server                       |
+| `npm run serve`                        | Angular dev server alone, against whatever content was last generated |
+| `npm run docs:new -- <path> ["Title"]` | Creates a page from a template                                        |
+| `npm test`                             | Renders content, then runs the unit tests                             |
+| `npm run format`                       | Prettier over the whole project                                       |
 
 ## Creating a page
 
@@ -55,14 +55,14 @@ them to the script.
 The content build never fails on a content problem — it reports and carries on, so a
 typo cannot block a deploy. Warnings you should act on:
 
-| Warning | Cause | Fix |
-| --- | --- | --- |
-| `link to "/x" does not match any document` | A relative link points at a file that does not exist, or a page was renamed | Update the link, or restore the page |
-| `Duplicate route "/x": a.md and b.md` | Two files resolve to the same slug — usually a `slug:` override colliding with a real file, or `page.md` next to `page/index.md`. The **first file wins; the second is dropped** | Rename one of them, or change the `slug:` override |
-| `nested N folders deep — the maximum is 8` | A page sits deeper than a section plus seven category levels | Flatten the tree or split into another section |
-| `relative link "x" has no .md/.html extension` | The link was treated as an asset — add the extension if it is a page | Link to the file, not the route |
-| `<file>.scss: <sass error>` | A page stylesheet failed to compile; the page renders unstyled | Fix the SCSS — the error names the line |
-| `Language "x" was not pre-loaded` | A code fence uses a language Shiki doesn't know; it renders as plain text | Check the fence's language tag |
+| Warning                                        | Cause                                                                                                                                                                            | Fix                                                |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `link to "/x" does not match any document`     | A relative link points at a file that does not exist, or a page was renamed                                                                                                      | Update the link, or restore the page               |
+| `Duplicate route "/x": a.md and b.md`          | Two files resolve to the same slug — usually a `slug:` override colliding with a real file, or `page.md` next to `page/index.md`. The **first file wins; the second is dropped** | Rename one of them, or change the `slug:` override |
+| `nested N folders deep — the maximum is 8`     | A page sits deeper than a section plus seven category levels                                                                                                                     | Flatten the tree or split into another section     |
+| `relative link "x" has no .md/.html extension` | The link was treated as an asset — add the extension if it is a page                                                                                                             | Link to the file, not the route                    |
+| `<file>.scss: <sass error>`                    | A page stylesheet failed to compile; the page renders unstyled                                                                                                                   | Fix the SCSS — the error names the line            |
+| `Language "x" was not pre-loaded`              | A code fence uses a language Shiki doesn't know; it renders as plain text                                                                                                        | Check the fence's language tag                     |
 
 ### How duplicate routes happen
 

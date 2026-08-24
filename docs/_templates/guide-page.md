@@ -1,6 +1,6 @@
 ---
-title: "{{title}}"
-description: 
+title: '{{title}}'
+description:
 sidebar_position: 10
 ---
 
@@ -25,5 +25,5 @@ echo "a command the reader can copy"
 ## What can go wrong
 
 | Symptom | Cause | Fix |
-| --- | --- | --- |
-|  |  |  |
+| ------- | ----- | --- |
+|         |       |     |

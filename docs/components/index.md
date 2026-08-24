@@ -2,7 +2,7 @@
 title: Angular components in Markdown
 description: Doc components are real Angular components, registered as custom elements — usable in any page.
 sidebar_label: Overview
---- 
+---
 
 # Angular components in Markdown
 
@@ -31,23 +31,23 @@ next page) — otherwise it stays literal text.
 
 ## The built-in components
 
-| Tag | Purpose |
-| --- | --- |
-| `<fd-tabs>` | Tabbed content — package managers, languages, platforms |
-| `<fd-steps>` | Numbered tutorial steps with a connector line |
-| `<fd-counter>` | Minimal interactive demo of live Angular state |
-| `<fd-api-field>` | One documented option/parameter, for API references |
-| `<fd-mermaid>` | A [Mermaid diagram](./mermaid.md) — written as a ```` ```mermaid ```` fence |
-| `<fd-changelog>` | [Repository history](./changelog.md) read from git at build time |
-| `<fd-changelog-months>` | An index of the generated changelog pages |
-| `<fd-changelog-repos>` | Cards linking to each repository's changelog |
-| `<fd-category-index>` | Cards for everything inside a category |
+| Tag                     | Purpose                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| `<fd-tabs>`             | Tabbed content — package managers, languages, platforms               |
+| `<fd-steps>`            | Numbered tutorial steps with a connector line                         |
+| `<fd-counter>`          | Minimal interactive demo of live Angular state                        |
+| `<fd-api-field>`        | One documented option/parameter, for API references                   |
+| `<fd-mermaid>`          | A [Mermaid diagram](./mermaid.md) — written as a ` ```mermaid ` fence |
+| `<fd-changelog>`        | [Repository history](./changelog.md) read from git at build time      |
+| `<fd-changelog-months>` | An index of the generated changelog pages                             |
+| `<fd-changelog-repos>`  | Cards linking to each repository's changelog                          |
+| `<fd-category-index>`   | Cards for everything inside a category                                |
 
 Each has its own page in this section, with the source Markdown shown next to the
 live result.
 
 Diagrams are the one component you never write as a tag: a fenced
-```` ```mermaid ```` block becomes one, so diagrams from another documentation
+` ```mermaid ` block becomes one, so diagrams from another documentation
 tool work unchanged. See [Diagrams](./mermaid.md).
 
 ## Adding your own
@@ -55,27 +55,27 @@ tool work unchanged. See [Diagrams](./mermaid.md).
 <fd-steps>
   <div step="Build a normal standalone component">
 
-  Put it under `src/app/doc-components/`. Use `ViewEncapsulation.None` if it should
-  style Markdown content passed into it.
+Put it under `src/app/doc-components/`. Use `ViewEncapsulation.None` if it should
+style Markdown content passed into it.
 
   </div>
   <div step="Register the tag">
 
-  Add one line to `src/app/doc-components/registry.ts`:
+Add one line to `src/app/doc-components/registry.ts`:
 
-  ```ts
-  { tag: 'fd-chart', component: DocChart },
-  ```
+```ts
+{ tag: 'fd-chart', component: DocChart },
+```
 
   </div>
   <div step="Use it in any page">
 
-  ```html
-  <fd-chart data="1,4,2,8"></fd-chart>
-  ```
+```html
+<fd-chart data="1,4,2,8"></fd-chart>
+```
 
-  Attributes map to `@Input()`s automatically. Use `numberAttribute` /
-  `booleanAttribute` transforms for non-string inputs.
+Attributes map to `@Input()`s automatically. Use `numberAttribute` /
+`booleanAttribute` transforms for non-string inputs.
 
   </div>
 </fd-steps>

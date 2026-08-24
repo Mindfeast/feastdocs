@@ -19,13 +19,13 @@ versions: [
 ],
 ```
 
-| Field | Meaning |
-| --- | --- |
-| `id` | Stable identifier, used in routes |
-| `label` | What the version switcher shows |
-| `docsDir` | Folder holding that version's pages |
+| Field     | Meaning                                                     |
+| --------- | ----------------------------------------------------------- |
+| `id`      | Stable identifier, used in routes                           |
+| `label`   | What the version switcher shows                             |
+| `docsDir` | Folder holding that version's pages                         |
 | `default` | The version that owns the bare routes. First entry if unset |
-| `slug` | Route prefix, if it should differ from `id` |
+| `slug`    | Route prefix, if it should differ from `id`                 |
 | `editUrl` | Edit-link base for this version. Omitted means no edit link |
 
 Leave `versions` out entirely and the site is unversioned — which is what most
@@ -64,6 +64,7 @@ Everything else follows the reader:
 - The changelog
 
   </div>
+
 </fd-columns>
 
 Try it: this site publishes an archived [v1](/v1) alongside the current pages.

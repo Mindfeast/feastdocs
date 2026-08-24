@@ -44,7 +44,8 @@ export function diffLines(theirsText: string, mineText: string): DiffHunk[] {
     else hunks.push({ kind: 'same', same: line, theirs: '', mine: '' });
   };
   const pushConflict = (theirs: string | null, mine: string | null) => {
-    if (last()?.kind !== 'conflict') hunks.push({ kind: 'conflict', same: '', theirs: '', mine: '' });
+    if (last()?.kind !== 'conflict')
+      hunks.push({ kind: 'conflict', same: '', theirs: '', mine: '' });
     const hunk = last();
     if (theirs !== null) hunk.theirs += (hunk.theirs ? '\n' : '') + theirs;
     if (mine !== null) hunk.mine += (hunk.mine ? '\n' : '') + mine;

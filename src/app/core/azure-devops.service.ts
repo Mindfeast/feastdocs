@@ -21,9 +21,7 @@ export class AzureDevOpsService {
   private readonly config = SITE.azureDevOps;
 
   readonly isConfigured =
-    this.config.baseUrl !== null &&
-    this.config.project !== null &&
-    this.config.repository !== null;
+    this.config.baseUrl !== null && this.config.project !== null && this.config.repository !== null;
 
   /** Pull requests target this; nothing commits to it. */
   readonly defaultBranch = this.config.branch;
@@ -72,7 +70,10 @@ export class AzureDevOpsService {
     const url =
       `${this.repoRoot}/items?scopePath=/${encodeURIComponent(docsDir)}` +
       `&recursionLevel=Full&versionDescriptor.version=${encodeURIComponent(branch)}&api-version=7.1`;
-    const result = await this.request<{ value: { path: string; isFolder?: boolean }[] }>('GET', url);
+    const result = await this.request<{ value: { path: string; isFolder?: boolean }[] }>(
+      'GET',
+      url,
+    );
     const prefix = `/${docsDir}/`;
     return result.value
       .filter((item) => !item.isFolder && /\.(md|markdown|html|scss)$/i.test(item.path))
@@ -144,7 +145,11 @@ export class AzureDevOpsService {
     docsDir: string;
     branch: string;
     message: string;
-    changes: readonly { path: string; content: string | null; kind: 'edit' | 'create' | 'delete' }[];
+    changes: readonly {
+      path: string;
+      content: string | null;
+      kind: 'edit' | 'create' | 'delete';
+    }[];
     /** The branch being edited. New-branch publish when this is the default. */
     onto: string;
   }): Promise<{

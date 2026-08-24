@@ -28,10 +28,10 @@ scroll horizontally on their own when they outgrow the page.
 
 ```md
 | Column | Column |
-| --- | --- |
-| Cell | Cell |
+| ------ | ------ |
+| Cell   | Cell   |
 ```
 
 | Column | Column |
-| --- | --- |
-| Cell | Cell |
+| ------ | ------ |
+| Cell   | Cell   |

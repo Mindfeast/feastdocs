@@ -1,6 +1,6 @@
 ---
-title: "Changelog"
-description: "Every change made to this repository, taken from its git history at build time."
+title: 'Changelog'
+description: 'Every change made to this repository, taken from its git history at build time.'
 sidebar_position: 10
 ---
 

@@ -3,7 +3,7 @@ title: Steps
 description: Numbered tutorial steps with a connector line.
 sidebar_position: 20
 ---
- 
+
 # Steps
 
 `<fd-steps>` turns its children into a numbered sequence. Each step is a `div` with
@@ -13,16 +13,8 @@ a `step` attribute carrying its title.
 
 ```html
 <fd-steps>
-  <div step="Create the file">
-
-  Markdown works inside a step — blank lines around it, as always.
-
-  </div>
-  <div step="Save">
-
-  The watcher re-renders and the browser reloads.
-
-  </div>
+  <div step="Create the file">Markdown works inside a step — blank lines around it, as always.</div>
+  <div step="Save">The watcher re-renders and the browser reloads.</div>
 </fd-steps>
 ```
 

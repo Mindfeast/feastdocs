@@ -48,4 +48,4 @@ Keep the image next to the page; the build copies it and rewrites the path.
 ![alt text](./image.png)
 ```
 
-*(rendered once the file exists next to the page)*
+_(rendered once the file exists next to the page)_

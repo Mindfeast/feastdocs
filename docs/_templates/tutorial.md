@@ -1,6 +1,6 @@
 ---
-title: "{{title}}"
-description: 
+title: '{{title}}'
+description:
 sidebar_position: 10
 ---
 

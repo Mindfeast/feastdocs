@@ -36,7 +36,7 @@ the initial bundle.
 
 Diagrams render in the browser rather than at build time. The consequence worth
 knowing: a diagram does not appear in the prerendered HTML a crawler reads. The
-diagram's *source* does, as text inside the element, so the content is still
+diagram's _source_ does, as text inside the element, so the content is still
 indexable — but if a diagram carries information a search engine must see,
 repeat it in prose.
 

@@ -1,11 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  computed,
-  inject,
-  linkedSignal,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, computed, inject, linkedSignal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchService } from '../../core/search.service';
 import type { SearchHit } from '../../core/models';

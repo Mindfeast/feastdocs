@@ -22,19 +22,19 @@ toc: true
 
 ## Fields
 
-| Field | Type | Default | Effect |
-| --- | --- | --- | --- |
-| `title` | string | first `#` heading, else the file name | Page heading, browser title, search result label |
-| `description` | string | empty | Shown under the heading and used as the meta description |
-| `sidebar_label` | string | `title` | Overrides the label in the sidebar when the title is too long for it |
-| `sidebar_position` | number | `999` | Sort order among siblings, ascending |
-| `sidebar_badge` | string | empty | Short marker before the sidebar label. HTTP methods are colour-coded |
-| `slug` | string | derived from the path | Replaces the route entirely |
-| `toc` | boolean | `true` | Set `false` to hide the table of contents |
-| `hidden` | boolean | `false` | Reachable by URL and search, but absent from the sidebar |
-| `draft` | boolean | `false` | Excluded from the build completely |
-| `tags` | string[] | `[]` | Stored on the page for your own use |
-| `keywords` | string[] | `[]` | Extra terms, available to the search index |
+| Field              | Type     | Default                               | Effect                                                               |
+| ------------------ | -------- | ------------------------------------- | -------------------------------------------------------------------- |
+| `title`            | string   | first `#` heading, else the file name | Page heading, browser title, search result label                     |
+| `description`      | string   | empty                                 | Shown under the heading and used as the meta description             |
+| `sidebar_label`    | string   | `title`                               | Overrides the label in the sidebar when the title is too long for it |
+| `sidebar_position` | number   | `999`                                 | Sort order among siblings, ascending                                 |
+| `sidebar_badge`    | string   | empty                                 | Short marker before the sidebar label. HTTP methods are colour-coded |
+| `slug`             | string   | derived from the path                 | Replaces the route entirely                                          |
+| `toc`              | boolean  | `true`                                | Set `false` to hide the table of contents                            |
+| `hidden`           | boolean  | `false`                               | Reachable by URL and search, but absent from the sidebar             |
+| `draft`            | boolean  | `false`                               | Excluded from the build completely                                   |
+| `tags`             | string[] | `[]`                                  | Stored on the page for your own use                                  |
+| `keywords`         | string[] | `[]`                                  | Extra terms, available to the search index                           |
 
 `sidebarLabel` and `sidebarPosition` are accepted as camelCase aliases.
 
@@ -88,11 +88,11 @@ A folder becomes a sidebar category. To control how, add a `_category.json`:
 }
 ```
 
-| Field | Default | Effect |
-| --- | --- | --- |
-| `label` | folder name, humanised | Category label |
-| `position` | `999`, or the index page's `sidebar_position` | Sort order among siblings |
-| `collapsed` | `false` | Whether the category starts collapsed |
+| Field       | Default                                       | Effect                                |
+| ----------- | --------------------------------------------- | ------------------------------------- |
+| `label`     | folder name, humanised                        | Category label                        |
+| `position`  | `999`, or the index page's `sidebar_position` | Sort order among siblings             |
+| `collapsed` | `false`                                       | Whether the category starts collapsed |
 
 If the folder has an `index.md`, that page becomes the category's own link — clicking
 the category label opens it instead of only expanding the group.

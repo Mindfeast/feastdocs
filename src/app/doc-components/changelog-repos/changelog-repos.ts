@@ -56,9 +56,8 @@ export class DocChangelogRepos {
   }
 
   private async load(): Promise<void> {
-    const { CHANGELOG, CHANGELOG_BY_REPO, CHANGELOG_SOURCES } = await import(
-      '../../generated/changelog'
-    );
+    const { CHANGELOG, CHANGELOG_BY_REPO, CHANGELOG_SOURCES } =
+      await import('../../generated/changelog');
 
     const { monthlyPages, monthlyPagesDir, groupByRepo } = SITE.changelog;
     const datasets = [

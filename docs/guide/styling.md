@@ -26,12 +26,12 @@ in both light and dark mode.
 
 ### Layout widths
 
-| Token | What it sets | Default |
-| --- | --- | --- |
-| `--fd-content-max` | The content column | `1080px` |
-| `--fd-toc-width` | The on-this-page column | `240px` |
-| `--fd-sidebar-width` | The section sidebar | `284px` |
-| `--fd-prose-max` | Optional cap on text width | `none` |
+| Token                | What it sets               | Default  |
+| -------------------- | -------------------------- | -------- |
+| `--fd-content-max`   | The content column         | `1080px` |
+| `--fd-toc-width`     | The on-this-page column    | `240px`  |
+| `--fd-sidebar-width` | The section sidebar        | `284px`  |
+| `--fd-prose-max`     | Optional cap on text width | `none`   |
 
 A page with a table of contents is `--fd-content-max` plus `--fd-toc-width`
 wide; one without is the content column alone. The sidebar sits outside both.
@@ -51,12 +51,12 @@ whole column:
 ### Two widths, on purpose
 
 `--fd-content-max` is the width of the column. `--fd-prose-max` is the width of
-the *text* inside it, and it is deliberately narrower:
+the _text_ inside it, and it is deliberately narrower:
 
-| Token | Applies to | Default |
-| --- | --- | --- |
-| `--fd-content-max` | The whole content column | `1010px` |
-| `--fd-prose-max` | Paragraphs, lists and headings | `76ch` |
+| Token              | Applies to                     | Default  |
+| ------------------ | ------------------------------ | -------- |
+| `--fd-content-max` | The whole content column       | `1010px` |
+| `--fd-prose-max`   | Paragraphs, lists and headings | `76ch`   |
 
 Tables, code blocks, diagrams and card grids want room. Prose does not: past
 roughly 90 characters a line, the eye loses its place coming back to the left
@@ -142,15 +142,15 @@ utilities do — the only difference is the class exists on this page alone.
 
 ## Which level to use
 
-| Situation | Level |
-| --- | --- |
-| Brand colour, content width, fonts | Tokens |
-| A quick emphasis or intro paragraph | Built-in `{.lead}` / `{.callout}` |
-| A class you use across many pages | `custom.scss` |
-| A layout that exists on exactly one page | Page `.scss` |
+| Situation                                | Level                             |
+| ---------------------------------------- | --------------------------------- |
+| Brand colour, content width, fonts       | Tokens                            |
+| A quick emphasis or intro paragraph      | Built-in `{.lead}` / `{.callout}` |
+| A class you use across many pages        | `custom.scss`                     |
+| A layout that exists on exactly one page | Page `.scss`                      |
 
 :::caution Scoping is not isolation
 Page styles are scoped by selector, not by shadow DOM. A rule like
-`p { color: red }` in a page stylesheet still hits every paragraph on *that* page —
+`p { color: red }` in a page stylesheet still hits every paragraph on _that_ page —
 including ones the theme rendered. Prefer a class.
 :::

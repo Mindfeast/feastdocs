@@ -8,7 +8,7 @@ sidebar_position: 66
 
 Short answer to the most common question: **the pages are driven by your
 configuration, not by your content.** Creating a folder and dropping a page with
-`<fd-changelog>` in it does *not* make the build produce years and months. The
+`<fd-changelog>` in it does _not_ make the build produce years and months. The
 build reads `changelog.monthlyPages` and writes the tree itself.
 
 :::info The one thing to remember
@@ -179,11 +179,11 @@ Without it the repository name is used.
 
 ## What is yours and what is the build's
 
-| | Owner | Rule |
-| --- | --- | --- |
-| `_section.json`, `index.md`, any page you wrote | You | Never touched |
-| `<repo>/_category.json`, `<year>/_category.json` | Build | Carries `"generated": true` |
-| `<repo>/index.md`, `<year>/<month>.md` | Build | Carries the AUTO-GENERATED marker |
+|                                                  | Owner | Rule                              |
+| ------------------------------------------------ | ----- | --------------------------------- |
+| `_section.json`, `index.md`, any page you wrote  | You   | Never touched                     |
+| `<repo>/_category.json`, `<year>/_category.json` | Build | Carries `"generated": true`       |
+| `<repo>/index.md`, `<year>/<month>.md`           | Build | Carries the AUTO-GENERATED marker |
 
 Two consequences:
 
@@ -213,11 +213,11 @@ let it prune, then turn it off.
 
 ## Troubleshooting
 
-| Symptom | Cause |
-| --- | --- |
-| No pages appear | `monthlyPages` is not `true`, or the history is empty |
-| `git history gave 1 commit` | Shallow checkout — the build falls back to the host API, and the log says so |
-| A month is missing | No commits landed in it; empty months are skipped |
-| An old month page lingers | It is outside `changelog.limit`; it is pruned on the next build with the feature on |
-| The repository level is missing | `groupByRepo` is `'auto'` and there is only one source |
-| Pages appear in an unexpected section | `monthlyPagesDir` is a top-level folder, so it *is* a section |
+| Symptom                               | Cause                                                                               |
+| ------------------------------------- | ----------------------------------------------------------------------------------- |
+| No pages appear                       | `monthlyPages` is not `true`, or the history is empty                               |
+| `git history gave 1 commit`           | Shallow checkout — the build falls back to the host API, and the log says so        |
+| A month is missing                    | No commits landed in it; empty months are skipped                                   |
+| An old month page lingers             | It is outside `changelog.limit`; it is pruned on the next build with the feature on |
+| The repository level is missing       | `groupByRepo` is `'auto'` and there is only one source                              |
+| Pages appear in an unexpected section | `monthlyPagesDir` is a top-level folder, so it _is_ a section                       |

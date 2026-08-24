@@ -86,6 +86,7 @@ may use variables or include other snippets. Subfolders work too:
 - Anything a reader should see spelled out in place
 
   </div>
+
 </fd-columns>
 
 A snippet used in one place is indirection with no payoff: the reader has to open
@@ -97,9 +98,7 @@ For an answer that most readers do not need open:
 
 ```html
 <fd-expandable title="Why is the build so fast?">
-
-Markdown here, surrounded by blank lines.
-
+  Markdown here, surrounded by blank lines.
 </fd-expandable>
 ```
 
@@ -127,16 +126,8 @@ For a comparison, or two short lists that read better side by side:
 
 ```html
 <fd-columns>
-  <div>
-
-  **Left column** — markdown, with blank lines.
-
-  </div>
-  <div>
-
-  **Right column.**
-
-  </div>
+  <div>**Left column** — markdown, with blank lines.</div>
+  <div>**Right column.**</div>
 </fd-columns>
 ```
 
@@ -159,6 +150,7 @@ For a comparison, or two short lists that read better side by side:
 - History depends on the product
 
   </div>
+
 </fd-columns>
 
 Columns collapse into one stack on a narrow screen, so nothing is squeezed on a

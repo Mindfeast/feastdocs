@@ -90,16 +90,15 @@ about to be published, so a reader who never edits is never asked to consent to
 repository access. The token belongs to the reader, so the commit carries their
 name and the site holds no shared credential.
 
-
 ## Site
 
-| Option | Type | Effect |
-| --- | --- | --- |
-| `title` | string | Navbar brand and the suffix of every browser title |
+| Option    | Type           | Effect                                                                                                                                                           |
+| --------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`   | string         | Navbar brand and the suffix of every browser title                                                                                                               |
 | `siteUrl` | string \| null | Public origin (e.g. `https://docs.example.com`). Enables SEO output at build time: prerendered HTML per page, canonical/Open Graph tags, sitemap.xml, robots.txt |
-| `tagline` | string | Fallback meta description for pages without one |
-| `logo` | string \| null | Path to an image inside `public/`, shown before the title |
-| `docsDir` | string | Where the content lives, relative to the project root |
+| `tagline` | string         | Fallback meta description for pages without one                                                                                                                  |
+| `logo`    | string \| null | Path to an image inside `public/`, shown before the title                                                                                                        |
+| `docsDir` | string         | Where the content lives, relative to the project root                                                                                                            |
 
 ## Navbar and footer
 
@@ -122,11 +121,11 @@ navbar: {
 
 ## Theme
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option        | Type                                | Effect                        |
+| ------------- | ----------------------------------- | ----------------------------- |
 | `defaultMode` | `'system'` \| `'light'` \| `'dark'` | What a first-time reader gets |
-| `accent` | CSS colour | Accent in light mode |
-| `accentDark` | CSS colour | Accent in dark mode |
+| `accent`      | CSS colour                          | Accent in light mode          |
+| `accentDark`  | CSS colour                          | Accent in dark mode           |
 
 Both accents are written to `:root` as custom properties at startup, so they are
 available to every stylesheet — including [page-scoped SCSS](../guide/styling.md).
@@ -143,10 +142,10 @@ first frame may be dark before the configured default takes over.
 
 ## Editing and metadata
 
-| Option | Type | Effect |
-| --- | --- | --- |
-| `editUrl` | string \| null | Base URL of a repo file view; the page's source path is appended |
-| `showLastUpdated` | boolean | Show the source file's modification date in the page footer |
+| Option            | Type           | Effect                                                           |
+| ----------------- | -------------- | ---------------------------------------------------------------- |
+| `editUrl`         | string \| null | Base URL of a repo file view; the page's source path is appended |
+| `showLastUpdated` | boolean        | Show the source file's modification date in the page footer      |
 
 ```js
 editUrl: 'https://github.com/acme/docs/edit/main/',
@@ -160,20 +159,20 @@ authoring date matters, drive it from your VCS instead.
 
 ## GitHub
 
-| Option | Type | Effect |
-| --- | --- | --- |
-| `github.repo` | string \| null | `owner/name`; enables the content manager's GitHub mode (web edits become commits) |
-| `github.branch` | string | Branch that web edits are committed to (default `main`) |
-| `github.oauthClientId` | string \| null | OAuth App client id; enables the "Sign in with GitHub" button |
-| `github.oauthScope` | string | Scope requested at sign-in — `public_repo` for a public repo, `repo` if private (default `repo`) |
+| Option                 | Type           | Effect                                                                                           |
+| ---------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| `github.repo`          | string \| null | `owner/name`; enables the content manager's GitHub mode (web edits become commits)               |
+| `github.branch`        | string         | Branch that web edits are committed to (default `main`)                                          |
+| `github.oauthClientId` | string \| null | OAuth App client id; enables the "Sign in with GitHub" button                                    |
+| `github.oauthScope`    | string         | Scope requested at sign-in — `public_repo` for a public repo, `repo` if private (default `repo`) |
 
 See [Use it for your own docs](../guide/your-own-docs.md) for a full setup
 walk-through, including CI.
 
 ## Editor
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option          | Type           | Effect                                                                                                                  |
+| --------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `editor.invite` | string \| null | Label on the navbar's content-manager link, shown until a reader opens it once. `null` (the default) keeps a plain icon |
 
 Teams running their own docs already know the editor is there, so the default is
@@ -183,8 +182,8 @@ get a labelled link that retires itself after they use it.
 
 ## Link previews
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option        | Type           | Effect                                                               |
+| ------------- | -------------- | -------------------------------------------------------------------- |
 | `socialImage` | string \| null | Image in `public/` used as `og:image`. `null` gives a text-only card |
 
 LinkedIn, Slack, X and WhatsApp all read Open Graph tags when someone shares a
@@ -199,8 +198,8 @@ a refresh with LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspect
 
 ## Versions
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option     | Type  | Effect                                            |
+| ---------- | ----- | ------------------------------------------------- |
 | `versions` | array | Documented versions. Omit for an unversioned site |
 
 Each entry is `{ id, label, docsDir, default, slug, editUrl }`. See
@@ -208,8 +207,8 @@ Each entry is `{ id, label, docsDir, default, slug, editUrl }`. See
 
 ## API reference
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option    | Type  | Effect                                            |
+| --------- | ----- | ------------------------------------------------- |
 | `openapi` | array | OpenAPI documents to generate endpoint pages from |
 
 Each entry is `{ spec, outDir, label }`. See
@@ -217,8 +216,8 @@ Each entry is `{ spec, outDir, label }`. See
 
 ## Sidebar
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option           | Type                              | Effect                                                                               |
+| ---------------- | --------------------------------- | ------------------------------------------------------------------------------------ |
 | `sidebar.expand` | `'active'` \| `'all'` \| `'none'` | How a section's categories start when it does not say for itself. Default `'active'` |
 
 `'active'` opens only the branch holding the current page, `'all'` opens
@@ -231,8 +230,8 @@ to `'all'`. Set `expand` and it wins.
 
 ## Reusable content
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option      | Type   | Effect                                                                      |
+| ----------- | ------ | --------------------------------------------------------------------------- |
 | `variables` | object | Values usable in any page as `{{ name }}`. Nested objects work: `{{ a.b }}` |
 
 Snippets need no configuration: a file in `docs/_snippets/` is available as
@@ -247,26 +246,26 @@ See [reuse and layout](../examples/reuse.md) for worked examples.
 
 ## Source links
 
-| Option | Type | Effect |
-| --- | --- | --- |
+| Option       | Type           | Effect                                                                            |
+| ------------ | -------------- | --------------------------------------------------------------------------------- |
 | `sourceRepo` | string \| null | Repository the navbar and footer source links point at. Defaults to `github.repo` |
 
 Most sites need nothing here: the links follow `github.repo`. Set `sourceRepo`
-when the code people should clone is a *different* repository from the one the
+when the code people should clone is a _different_ repository from the one the
 site is built and edited from — this site points at its starter template, while
 web editing and changelog commit links stay on the repository behind the site.
 
 ## Changelog
 
-| Option | Type | Effect |
-| --- | --- | --- |
-| `changelog.limit` | number | How many commits the build reads from `git log`. Default `150` |
-| `changelog.repos` | array | Other repositories to collect, as `owner/name` or `{provider, org, project, repo}` |
-| `changelog.monthlyPages` | boolean | Generate a page per month under a category per year. Default `false` |
-| `changelog.monthlyPagesDir` | string | Where those pages go, relative to `docsDir`. Default `'changelog'` |
-| `changelog.branch` | string \| null | Branch to read history from. `null` (default) uses the checked-out branch |
-| `changelog.groupByRepo` | boolean \| `'auto'` | Group generated pages under a category per repository. Default `true` |
-| `changelog.selfLabel` | string \| null | Category label for this repository. Defaults to the repo name |
+| Option                      | Type                | Effect                                                                             |
+| --------------------------- | ------------------- | ---------------------------------------------------------------------------------- |
+| `changelog.limit`           | number              | How many commits the build reads from `git log`. Default `150`                     |
+| `changelog.repos`           | array               | Other repositories to collect, as `owner/name` or `{provider, org, project, repo}` |
+| `changelog.monthlyPages`    | boolean             | Generate a page per month under a category per year. Default `false`               |
+| `changelog.monthlyPagesDir` | string              | Where those pages go, relative to `docsDir`. Default `'changelog'`                 |
+| `changelog.branch`          | string \| null      | Branch to read history from. `null` (default) uses the checked-out branch          |
+| `changelog.groupByRepo`     | boolean \| `'auto'` | Group generated pages under a category per repository. Default `true`              |
+| `changelog.selfLabel`       | string \| null      | Category label for this repository. Defaults to the repo name                      |
 
 How the generated tree works, and what stays yours:
 [how the changelog pages work](../guide/changelog-pages.md).

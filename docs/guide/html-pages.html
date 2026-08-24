@@ -7,47 +7,55 @@ sidebar_position: 6
 <h1>HTML pages</h1>
 
 <p>
-  This page is a <code>.html</code> file in <code>docs/guide/</code>. It is not run
-  through the Markdown parser, but it is still a first-class page: front matter,
-  heading anchors, table of contents, link rewriting, search indexing and the
-  page-scoped stylesheet all work exactly as they do for Markdown.
+  This page is a <code>.html</code> file in <code>docs/guide/</code>. It is not run through the
+  Markdown parser, but it is still a first-class page: front matter, heading anchors, table of
+  contents, link rewriting, search indexing and the page-scoped stylesheet all work exactly as they
+  do for Markdown.
 </p>
 
 <h2>What still happens for you</h2>
 
 <p>
-  Three things are rewritten at build time so an HTML page behaves like any other
-  page in the app:
+  Three things are rewritten at build time so an HTML page behaves like any other page in the app:
 </p>
 
 <ul>
-  <li><strong>Headings</strong> — <code>h2</code> and <code>h3</code> get stable ids and appear in the table of contents on the right.</li>
-  <li><strong>Links</strong> — <code>href="./markdown.md"</code> becomes an app route, so <a href="./markdown.md">this link</a> navigates without a page reload.</li>
-  <li><strong>Assets</strong> — relative <code>src</code> attributes are pointed at the copied asset folder.</li>
+  <li>
+    <strong>Headings</strong> — <code>h2</code> and <code>h3</code> get stable ids and appear in the
+    table of contents on the right.
+  </li>
+  <li>
+    <strong>Links</strong> — <code>href="./markdown.md"</code> becomes an app route, so
+    <a href="./markdown.md">this link</a> navigates without a page reload.
+  </li>
+  <li>
+    <strong>Assets</strong> — relative <code>src</code> attributes are pointed at the copied asset
+    folder.
+  </li>
 </ul>
 
 <h2>When to use it</h2>
 
 <p>
-  Reach for an HTML page when the markup <em>is</em> the content: a component
-  gallery, a comparison layout, a status board. If the page is mostly prose with a
-  little markup in it, stay in Markdown — raw HTML works there too.
+  Reach for an HTML page when the markup <em>is</em> the content: a component gallery, a comparison
+  layout, a status board. If the page is mostly prose with a little markup in it, stay in Markdown —
+  raw HTML works there too.
 </p>
 
 <div class="feature-grid">
   <article class="feature-card">
     <h3 class="feature-card__title" data-toc="false">Scoped styles</h3>
     <p class="feature-card__body">
-      This grid is styled by <code>html-pages.scss</code>, compiled at build time and
-      scoped to this page. The class names cannot collide with anything else.
+      This grid is styled by <code>html-pages.scss</code>, compiled at build time and scoped to this
+      page. The class names cannot collide with anything else.
     </p>
   </article>
 
   <article class="feature-card">
     <h3 class="feature-card__title" data-toc="false">Design tokens</h3>
     <p class="feature-card__body">
-      The card borders and accent use the same custom properties as the rest of the
-      site, so they follow light and dark mode with no extra work.
+      The card borders and accent use the same custom properties as the rest of the site, so they
+      follow light and dark mode with no extra work.
     </p>
   </article>
 
@@ -62,7 +70,7 @@ sidebar_position: 6
 <h2>The trade-off</h2>
 
 <p>
-  You lose the Markdown conveniences: admonitions, code fence highlighting and
-  tables all have to be written out as markup. Mixing formats across a docs set is
-  fine — the reader cannot tell which file produced which page.
+  You lose the Markdown conveniences: admonitions, code fence highlighting and tables all have to be
+  written out as markup. Mixing formats across a docs set is fine — the reader cannot tell which
+  file produced which page.
 </p>

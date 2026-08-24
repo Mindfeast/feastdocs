@@ -8,30 +8,26 @@ sidebar_position: 10
 
 `<fd-tabs>` renders its children as a tab group. Each pane is a `div` with a `tab`
 attribute naming its label.
-  
+
 ## Example
 
-```html
-<fd-tabs>
-  <div tab="npm">
-
-  ```bash
-  npm install feastdocs
-  ```
+````html
+<fd-tabs> <div tab="npm">```bash npm install feastdocs</div></fd-tabs>
+````
 
   </div>
   <div tab="pnpm">
 
-  ```bash
-  pnpm add feastdocs
-  ```
+```bash
+pnpm add feastdocs
+```
 
   </div>
   <div tab="yarn">
 
-  ```bash
-  yarn add feastdocs
-  ```
+```bash
+yarn add feastdocs
+```
 
   </div>
 </fd-tabs>

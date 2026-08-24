@@ -16,11 +16,11 @@ openapi: [
 ],
 ```
 
-| Field | Meaning |
-| --- | --- |
-| `spec` | Path to the document, relative to the project root. JSON or YAML |
+| Field    | Meaning                                                                    |
+| -------- | -------------------------------------------------------------------------- |
+| `spec`   | Path to the document, relative to the project root. JSON or YAML           |
 | `outDir` | Folder under `docsDir` to write into. A top-level folder becomes a section |
-| `label` | Section name. Defaults to `info.title` from the document |
+| `label`  | Section name. Defaults to `info.title` from the document                   |
 
 ## Several APIs in one section
 
@@ -77,14 +77,14 @@ Both work. A Swagger 2.0 document (`"swagger": "2.0"`, as older .NET and Java
 tooling emits) is converted to the OpenAPI 3 shape in memory before anything
 reads it, so you do not have to migrate a spec to document it:
 
-| Swagger 2.0 | Becomes |
-| --- | --- |
-| `host` + `basePath` + `schemes` | `servers`, so the `curl` line has the real host |
-| a parameter with `in: body` | the request body, with its schema and example |
-| a parameter with `in: formData` | a form-encoded request body |
-| `type` / `format` / `enum` on a parameter | that parameter's schema |
-| `response.schema` | the response content, so examples are generated |
-| `definitions` | resolved in place — `$ref: '#/definitions/X'` needs no rewriting |
+| Swagger 2.0                               | Becomes                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| `host` + `basePath` + `schemes`           | `servers`, so the `curl` line has the real host                  |
+| a parameter with `in: body`               | the request body, with its schema and example                    |
+| a parameter with `in: formData`           | a form-encoded request body                                      |
+| `type` / `format` / `enum` on a parameter | that parameter's schema                                          |
+| `response.schema`                         | the response content, so examples are generated                  |
+| `definitions`                             | resolved in place — `$ref: '#/definitions/X'` needs no rewriting |
 
 ## What it generates
 
@@ -154,6 +154,7 @@ anyone reading the API from code.
 - An interactive "try it" console; the `curl` command stands in
 
   </div>
+
 </fd-columns>
 
 Example values follow `format`, so a `date` field shows `2026-01-01` rather than

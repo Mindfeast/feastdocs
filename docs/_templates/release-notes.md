@@ -1,5 +1,5 @@
 ---
-title: "{{title}}"
+title: '{{title}}'
 description: Released {{date}}.
 sidebar_position: 10
 ---
@@ -10,12 +10,12 @@ Released **{{date}}**.
 
 ## New
 
-- 
+-
 
 ## Changed
 
-- 
+-
 
 ## Fixed
 
-- 
+-

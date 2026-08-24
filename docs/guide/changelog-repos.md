@@ -162,13 +162,13 @@ unreleased work.
 
 ## What differs between sources
 
-| | This repository | GitHub API | Azure DevOps API |
-| --- | --- | --- | --- |
-| File count | yes | no | yes (`changeCounts`) |
-| `docs-only` filter | yes | keeps everything it cannot rule out | same |
-| Merge commits | skipped | skipped | kept — a squashed PR is the change |
-| Commit body | full | full | may be truncated by Azure, marked `…` |
-| Commit links | repository host | GitHub | Azure DevOps |
+|                    | This repository | GitHub API                          | Azure DevOps API                      |
+| ------------------ | --------------- | ----------------------------------- | ------------------------------------- |
+| File count         | yes             | no                                  | yes (`changeCounts`)                  |
+| `docs-only` filter | yes             | keeps everything it cannot rule out | same                                  |
+| Merge commits      | skipped         | skipped                             | kept — a squashed PR is the change    |
+| Commit body        | full            | full                                | may be truncated by Azure, marked `…` |
+| Commit links       | repository host | GitHub                              | Azure DevOps                          |
 
 Azure squash merges arrive as `Merged PR 482: fix: …`. That prefix is stripped
 so the conventional-commit type inside still becomes a badge.
@@ -187,10 +187,10 @@ Read that in your deploy log first — it says exactly what each source produced
 Nothing here fails a build: a source that cannot be read logs a warning and
 renders an empty history, because a changelog is not worth blocking a deploy.
 
-| Log line | Cause |
-| --- | --- |
-| `GitHub API 404` | Private repository without a token, or a branch that does not exist |
-| `GitHub API 403` | Rate limited — set `GITHUB_TOKEN` |
-| `Azure DevOps 401` or `203` | Missing or expired PAT, or no **Code (Read)** scope |
+| Log line                                       | Cause                                                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `GitHub API 404`                               | Private repository without a token, or a branch that does not exist                                    |
+| `GitHub API 403`                               | Rate limited — set `GITHUB_TOKEN`                                                                      |
+| `Azure DevOps 401` or `203`                    | Missing or expired PAT, or no **Code (Read)** scope                                                    |
 | `no AZURE_DEVOPS_PAT in the build environment` | The variable never reached the build — on Azure Pipelines, secret variables must be mapped into `env:` |
-| `git history gave 1 commit` | The checkout is shallow; the build falls back to the API for this repository |
+| `git history gave 1 commit`                    | The checkout is shallow; the build falls back to the API for this repository                           |

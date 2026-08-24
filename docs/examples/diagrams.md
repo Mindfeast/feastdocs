@@ -6,7 +6,7 @@ sidebar_position: 60
 
 # Diagrams
 
-Fenced ```` ```mermaid ```` blocks render as diagrams — the same syntax GitHub,
+Fenced ` ```mermaid ` blocks render as diagrams — the same syntax GitHub,
 Docusaurus and most other tools use, so an existing project keeps its diagrams
 as they are.
 

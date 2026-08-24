@@ -196,13 +196,13 @@ and a near-black background. Set both.
 
 None of these belong in the repository:
 
-| Variable | Needed for | Where it goes |
-| --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Web editing OAuth | Host environment variable |
-| `GITHUB_CLIENT_SECRET` | Web editing OAuth | Host **secret** |
-| `GITHUB_TOKEN` | Private or rate-limited GitHub changelog sources | Host **secret** |
-| `AZURE_DEVOPS_PAT` | Any Azure DevOps changelog source | Host **secret** |
-| `CLOUDFLARE_API_TOKEN` | Deploying from CI | CI **secret** |
+| Variable               | Needed for                                       | Where it goes             |
+| ---------------------- | ------------------------------------------------ | ------------------------- |
+| `GITHUB_CLIENT_ID`     | Web editing OAuth                                | Host environment variable |
+| `GITHUB_CLIENT_SECRET` | Web editing OAuth                                | Host **secret**           |
+| `GITHUB_TOKEN`         | Private or rate-limited GitHub changelog sources | Host **secret**           |
+| `AZURE_DEVOPS_PAT`     | Any Azure DevOps changelog source                | Host **secret**           |
+| `CLOUDFLARE_API_TOKEN` | Deploying from CI                                | CI **secret**             |
 
 A rule that saves grief later: if a value would let someone act as you, it goes
 in the host's secret store, is referenced by name in code, and is rotated when

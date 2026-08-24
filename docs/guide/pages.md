@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Pages & sections
 
-There is no navigation to configure. The `docs/` folder *is* the navigation.
+There is no navigation to configure. The `docs/` folder _is_ the navigation.
 
 ## Sections: the top navbar
 
@@ -49,15 +49,15 @@ to the folder name, humanised.
 
 ## Pages: files inside a section
 
-| File | Route | Sidebar |
-| --- | --- | --- |
-| `docs/guide/index.md` | `/guide` | Section landing, first in the sidebar |
-| `docs/guide/installation.md` | `/guide/installation` | Item in the Guide sidebar |
-| `docs/guide/advanced/hooks.md` | `/guide/advanced/hooks` | Inside an **Advanced** category |
-| `docs/index.md` | `/` | No sidebar — root pages have no section |
-| `docs/guide/_draft.md` | — | Files starting with `_` are never published |
+| File                           | Route                   | Sidebar                                     |
+| ------------------------------ | ----------------------- | ------------------------------------------- |
+| `docs/guide/index.md`          | `/guide`                | Section landing, first in the sidebar       |
+| `docs/guide/installation.md`   | `/guide/installation`   | Item in the Guide sidebar                   |
+| `docs/guide/advanced/hooks.md` | `/guide/advanced/hooks` | Inside an **Advanced** category             |
+| `docs/index.md`                | `/`                     | No sidebar — root pages have no section     |
+| `docs/guide/_draft.md`         | —                       | Files starting with `_` are never published |
 
-Folders *inside* a section become collapsible sidebar categories. Give one a label
+Folders _inside_ a section become collapsible sidebar categories. Give one a label
 with a `_category.json`:
 
 ```json title="docs/guide/advanced/_category.json"
@@ -99,11 +99,11 @@ section has depth. Two flags let you say otherwise.
 { "label": "Components", "expand": "all" }
 ```
 
-| Value | Effect |
-| --- | --- |
+| Value    | Effect                                                       |
+| -------- | ------------------------------------------------------------ |
 | `active` | Only the branch containing the current page. **The default** |
-| `all` | Everything expanded |
-| `none` | Everything collapsed, including around the current page |
+| `all`    | Everything expanded                                          |
+| `none`   | Everything collapsed, including around the current page      |
 
 `all` suits a short section a reader wants to see whole — the Components section
 here uses it. `active` suits a deep or generated tree: the changelog section
@@ -123,11 +123,11 @@ Without the flag, a section follows `sidebar.expand` in
 { "label": "Advanced", "expand": "always" }
 ```
 
-| Value | Effect |
-| --- | --- |
-| `"always"` | Pinned open. No toggle, and no stored state can close it |
-| `true` | Starts open |
-| `false` | Starts closed. `"collapsed": true` still works and means the same |
+| Value      | Effect                                                            |
+| ---------- | ----------------------------------------------------------------- |
+| `"always"` | Pinned open. No toggle, and no stored state can close it          |
+| `true`     | Starts open                                                       |
+| `false`    | Starts closed. `"collapsed": true` still works and means the same |
 
 `"always"` is your "favourite" — the one branch that should never be hidden,
 whatever the section default says and whatever the reader clicked last week. The

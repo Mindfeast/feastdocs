@@ -37,11 +37,13 @@ server, with one requirement: unknown paths must fall back to `index.html`, beca
 routing happens in the browser.
 
 :::info nginx
+
 ```nginx
 location / {
   try_files $uri $uri/ /index.html;
 }
 ```
+
 :::
 
 Serving from a subpath? Build with `ng build --base-href /docs/`.

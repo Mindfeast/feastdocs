@@ -14,7 +14,7 @@ sidebars and theming — none of which you maintain by hand.
 
 Three ideas carry the whole framework:
 
-1. **Folders are navigation.** Every top-level folder in `docs/` is a *section* — a
+1. **Folders are navigation.** Every top-level folder in `docs/` is a _section_ — a
    tab in the navbar with its own sidebar. Folders inside a section are sidebar
    categories. Files are pages.
 2. **Content is compiled.** Markdown rendering, syntax highlighting, SCSS
@@ -41,22 +41,22 @@ Three ideas carry the whole framework:
 <fd-steps>
   <div step="Install and run">
 
-  [Installation](./installation.md) — clone, `npm install`, `npm start`.
+[Installation](./installation.md) — clone, `npm install`, `npm start`.
 
   </div>
   <div step="Create pages and sections">
 
-  [Pages & sections](./pages.md) — how files map to routes, tabs and sidebars.
+[Pages & sections](./pages.md) — how files map to routes, tabs and sidebars.
 
   </div>
   <div step="Learn the Markdown extras">
 
-  [Markdown features](./markdown.md) — admonitions, code titles, attributes, links.
+[Markdown features](./markdown.md) — admonitions, code titles, attributes, links.
 
   </div>
   <div step="Style it">
 
-  [Styling](./styling.md) — design tokens, site overrides, page-scoped SCSS.
+[Styling](./styling.md) — design tokens, site overrides, page-scoped SCSS.
 
   </div>
 </fd-steps>

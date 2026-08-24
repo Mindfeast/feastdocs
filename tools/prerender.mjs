@@ -25,7 +25,9 @@ let shell;
 try {
   shell = await fs.readFile(shellPath, 'utf8');
 } catch {
-  console.error(`${red('✗')} prerender: ${path.relative(ROOT, shellPath)} not found — run ng build first.`);
+  console.error(
+    `${red('✗')} prerender: ${path.relative(ROOT, shellPath)} not found — run ng build first.`,
+  );
   process.exit(1);
 }
 
@@ -71,7 +73,9 @@ await fs.writeFile(
   'utf8',
 );
 
-console.log(`${green('✓')} prerendered ${pages} pages, sitemap.xml, robots.txt ${dim(`→ ${path.relative(ROOT, DIST)}`)}`);
+console.log(
+  `${green('✓')} prerendered ${pages} pages, sitemap.xml, robots.txt ${dim(`→ ${path.relative(ROOT, DIST)}`)}`,
+);
 
 function renderPage(shell, doc, config, siteUrl) {
   const title = doc.slug === '' ? config.title : `${doc.title} · ${config.title}`;
@@ -122,10 +126,7 @@ function renderPage(shell, doc, config, siteUrl) {
 }
 
 function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function escapeAttr(value) {

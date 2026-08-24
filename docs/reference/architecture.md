@@ -20,16 +20,16 @@ feastdocs.config.mjs    └── emit.mjs      write          └── site-co
                                                           public/docs-assets/**
 ```
 
-| File | Responsibility |
-| --- | --- |
-| `tools/lib/config.mjs` | Loads `feastdocs.config.mjs` and applies defaults |
-| `tools/lib/collect.mjs` | Scans `docs/`, resolves slugs and titles, builds one sidebar tree per section, compiles page SCSS, validates links |
-| `tools/lib/markdown.mjs` | markdown-it setup: admonitions, code fences, link and asset rewriting, heading collection |
-| `tools/lib/emit.mjs` | Writes the generated modules, the search index, and the copied assets |
-| `tools/dev.mjs` | Watches `docs/`, rebuilds, runs the Angular dev server and the editor API |
-| `tools/editor-api.mjs` | Local file API behind the [content manager](./editor.md) |
-| `tools/new-doc.mjs` | Scaffolds a new page |
-| `tools/prerender.mjs` | After `ng build`: bakes each page's HTML + SEO metadata into static per-route index.html files, plus sitemap.xml and robots.txt |
+| File                     | Responsibility                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `tools/lib/config.mjs`   | Loads `feastdocs.config.mjs` and applies defaults                                                                               |
+| `tools/lib/collect.mjs`  | Scans `docs/`, resolves slugs and titles, builds one sidebar tree per section, compiles page SCSS, validates links              |
+| `tools/lib/markdown.mjs` | markdown-it setup: admonitions, code fences, link and asset rewriting, heading collection                                       |
+| `tools/lib/emit.mjs`     | Writes the generated modules, the search index, and the copied assets                                                           |
+| `tools/dev.mjs`          | Watches `docs/`, rebuilds, runs the Angular dev server and the editor API                                                       |
+| `tools/editor-api.mjs`   | Local file API behind the [content manager](./editor.md)                                                                        |
+| `tools/new-doc.mjs`      | Scaffolds a new page                                                                                                            |
+| `tools/prerender.mjs`    | After `ng build`: bakes each page's HTML + SEO metadata into static per-route index.html files, plus sitemap.xml and robots.txt |
 
 Two details worth knowing when editing the pipeline:
 
@@ -41,14 +41,14 @@ Two details worth knowing when editing the pipeline:
 
 ## The app
 
-| Path | Responsibility |
-| --- | --- |
-| `src/app/core/content.service.ts` | Page lookup, lazy loading, breadcrumbs, reading order |
-| `src/app/core/search.service.ts` | Fetches the index once, ranks results |
-| `src/app/core/theme.service.ts` | Light/dark/system, persisted per reader |
-| `src/app/pages/doc-page/` | Renders a page and everything around it |
-| `src/app/layout/` | Navbar, sidebar, table of contents, search dialog |
-| `src/styles/` | Tokens, base styles, and the global styles Markdown output needs |
+| Path                              | Responsibility                                                   |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `src/app/core/content.service.ts` | Page lookup, lazy loading, breadcrumbs, reading order            |
+| `src/app/core/search.service.ts`  | Fetches the index once, ranks results                            |
+| `src/app/core/theme.service.ts`   | Light/dark/system, persisted per reader                          |
+| `src/app/pages/doc-page/`         | Renders a page and everything around it                          |
+| `src/app/layout/`                 | Navbar, sidebar, table of contents, search dialog                |
+| `src/styles/`                     | Tokens, base styles, and the global styles Markdown output needs |
 
 ## One route, many pages
 
@@ -93,9 +93,9 @@ document changes and cleans up the observer behind it.
 
 ## Where things are cached
 
-| What | Where | Lifetime |
-| --- | --- | --- |
-| Rendered page chunks | `ContentService` map | The session |
-| Search index | `SearchService` signal | First search onwards |
-| Theme choice | `localStorage` | Until changed |
-| Collapsed categories | `localStorage` | Until changed |
+| What                 | Where                  | Lifetime             |
+| -------------------- | ---------------------- | -------------------- |
+| Rendered page chunks | `ContentService` map   | The session          |
+| Search index         | `SearchService` signal | First search onwards |
+| Theme choice         | `localStorage`         | Until changed        |
+| Collapsed categories | `localStorage`         | Until changed        |

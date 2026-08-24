@@ -255,10 +255,10 @@ The repository's GitHub Actions workflow (`.github/workflows/ci.yml`) builds and
 tests every push, and deploys to Cloudflare Pages on `main` once two repository
 secrets exist (Settings → Secrets and variables → Actions):
 
-| Secret | Where it comes from |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → API tokens, with *Cloudflare Pages — Edit* |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages (right sidebar) |
+| Secret                  | Where it comes from                                               |
+| ----------------------- | ----------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard → API tokens, with _Cloudflare Pages — Edit_ |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages (right sidebar)            |
 
 Without the secrets the deploy job skips itself, so the workflow is safe to keep
 even if you deploy elsewhere.
@@ -304,10 +304,10 @@ enforces them on every commit, whoever is signed in.
 Both strategies work at the same time; see the
 [content manager](/reference/editor) for the full picture:
 
-| Strategy | Who it fits | How it commits |
-| --- | --- | --- |
-| **Git push** | People with a code editor and git | They edit `docs/`, commit, push — normal review flow |
-| **Web editing** | People who live in the browser | The content manager commits to `github.repo` as their GitHub user |
+| Strategy        | Who it fits                       | How it commits                                                    |
+| --------------- | --------------------------------- | ----------------------------------------------------------------- |
+| **Git push**    | People with a code editor and git | They edit `docs/`, commit, push — normal review flow              |
+| **Web editing** | People who live in the browser    | The content manager commits to `github.repo` as their GitHub user |
 
 Either way the history is git, so "last updated by" under every page stays
 truthful — it is read from the commits at build time.

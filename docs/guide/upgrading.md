@@ -14,13 +14,13 @@ and it is also why improvements do not arrive on their own.
 
 ## What moves, and what never does
 
-| | |
-| --- | --- |
-| **Replaced** | `src/`, `tools/`, `functions/`, `deploy/`, `angular.json`, the Dockerfile, CI workflows, `CLAUDE.md` |
-| **Merged** | `package.json` — upstream dependencies and scripts arrive; your name and your own additions stay |
-| **Never touched** | `docs/`, `feastdocs.config.mjs`, `public/`, `README.md` |
+|                   |                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| **Replaced**      | `src/`, `tools/`, `functions/`, `deploy/`, `angular.json`, the Dockerfile, CI workflows, `CLAUDE.md` |
+| **Merged**        | `package.json` — upstream dependencies and scripts arrive; your name and your own additions stay     |
+| **Never touched** | `docs/`, `feastdocs.config.mjs`, `public/`, `README.md`                                              |
 
-That split is the whole design: everything that makes the site *yours* is in the
+That split is the whole design: everything that makes the site _yours_ is in the
 second row.
 
 ## Running it
@@ -71,7 +71,7 @@ usually mechanical. Two places deserve a look:
   [configuration reference](../reference/configuration.md) lists everything
   current.
 
-If you *have* customised the framework — a component you edited, a change to the
+If you _have_ customised the framework — a component you edited, a change to the
 pipeline — your edit is overwritten. Keep such changes in files of your own
 where you can (a new component rather than a modified one), and check the diff
 when you cannot.
@@ -102,9 +102,11 @@ in every file you replaced — starting with `docs/`, which you emptied on day
 one. `npm run upgrade` exists because that trade is rarely worth it.
 
 :::tip Upgrade on a branch
+
 ```bash
 git switch -c upgrade-framework
 npm run upgrade -- --apply && npm install && npm run build
 ```
+
 If the build is unhappy, throw the branch away.
 :::

@@ -18,9 +18,7 @@ the element's content, so inline code and links work inside it.
 <fd-api-field name="slug" type="string">
   Replaces the derived route. See <a href="./index.md">the overview</a>.
 </fd-api-field>
-<fd-api-field name="title" type="string" required>
-  Page heading and browser title.
-</fd-api-field>
+<fd-api-field name="title" type="string" required> Page heading and browser title. </fd-api-field>
 ```
 
 Renders as:

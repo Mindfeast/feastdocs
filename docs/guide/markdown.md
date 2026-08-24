@@ -100,17 +100,17 @@ Pipe tables, wrapped in a horizontal scroll container so wide tables never break
 the page layout.
 
 ```md
-| Field | Type | Default |
-| --- | --- | --- |
-| `title` | string | file name |
-| `toc` | boolean | `true` |
+| Field   | Type    | Default   |
+| ------- | ------- | --------- |
+| `title` | string  | file name |
+| `toc`   | boolean | `true`    |
 ```
 
-| Field | Type | Default |
-| --- | --- | --- |
-| `title` | string | file name |
-| `toc` | boolean | `true` |
-| `sidebar_position` | number | `999` |
+| Field              | Type    | Default   |
+| ------------------ | ------- | --------- |
+| `title`            | string  | file name |
+| `toc`              | boolean | `true`    |
+| `sidebar_position` | number  | `999`     |
 
 ## Task lists
 
@@ -138,11 +138,11 @@ This paragraph carries a class.{.lead}
 Relative links are resolved at build time and turned into app routes, so navigation
 stays client-side and nothing reloads.
 
-| You write | Becomes |
-| --- | --- |
-| `[Setup](./setup.md)` | a route in the same folder |
-| `[Home](../index.md)` | a route one level up |
-| `[Anchor](./setup.md#step-2)` | route plus a heading anchor |
+| You write                        | Becomes                           |
+| -------------------------------- | --------------------------------- |
+| `[Setup](./setup.md)`            | a route in the same folder        |
+| `[Home](../index.md)`            | a route one level up              |
+| `[Anchor](./setup.md#step-2)`    | route plus a heading anchor       |
 | `[Angular](https://angular.dev)` | external link, opens in a new tab |
 
 If a relative link points at a file that does not exist, the content build prints a

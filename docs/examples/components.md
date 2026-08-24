@@ -16,16 +16,8 @@ inside the panes stays literal text.
 
 ```html
 <fd-tabs>
-  <div tab="First">
-
-Content (keep the blank lines).
-
-  </div>
-  <div tab="Second">
-
-Content.
-
-  </div>
+  <div tab="First">Content (keep the blank lines).</div>
+  <div tab="Second">Content.</div>
 </fd-tabs>
 ```
 
@@ -46,16 +38,8 @@ Content.
 
 ```html
 <fd-steps>
-  <div step="First step">
-
-What to do.
-
-  </div>
-  <div step="Second step">
-
-What comes next.
-
-  </div>
+  <div step="First step">What to do.</div>
+  <div step="Second step">What comes next.</div>
 </fd-steps>
 ```
 
@@ -75,9 +59,7 @@ What comes next.
 ## API field
 
 ```html
-<fd-api-field name="option" type="string" default="value">
-  What it does.
-</fd-api-field>
+<fd-api-field name="option" type="string" default="value"> What it does. </fd-api-field>
 ```
 
 <fd-api-field name="option" type="string" default="value">
