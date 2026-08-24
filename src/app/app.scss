@@ -21,7 +21,9 @@
   // `auto` instead of a fixed track: pages without a sidebar (landing, 404)
   // collapse the column to zero and the content takes the full width.
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
+  // No `align-items: start` here. The sticky pane is the <aside> inside
+  // <app-sidebar>, not the grid item itself, so the item has to stretch to the
+  // full row: a sticky element can only travel inside its parent's box.
 
   @media (max-width: 996px) {
     grid-template-columns: minmax(0, 1fr);

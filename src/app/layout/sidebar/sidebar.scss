@@ -1,3 +1,10 @@
+// The grid item is this host, and the sticky pane is the <aside> inside it, so
+// the host must be a block that stretches down the whole content row. Without
+// it the aside has nowhere to travel and scrolls away with the page.
+:host {
+  display: block;
+}
+
 .fd-sidebar {
   position: sticky;
   top: var(--fd-navbar-offset);
@@ -6,11 +13,9 @@
   gap: 0.75rem;
   width: var(--fd-sidebar-width);
   height: calc(100vh - var(--fd-navbar-offset));
-  padding: 1rem 0.75rem 2rem;
+  padding: 1rem 0.75rem;
   border-inline-end: 1px solid var(--fd-border);
   background: var(--fd-surface);
-  overflow-y: auto;
-  overscroll-behavior: contain;
 
   @media (max-width: 996px) {
     position: fixed;
@@ -41,6 +46,7 @@
 // Mobile drawer only — on desktop the section tabs live in the navbar.
 .fd-sidebar__all-sections {
   display: none;
+  flex: none;
 
   @media (max-width: 996px) {
     display: flex;
@@ -77,6 +83,7 @@
 
 .fd-sidebar__section {
   display: flex;
+  flex: none;
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.25rem 0.5rem 0.65rem;
@@ -107,6 +114,7 @@
 .fd-sidebar__filter {
   position: relative;
   display: flex;
+  flex: none;
   align-items: center;
 
   svg {
@@ -145,6 +153,18 @@
       appearance: none;
     }
   }
+}
+
+// The tree scrolls on its own, so the section label and the filter box stay put
+// however long the tree is. `min-height: 0` is what lets a flex item shrink
+// below its content height — without it the box grows and nothing scrolls.
+.fd-sidebar__nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding-block-end: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .fd-sidebar__list {
