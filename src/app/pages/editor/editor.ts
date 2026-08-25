@@ -1037,7 +1037,12 @@ export class Editor {
    */
   protected async publishOnline(): Promise<void> {
     if (this.publishingOnline() || this.pendingCount() === 0) return;
-    const branch = this.publishBranch().trim();
+    // A branch name is only needed on the default branch, where one has to be cut.
+    // Anywhere else the commit joins the branch already being edited, and asking
+    // for a name there would be asking for a name nothing uses.
+    const branch = this.onDefaultBranch()
+      ? this.publishBranch().trim()
+      : this.publishBranch().trim() || this.workingBranch();
     const message = this.publishMessage().trim();
     if (branch === '' || message === '') return;
 
@@ -1239,6 +1244,159 @@ export class Editor {
     }
   }
 
+  /* ---- source control, in every mode ------------------------------------
+   *
+   * The panel started as a local-mode feature because local mode is the one with
+   * a working copy. Online there is no working copy — a save *is* a staged change
+   * — but everything around it is the same question: which branch am I on, what
+   * is about to be committed, what does it actually change, and how does it
+   * become a pull request. So the panel is shared, and the differences between
+   * the backends are named here rather than duplicated through the template.
+   */
+
+  /** Whether there is anything for the panel to talk to in this mode. */
+  protected readonly scmAvailable = computed(() =>
+    this.mode() === 'local' ? this.git() !== null : this.onlineReady(),
+  );
+
+  /** Online modes need a session before any of this can be asked. */
+  private readonly onlineReady = computed(() =>
+    this.mode() === 'ado'
+      ? this.ado.isConfigured && this.entra.signedIn()
+      : this.mode() === 'github' && this.github.isConnected(),
+  );
+
+  /** The branch the panel is showing, whichever mode supplied it. */
+  protected readonly scmBranch = computed(() =>
+    this.mode() === 'local'
+      ? (this.git()?.branch ?? null)
+      : this.mode() === 'ado'
+        ? this.workingBranch()
+        : this.github.activeBranch(),
+  );
+
+  protected readonly scmDefaultBranch = computed(() =>
+    this.mode() === 'local'
+      ? (this.git()?.defaultBranch ?? null)
+      : this.mode() === 'ado'
+        ? this.ado.defaultBranch
+        : this.github.defaultBranch,
+  );
+
+  protected readonly onScmDefaultBranch = computed(
+    () => this.scmBranch() !== null && this.scmBranch() === this.scmDefaultBranch(),
+  );
+
+  /** Branch names for the picker, from whichever backend is active. */
+  protected readonly scmBranches = computed<readonly string[]>(() =>
+    this.mode() === 'local' ? this.localBranches() : this.branches(),
+  );
+
+  /**
+   * What is about to be committed.
+   *
+   * Locally that is git's index; online it is the editor's own staged changes,
+   * because nothing has been written anywhere yet. Both are "staged" to the
+   * person looking at them, so the panel says so and the wording below is the
+   * only thing that differs.
+   */
+  protected readonly scmStaged = computed(() =>
+    this.mode() === 'local'
+      ? this.stagedChanges().map((change) => ({
+          file: change.file,
+          label: this.changeLabel(change.status),
+        }))
+      : this.pendingList().map((change) => ({
+          file: change.path,
+          label: change.kind === 'create' ? 'new' : change.kind === 'delete' ? 'deleted' : 'edited',
+        })),
+  );
+
+  protected readonly scmCount = computed(() =>
+    this.mode() === 'local' ? this.changedCount() : this.pendingCount(),
+  );
+
+  /* ---- online: branches, pull requests, history ------------------------- */
+
+  private async refreshOnlineCommits(): Promise<void> {
+    if (!this.onlineReady()) return;
+    try {
+      const commits =
+        this.mode() === 'ado'
+          ? await this.ado.listCommits(this.workingBranch(), 8)
+          : await this.github.listCommits(8);
+      // Everything listed here is already on the remote — that is where it was
+      // read from — so there is no unpushed state to mark.
+      this.commits.set(commits.map((entry) => ({ ...entry, pushed: true })));
+    } catch {
+      this.commits.set([]);
+    }
+  }
+
+  /** Creates a branch from the default branch and switches the editor onto it. */
+  protected async createOnlineBranch(): Promise<void> {
+    const branch = this.newBranch().trim();
+    if (branch === '') return;
+    const done = await this.run('New branch', async () => {
+      if (this.mode() === 'ado') await this.ado.createBranch(branch);
+      else await this.github.createBranch(branch);
+      return true;
+    });
+    if (done === null) return;
+    this.newBranch.set('');
+    this.scmNote.set(`On ${branch}, taken from ${this.scmDefaultBranch()}.`);
+    await this.switchScmBranch(branch);
+  }
+
+  /**
+   * Opens a pull request for the branch being edited.
+   *
+   * This is the GitHub path: a commit lands on the branch and the request is a
+   * separate step. Azure DevOps opens one as part of publishing, so it never
+   * needs this.
+   */
+  protected async openPullRequestOnline(): Promise<void> {
+    const branch = this.scmBranch();
+    if (branch === null || this.onScmDefaultBranch()) return;
+    const done = await this.run('Pull request', () =>
+      this.github.openPullRequest(
+        branch,
+        `docs: changes from ${branch}`,
+        'Edited from the documentation site.',
+      ),
+    );
+    if (done === null) return;
+    this.openPullRequest.set(done);
+    this.scmNote.set(`Opened pull request !${done.id}.`);
+    this.scmLink.set(done.url);
+  }
+
+  /** Switches branch in whichever mode is active. */
+  protected async switchScmBranch(branch: string): Promise<void> {
+    if (this.mode() === 'local') {
+      await this.switchLocalBranch(branch);
+      return;
+    }
+    if (this.mode() === 'ado') {
+      await this.switchBranch(branch);
+      await this.refreshOnlineCommits();
+      return;
+    }
+    // GitHub: every request in the service reads whatever this signal says, so
+    // the file list and the open file have to be re-read from the new branch.
+    if (branch === this.github.activeBranch()) return;
+    this.github.activeBranch.set(branch);
+    this.review.set(null);
+    this.openPullRequest.set(
+      branch === this.github.defaultBranch
+        ? null
+        : await this.github.activePullRequest(branch).catch(() => null),
+    );
+    const path = this.selected();
+    await this.refreshFiles();
+    if (path && this.files().includes(path)) await this.open(path);
+    await this.refreshOnlineCommits();
+  }
   /* ---- local: the source-control panel --------------------------------- */
 
   /**
@@ -1294,9 +1452,14 @@ export class Editor {
     if (!open) return;
     this.scmNote.set(null);
     this.publishError.set(null);
-    await this.refreshGit();
-    await this.refreshLocalBranches();
-    await this.refreshCommits();
+    if (this.mode() === 'local') {
+      await this.refreshGit();
+      await this.refreshLocalBranches();
+      await this.refreshCommits();
+      return;
+    }
+    await this.refreshBranches();
+    await this.refreshOnlineCommits();
   }
 
   /** One place for "which button is waiting" and for turning a 400 into a sentence. */
@@ -1581,8 +1744,11 @@ export class Editor {
       return;
     }
     this.mode.set(mode);
-    if (mode === 'ado') await this.refreshBranches();
-    else this.branches.set([]);
+    this.branches.set([]);
+    this.commits.set([]);
+    this.scmNote.set(null);
+    this.scmLink.set(null);
+    if (mode !== 'local') await this.refreshBranches();
     this.review.set(null);
     this.selected.set(null);
     this.contentText.set('');

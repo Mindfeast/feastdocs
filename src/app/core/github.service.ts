@@ -40,7 +40,20 @@ export class GithubService {
   private readonly http = inject(HttpClient);
 
   readonly repo = SITE.github.repo;
-  readonly branch = SITE.github.branch;
+  /** The configured branch. Pull requests target this; it is never renamed. */
+  readonly defaultBranch = SITE.github.branch;
+  /**
+   * The branch being read and written.
+   *
+   * Every request below reads `this.branch`, which follows this signal — so
+   * switching branches needs no changes inside the methods, and a stale branch
+   * cannot be left behind in one of them.
+   */
+  readonly activeBranch = signal<string>(SITE.github.branch);
+  /** Kept as a property so templates and messages read naturally. */
+  get branch(): string {
+    return this.activeBranch();
+  }
   readonly isConfigured = this.repo !== null;
 
   readonly user = signal<GithubUser | null>(null);
@@ -93,6 +106,92 @@ export class GithubService {
     this.clearStoredToken();
   }
 
+  /* ---- branches, pull requests, history ---------------------------------
+   *
+   * A single configured branch was enough while every edit committed straight
+   * to it. It is not enough to address review comments on work already pushed,
+   * which is the ordinary case as soon as a repository protects its default
+   * branch — so the same operations the local panel has are available here.
+   */
+
+  /** Branch names, default first, then alphabetical. */
+  async listBranches(): Promise<string[]> {
+    // 100 is the API maximum for one page. A docs repository with more branches
+    // than that exists, but a picker listing them all would be unusable anyway.
+    const branches = await this.get<Array<{ name: string }>>(
+      `/repos/${this.repo}/branches?per_page=100`,
+    );
+    const names = branches.map((entry) => entry.name).sort((a, b) => a.localeCompare(b));
+    return [
+      ...names.filter((name) => name === this.defaultBranch),
+      ...names.filter((name) => name !== this.defaultBranch),
+    ];
+  }
+
+  /** Head commit of a branch — what a new branch is cut from. */
+  async branchHead(branch: string): Promise<string> {
+    const ref = await this.get<{ object: { sha: string } }>(
+      `/repos/${this.repo}/git/ref/heads/${encodeURIComponent(branch)}`,
+    );
+    return ref.object.sha;
+  }
+
+  /**
+   * Creates a branch at another branch's head and makes it the active one.
+   *
+   * Cut from the *remote* head rather than from anything cached, so it starts
+   * where the repository actually is.
+   */
+  async createBranch(name: string, from = this.defaultBranch): Promise<void> {
+    const sha = await this.branchHead(from);
+    await this.send('POST', `/repos/${this.repo}/git/refs`, {
+      ref: `refs/heads/${name}`,
+      sha,
+    });
+    this.activeBranch.set(name);
+  }
+
+  /** An open pull request from this branch, so an existing one can be linked. */
+  async activePullRequest(branch: string): Promise<{ id: number; url: string } | null> {
+    const owner = (this.repo ?? '').split('/')[0];
+    const found = await this.get<Array<{ number: number; html_url: string }>>(
+      `/repos/${this.repo}/pulls?state=open&head=${encodeURIComponent(`${owner}:${branch}`)}`,
+    );
+    return found.length > 0 ? { id: found[0].number, url: found[0].html_url } : null;
+  }
+
+  /** Opens a pull request from a branch into the default branch. */
+  async openPullRequest(
+    branch: string,
+    title: string,
+    body: string,
+  ): Promise<{ id: number; url: string }> {
+    const created = await this.send<{ number: number; html_url: string }>(
+      'POST',
+      `/repos/${this.repo}/pulls`,
+      { head: branch, base: this.defaultBranch, title, body },
+    );
+    return { id: created.number, url: created.html_url };
+  }
+
+  /** Recent commits on the active branch, newest first. */
+  async listCommits(
+    limit = 8,
+  ): Promise<Array<{ sha: string; subject: string; author: string; date: string }>> {
+    const commits = await this.get<
+      Array<{
+        sha: string;
+        commit: { message: string; author: { name: string; date: string } };
+      }>
+    >(`/repos/${this.repo}/commits?sha=${encodeURIComponent(this.branch)}&per_page=${limit}`);
+    return commits.map((entry) => ({
+      sha: entry.sha.slice(0, 7),
+      // Only the subject: a commit body in a one-line list is noise.
+      subject: entry.commit.message.split('\n')[0],
+      author: entry.commit.author.name,
+      date: entry.commit.author.date,
+    }));
+  }
   /** Every doc-ish file under docsDir on the configured branch. */
   async listFiles(docsDir: string): Promise<string[]> {
     return [...(await this.listTree(docsDir)).keys()].sort();

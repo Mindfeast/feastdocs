@@ -1,8 +1,8 @@
 ---
-title: 'List rate plans'
-description: 'Superseded by `/availability`, which returns rates inline.'
-sidebar_label: 'List rate plans'
-sidebar_badge: 'GET'
+title: "List rate plans"
+description: "Superseded by `/availability`, which returns rates inline."
+sidebar_label: "List rate plans"
+sidebar_badge: "GET"
 sidebar_position: 2
 ---
 
@@ -19,8 +19,8 @@ Superseded by `/availability`, which returns rates inline.
 ## Responses
 
 | Status | Description |
-| ------ | ----------- |
-| `200`  | Rate plans. |
+| --- | --- |
+| `200` | Rate plans. |
 
 ## Try it
 

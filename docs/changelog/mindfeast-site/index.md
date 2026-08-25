@@ -1,5 +1,5 @@
 ---
-title: 'Mindfeast Site'
+title: "Mindfeast Site"
 sidebar_label: 'Overview'
 description: '11 changes recorded for Mindfeast Site.'
 ---

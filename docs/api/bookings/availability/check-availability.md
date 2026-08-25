@@ -1,8 +1,8 @@
 ---
-title: 'Check availability'
-description: 'Rooms bookable for a date range, with nightly rates.'
-sidebar_label: 'Check availability'
-sidebar_badge: 'GET'
+title: "Check availability"
+description: "Rooms bookable for a date range, with nightly rates."
+sidebar_label: "Check availability"
+sidebar_badge: "GET"
 sidebar_position: 1
 ---
 
@@ -23,9 +23,9 @@ Rooms bookable for a date range, with nightly rates.
 
 ## Responses
 
-| Status | Description      |
-| ------ | ---------------- |
-| `200`  | Available rooms. |
+| Status | Description |
+| --- | --- |
+| `200` | Available rooms. |
 
 ### Example response
 

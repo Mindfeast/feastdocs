@@ -1,8 +1,8 @@
 ---
-title: 'List reservations'
-description: 'Returns reservations for the authenticated property, newest first.'
-sidebar_label: 'List reservations'
-sidebar_badge: 'GET'
+title: "List reservations"
+description: "Returns reservations for the authenticated property, newest first."
+sidebar_label: "List reservations"
+sidebar_badge: "GET"
 sidebar_position: 1
 ---
 
@@ -23,10 +23,10 @@ Returns reservations for the authenticated property, newest first.
 
 ## Responses
 
-| Status | Description               |
-| ------ | ------------------------- |
-| `200`  | A page of reservations.   |
-| `401`  | Missing or invalid token. |
+| Status | Description |
+| --- | --- |
+| `200` | A page of reservations. |
+| `401` | Missing or invalid token. |
 
 ### Example response
 

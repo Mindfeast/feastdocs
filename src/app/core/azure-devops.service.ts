@@ -124,6 +124,47 @@ export class AzureDevOpsService {
       : null;
   }
 
+  /** Recent commits on a branch, newest first. */
+  async listCommits(
+    branch = this.defaultBranch,
+    limit = 8,
+  ): Promise<Array<{ sha: string; subject: string; author: string; date: string }>> {
+    const url =
+      `${this.repoRoot}/commits?searchCriteria.itemVersion.version=${encodeURIComponent(branch)}` +
+      `&searchCriteria.$top=${limit}&api-version=7.1`;
+    const result = await this.request<{
+      value: Array<{
+        commitId: string;
+        comment: string;
+        author: { name: string; date: string };
+      }>;
+    }>('GET', url);
+    return result.value.map((entry) => ({
+      sha: entry.commitId.slice(0, 7),
+      // Only the subject: a commit body in a one-line list is noise.
+      subject: (entry.comment ?? '').split('\n')[0],
+      author: entry.author?.name ?? '',
+      date: entry.author?.date ?? '',
+    }));
+  }
+
+  /**
+   * Creates a branch at another branch's head, without a commit.
+   *
+   * A ref update from the all-zero object id is how Azure DevOps spells "create";
+   * `publish` does it as part of a push, but a branch you intend to work on for a
+   * while is worth making on its own.
+   */
+  async createBranch(name: string, from = this.defaultBranch): Promise<void> {
+    const head = await this.branchHead(from);
+    await this.request('POST', `${this.repoRoot}/refs?api-version=7.1`, [
+      {
+        name: `refs/heads/${name}`,
+        oldObjectId: '0000000000000000000000000000000000000000',
+        newObjectId: head,
+      },
+    ]);
+  }
   /**
    * Turns changes into a commit, one of two ways.
    *

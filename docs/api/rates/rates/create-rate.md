@@ -1,8 +1,8 @@
 ---
-title: 'Create a rate plan'
-description: 'POST /rates'
-sidebar_label: 'Create a rate plan'
-sidebar_badge: 'POST'
+title: "Create a rate plan"
+description: "POST /rates"
+sidebar_label: "Create a rate plan"
+sidebar_badge: "POST"
 sidebar_position: 2
 ---
 
@@ -26,8 +26,8 @@ sidebar_position: 2
 ## Responses
 
 | Status | Description |
-| ------ | ----------- |
-| `201`  | Created.    |
+| --- | --- |
+| `201` | Created. |
 
 ### Example response
 

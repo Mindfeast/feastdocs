@@ -1,8 +1,8 @@
 ---
-title: 'Get a reservation'
-description: 'GET /reservations/{id}'
-sidebar_label: 'Get a reservation'
-sidebar_badge: 'GET'
+title: "Get a reservation"
+description: "GET /reservations/{id}"
+sidebar_label: "Get a reservation"
+sidebar_badge: "GET"
 sidebar_position: 3
 ---
 
@@ -18,10 +18,10 @@ sidebar_position: 3
 
 ## Responses
 
-| Status | Description          |
-| ------ | -------------------- |
-| `200`  | The reservation.     |
-| `404`  | No such reservation. |
+| Status | Description |
+| --- | --- |
+| `200` | The reservation. |
+| `404` | No such reservation. |
 
 ### Example response
 

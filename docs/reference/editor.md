@@ -45,8 +45,8 @@ and a live Markdown preview on the right.
   publishes to
 - **Choose a branch, undo a change** — pick the branch you are editing, read
   each pending change as a diff, and discard the ones you do not want, in every
-  mode. See [source control](#source-control-in-local-mode) and
-  [branches and pull requests](#branches-and-pull-requests-online)
+  mode. See [source control](#source-control) and
+  [committing online](#committing-and-pull-requests-online)
 
 Saving writes the file to disk, which means the normal pipeline takes over: the
 watcher re-renders the content, the dev server hot-reloads, and the change shows
@@ -67,12 +67,19 @@ only when a dev server is up, so a deployed site with both hosts configured
 reaches either. Without any of them, the page explains what to set up instead of
 failing.
 
-### Source control, in local mode
+### Source control
 
-A local save is a file on disk, so git sees it immediately — and **Source
-control** in the toolbar shows what git sees, split the way git splits it. It is
-the same repository your terminal is looking at; `git status` and this panel never
-disagree.
+**Source control** in the toolbar opens one panel that works in every mode. What
+changes between them is where the answers come from, not what you can ask.
+
+In local mode a save is a file on disk, so git sees it immediately and the panel
+shows what git sees, split the way git splits it. It is the same repository your
+terminal is looking at; `git status` and this panel never disagree.
+
+Online there is no working copy — a save _is_ a staged change, held in the browser
+until you commit — so there is a **Staged changes** group and nothing else to
+stage. Everything around it is the same: which branch you are on, what is about to
+be committed, what it changes, and how it becomes a pull request.
 
 **Staged changes** and **Changes** list the files under `docs/`, each labelled the
 way an author would say it (_edited_, _new_, _deleted_, _renamed_):
@@ -147,21 +154,34 @@ every reader's first download — returning to `/` would leave the sign-in
 half-done.
 :::
 
-### Branches and pull requests, online
+### Committing and pull requests, online
 
-Online modes stage changes rather than writing them, and the branch you are
-editing decides what publishing does:
+The branch you are editing decides what committing does:
 
 - On the **default branch**, publishing cuts a new branch and opens a pull
   request. Protected default branches are the norm, so this is the only route
-  that works everywhere.
-- On **any other branch**, the commit is added to that branch — which is how a
+  that works everywhere — and it is why the panel asks for a branch name only
+  here.
+- On **any other branch**, the commit is added to that branch, which is how a
   review comment gets addressed without opening a second pull request for the
-  same work. If a pull request is already open for it, the editor links it.
+  same work. If a request is already open for it, the panel links it.
 
 Each staged change can be read before it is sent: clicking it diffs the staged
 version against the branch, hunk by hunk. ↺ discards one and puts the branch's
 version back.
+
+The two hosts divide the work differently, and the panel follows rather than
+pretending otherwise. Azure DevOps models a push as a ref update plus commits, so
+branch, commit, push and pull request happen in one call — one button. GitHub
+commits to a branch and stops, so **Open a pull request** is a separate step,
+offered once you are on a branch that is not the default.
+
+:::note Undo is local-only
+Every commit the panel lists in an online mode is already on the remote — that is
+where it was read from. Taking one back would rewrite history other people have,
+so **Undo last commit** appears only in local mode, where a commit can still be
+private.
+:::
 
 ### Connecting GitHub
 
