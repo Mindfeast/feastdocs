@@ -11,3 +11,4 @@ reads the history from the host's API instead. Set `GITHUB_TOKEN` (or
 Checking out with full depth in your own pipeline is still the cheapest path:
 `fetch-depth: 0` on GitHub Actions, `fetchDepth: 0` on Azure Pipelines.
 :::
+ 
