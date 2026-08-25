@@ -386,34 +386,23 @@
               Commit {{ pendingCount() }} change{{ pendingCount() === 1 ? '' : 's' }}
             </button>
           }
-          @if (mode() === 'local' && localBranches().length > 0) {
+          <!--
+            One branch picker for every backend. It used to be two — local and
+            Azure DevOps — which left GitHub, the mode a deployed site actually
+            runs in, with no way to change branch outside the panel.
+          -->
+          @if (scmBranches().length > 0) {
             <label class="fd-editor__branch">
               <span class="fd-editor__branchlabel">Branch</span>
               <select
                 aria-label="Branch to edit"
-                [disabled]="switchingBranch()"
-                [value]="git()?.branch"
-                (change)="switchLocalBranch($any($event.target).value)"
+                [disabled]="switchingBranch() || busy() !== null"
+                [value]="scmBranch()"
+                (change)="switchScmBranch($any($event.target).value)"
               >
-                @for (branch of localBranches(); track branch) {
+                @for (branch of scmBranches(); track branch) {
                   <option [value]="branch">
-                    {{ branch }}{{ branch === git()?.defaultBranch ? ' (protected)' : '' }}
-                  </option>
-                }
-              </select>
-            </label>
-          }
-          @if (mode() === 'ado' && branches().length > 0) {
-            <label class="fd-editor__branch">
-              <span class="fd-editor__branchlabel">Branch</span>
-              <select
-                aria-label="Branch to edit"
-                [value]="workingBranch()"
-                (change)="switchBranch($any($event.target).value)"
-              >
-                @for (branch of branches(); track branch) {
-                  <option [value]="branch">
-                    {{ branch }}{{ branch === ado.defaultBranch ? ' (protected)' : '' }}
+                    {{ branch }}{{ branch === scmDefaultBranch() ? ' (protected)' : '' }}
                   </option>
                 }
               </select>

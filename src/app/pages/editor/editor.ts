@@ -1371,10 +1371,29 @@ export class Editor {
     this.scmLink.set(done.url);
   }
 
-  /** Switches branch in whichever mode is active. */
+  /**
+   * Switches branch in whichever mode is active.
+   *
+   * Online, staged changes hold the whole file as it was read from the branch you
+   * staged them on. Carrying them to another branch and committing would write
+   * that version over whatever the new branch has — a silent revert of someone
+   * else's work, from a control that only said "switch branch". Local mode refuses
+   * outright (the dev server will not move a dirty tree); online there is nothing
+   * to stop it, so it has to be asked.
+   */
   protected async switchScmBranch(branch: string): Promise<void> {
     if (this.mode() === 'local') {
       await this.switchLocalBranch(branch);
+      return;
+    }
+    if (branch === this.scmBranch()) return;
+    if (
+      this.pendingCount() > 0 &&
+      !confirm(
+        `${this.pendingCount()} staged change(s) were read from ${this.scmBranch()}. ` +
+          `Committing them on ${branch} would overwrite what is there. Switch anyway?`,
+      )
+    ) {
       return;
     }
     if (this.mode() === 'ado') {
@@ -1727,6 +1746,10 @@ export class Editor {
       );
       await this.github.connect(result.token);
       this.mode.set('github');
+      // The branch list needs a session, so this is the first moment it can be
+      // read — without it the picker stays hidden until something else refreshes.
+      await this.refreshBranches();
+      await this.refreshFiles();
     } catch (error) {
       this.status.set({ kind: 'error', message: describe(error, 'GitHub sign-in failed.') });
     } finally {
@@ -1765,6 +1788,7 @@ export class Editor {
     try {
       await this.github.connect(token);
       this.tokenInput.set('');
+      await this.refreshBranches();
       await this.refreshFiles();
     } catch {
       this.status.set({
