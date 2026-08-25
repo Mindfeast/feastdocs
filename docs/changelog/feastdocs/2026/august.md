@@ -1,7 +1,7 @@
 ---
 title: "FeastDocs — August 2026"
 sidebar_label: 'August'
-description: '96 changes in FeastDocs, August 2026.'
+description: '97 changes in FeastDocs, August 2026.'
 sidebar_position: -8
 ---
 

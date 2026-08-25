@@ -439,7 +439,8 @@
               Publish {{ pendingCount() }} change{{ pendingCount() === 1 ? '' : 's' }}…
             </button>
           }
-          @if (mode() === 'local' && git()) {
+          <!-- The way into the panel, in whichever mode can answer it. -->
+          @if (scmAvailable()) {
             <button
               type="button"
               class="fd-button fd-button--ghost"
@@ -448,8 +449,8 @@
               (click)="toggleScm()"
             >
               Source control
-              @if (changedCount() > 0) {
-                <span>{{ changedCount() }}</span>
+              @if (scmCount() > 0) {
+                <span>{{ scmCount() }}</span>
               }
             </button>
           }
